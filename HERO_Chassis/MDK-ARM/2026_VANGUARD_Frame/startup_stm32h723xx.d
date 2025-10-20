@@ -1,0 +1,1 @@
+2026_vanguard_frame\startup_stm32h723xx.o: startup_stm32h723xx.s

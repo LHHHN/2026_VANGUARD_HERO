@@ -18,10 +18,10 @@
 //归一化最小均方（NLMS）算法通常需要参考信号进行自适应滤波
 
 #ifndef MAX_LMS_FILTER_NUM
-#define MAX_LMS_FILTER_NUM 30  /* 最大滤波器阶数 */
+#define MAX_LMS_FILTER_NUM 50  /* 最大滤波器阶数 */
 #endif
 
-typedef struct TagAdaptFilter
+typedef struct
 {
 	uint8_t cnt;                 /* 样本计数器 */
 	float y;                   /* 滤波输出值 */
@@ -32,9 +32,11 @@ typedef struct TagAdaptFilter
 	float mu;									/* 正则化参数 */
 
 	float d;								/* 虚拟滞后参考 */
+
+    uint8_t adapt_flag;
 } nlms_t;
 
-void Nlms_Init(nlms_t *const afd);
+void Nlms_Init(nlms_t *afd, uint8_t flag);
 
 void Nlms_Filter(nlms_t *afd, float new_x);
 

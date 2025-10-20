@@ -107,7 +107,7 @@ void DM_Motor_Stop(DM_motor_instance_t *motor)
 	}
 }
 
-void DM_Motor_ENABLE(DM_motor_instance_t *motor)
+void DM_Motor_Enable(DM_motor_instance_t *motor)
 {
 	if (motor == NULL)
 	{
@@ -122,7 +122,7 @@ void DM_Motor_ENABLE(DM_motor_instance_t *motor)
 	}
 }
 
-void DM_Motor_DISABLE(DM_motor_instance_t *motor)
+void DM_Motor_Disable(DM_motor_instance_t *motor)
 {
 	if (motor == NULL)
 	{
@@ -284,9 +284,9 @@ static void DM_Motor_Decode(CAN_instance_t *motor_can)
 	Supervisor_Reload(motor->supervisor);
 	motor->dt = DWT_GetDeltaT(&motor->feed_cnt);
 
-	if (motor->error_code & DM_MOTOR_LOST_ERROR)
+	if (motor->error_code & MOTOR_LOST_ERROR)
 	{
-		motor->error_code &= ~(DM_MOTOR_LOST_ERROR);
+		motor->error_code &= ~(MOTOR_LOST_ERROR);
 	}
 
 	receive_data->last_position = receive_data->position;
@@ -302,12 +302,14 @@ static void DM_Motor_Decode(CAN_instance_t *motor_can)
 
 	receive_data->t_mos   = (float) rxbuff[6];
 	receive_data->t_rotor = (float) rxbuff[7];
+
+	DM_Motor_Error_Judge(motor);
 }
 
 static void DM_Motor_Lost_Callback(void *motor_ptr)
 {
 	DM_motor_instance_t *motor = (DM_motor_instance_t *) motor_ptr;
-	motor->error_code |= DM_MOTOR_LOST_ERROR;
+	motor->error_code |= MOTOR_LOST_ERROR;
 }
 
 //经典CAN
@@ -348,6 +350,7 @@ DM_motor_instance_t *DM_Motor_Init(motor_init_config_t *config)
 	instance->motor_controller.torque_feedforward_ptr   = config->controller_param_init_config.torque_feedforward_ptr;
 	instance->motor_controller.speed_feedforward_ptr    = config->controller_param_init_config.speed_feedforward_ptr;
 
+
 	instance->dm_tx_id = config->can_init_config.tx_id;
 	instance->dm_rx_id = config->can_init_config.rx_id;
 
@@ -359,11 +362,11 @@ DM_motor_instance_t *DM_Motor_Init(motor_init_config_t *config)
 	supervisor_init_config_t supervisor_config = {
 		.handler_callback = DM_Motor_Lost_Callback,
 		.owner_id = instance,
-		.reload_count = 2, // 20ms未收到数据则丢失
+		.reload_count = 20, // 20ms未收到数据则丢失
 	};
 	instance->supervisor = Supervisor_Register(&supervisor_config);
 
-	instance->error_code = DM_ERROR_NONE;
+	instance->error_code = MOTOR_ERROR_NONE;
 
 	DWT_GetDeltaT(&instance->feed_cnt);
 
@@ -374,6 +377,9 @@ DM_motor_instance_t *DM_Motor_Init(motor_init_config_t *config)
 	return instance;
 }
 
+#include "user_lib.h"
+
+// 异常检测
 uint8_t DM_Motor_Error_Judge(DM_motor_instance_t *motor)
 {
 	uint8_t error_cnt;
@@ -392,11 +398,11 @@ uint8_t DM_Motor_Error_Judge(DM_motor_instance_t *motor)
 			if ((dm_motor_instances[i]->receive_data.torque > 5.0f) || (dm_motor_instances[i]->receive_data.velocity > 5.0f))
 			{
 				error_cnt++;
-				dm_motor_instances[i]->error_code |= DM_MOTOR_SUPERLOAD_ERROR;
+				dm_motor_instances[i]->error_code |= MOTOR_SUPERLOAD_ERROR;
 			}
 			else
 			{
-				dm_motor_instances[i]->error_code &= ~(DM_MOTOR_SUPERLOAD_ERROR);
+				dm_motor_instances[i]->error_code &= ~(MOTOR_SUPERLOAD_ERROR);
 			}
 		}
 	}
@@ -410,11 +416,11 @@ uint8_t DM_Motor_Error_Judge(DM_motor_instance_t *motor)
 		if ((motor->receive_data.torque > 5.0f) || (motor->receive_data.velocity > 5.0f))
 		{
 			error_cnt = 1;
-			motor->error_code |= DM_MOTOR_SUPERLOAD_ERROR;
+			motor->error_code |= MOTOR_SUPERLOAD_ERROR;
 		}
 		else
 		{
-			motor->error_code &= ~(DM_MOTOR_SUPERLOAD_ERROR);
+			motor->error_code &= ~(MOTOR_SUPERLOAD_ERROR);
 		}
 	}
 
@@ -435,7 +441,7 @@ void DM_Motor_Control(DM_motor_instance_t *motor_s)
 	float pid_fab, pid_ref;		  // 电机PID测量值和设定值
 
 	uint8_t j = 0;
-	if (motor == NULL)
+	if (motor_s == NULL)
 	{
 		j = idx;
 	}
@@ -446,7 +452,7 @@ void DM_Motor_Control(DM_motor_instance_t *motor_s)
 	// 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
 	for (size_t i = 0 ; i < idx ; ++i)
 	{ // 减小访存开销,先保存指针引用
-		if (motor == NULL)
+		if (motor_s == NULL)
 		{
 			motor = dm_motor_instances[i];
 		}
@@ -466,61 +472,69 @@ void DM_Motor_Control(DM_motor_instance_t *motor_s)
 			pid_ref *= -1; // 目标值设置反转
 		}
 
-		// pid_ref会顺次通过被启用的闭环充当数据的载体
-		// 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
-		// dm_diff的值需要自己另外做处理，比如使其指向视觉发送的目标装甲板的偏差值
-		if ((motor_setting->close_loop_type & ANGLE_LOOP) && (motor_setting->outer_loop_type == ANGLE_LOOP))
+		if (motor->motor_settings.control_button == TORQUE_DIRECT_CONTROL)
 		{
-			if (motor_setting->angle_feedback_source == OTHER_FEED)
+			// 直接控制扭矩
+			motor->transmit_data.torque_des = motor_controller->pid_ref;
+		}
+		else
+		{
+			// pid_ref会顺次通过被启用的闭环充当数据的载体
+			// 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
+			// dm_diff的值需要自己另外做处理，比如使其指向视觉发送的目标装甲板的偏差值
+			if ((motor_setting->close_loop_type & ANGLE_LOOP) && (motor_setting->outer_loop_type == ANGLE_LOOP))
 			{
-				pid_fab = *motor_controller->other_angle_feedback_ptr;
-			}
-			else
-			{
-				if (motor->motor_feedback == DM_MOTOR_ABSOLUTE)
+				if (motor_setting->angle_feedback_source == OTHER_FEED)
 				{
-					pid_fab = motor->receive_data.position;
+					pid_fab = *motor_controller->other_angle_feedback_ptr;
 				}
-				else if (motor->motor_feedback == DM_MOTOR_DIFF)
+				else
 				{
-					pid_fab = motor->receive_data.dm_diff;
+					if (motor->motor_feedback == DM_MOTOR_ABSOLUTE)
+					{
+						pid_fab = motor->receive_data.position;
+					}
+					else if (motor->motor_feedback == DM_MOTOR_DIFF)
+					{
+						pid_fab = motor->receive_data.dm_diff;
+					}
 				}
+				// 更新pid_ref进入下一个环
+				pid_ref = PID_Position(motor_controller->angle_PID,
+				                       pid_fab,
+				                       pid_ref);
 			}
-			// 更新pid_ref进入下一个环
-			pid_ref = PID_Position(motor_controller->angle_PID,
-			                       pid_fab,
-			                       pid_ref);
-		}
 
-		// 计算速度环,(外层闭环为速度或位置)且(启用速度环)时会计算速度环
-		if ((motor_setting->close_loop_type & SPEED_LOOP) && (motor_setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP)))
-		{
-			if (motor_setting->feedforward_flag & SPEED_FEEDFORWARD)
+			// 计算速度环,(外层闭环为速度或位置)且(启用速度环)时会计算速度环
+			if ((motor_setting->close_loop_type & SPEED_LOOP) && (motor_setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP)))
 			{
-				pid_ref += *motor_controller->speed_feedforward_ptr;
+				if (motor_setting->feedforward_flag & SPEED_FEEDFORWARD)
+				{
+					pid_ref += *motor_controller->speed_feedforward_ptr;
+				}
+
+				if (motor_setting->speed_feedback_source == OTHER_FEED)
+				{
+					pid_fab = *motor_controller->other_speed_feedback_ptr;
+				}
+
+				// 更新pid_ref进入下一个环
+				pid_ref = PID_Increment(motor_controller->speed_PID,
+				                        pid_fab,
+				                        pid_ref);
 			}
 
-			if (motor_setting->speed_feedback_source == OTHER_FEED)
+			// 计算扭矩环,目前只要启用了扭矩环就计算,不管外层闭环是什么,并且扭矩只有电机自身传感器的反馈
+			if (motor_setting->feedforward_flag & TORQUE_FEEDFORWARD)
 			{
-				pid_fab = *motor_controller->other_speed_feedback_ptr;
+				pid_ref += *motor_controller->torque_feedforward_ptr;
 			}
-
-			// 更新pid_ref进入下一个环
-			pid_ref = PID_Increment(motor_controller->speed_PID,
-			                        pid_fab,
-			                        pid_ref);
-		}
-
-		// 计算扭矩环,目前只要启用了扭矩环就计算,不管外层闭环是什么,并且扭矩只有电机自身传感器的反馈
-		if (motor_setting->feedforward_flag & TORQUE_FEEDFORWARD)
-		{
-			pid_ref += *motor_controller->torque_feedforward_ptr;
-		}
-		if (motor_setting->close_loop_type & TORQUE_LOOP)
-		{
-			pid_ref = PID_Position(motor_controller->torque_PID,
-			                       receive_data->torque,
-			                       pid_ref);
+			if (motor_setting->close_loop_type & TORQUE_LOOP)
+			{
+				pid_ref = PID_Position(motor_controller->torque_PID,
+				                       receive_data->torque,
+				                       pid_ref);
+			}
 		}
 
 		if (motor_setting->feedback_reverse_flag == FEEDBACK_DIRECTION_REVERSE)
@@ -648,6 +662,12 @@ void DM_Motor_Control(DM_motor_instance_t *motor_s)
 
 		else if (motor->dm_mode == MIT_MODE)
 		{
+			//这里不提供其他的设计，只有纯力矩控制，如有需求在此修改代码逻辑即可
+			motor->transmit_data.position_des = 0.0f;
+			motor->transmit_data.velocity_des = 0.0f;
+			motor->transmit_data.Kp           = 0;
+			motor->transmit_data.Kd           = 0;
+
 			// 若该电机处于停止状态,直接将buff置零
 			if (motor->motor_state_flag == MOTOR_DISABLE)
 			{
@@ -656,12 +676,6 @@ void DM_Motor_Control(DM_motor_instance_t *motor_s)
 				motor->transmit_data.torque_des   = 0.0f;
 				pid_ref                           = 0.0f;
 			}
-
-			//这里不提供其他的设计，只有纯力矩控制，如有需求在此修改代码逻辑即可
-			motor->transmit_data.position_des = 0.0f;
-			motor->transmit_data.velocity_des = 0.0f;
-			motor->transmit_data.Kp           = 0;
-			motor->transmit_data.Kd           = 0;
 
 			if (motor->motor_settings.outer_loop_type == ANGLE_LOOP)
 			{

@@ -118,7 +118,7 @@ typedef enum
 	M2006,
 	DM4310,
 	DM8009P,
-} motor_type_e;
+} motor_model_e;
 
 typedef enum
 {
@@ -130,25 +130,27 @@ typedef enum
 /* 异常检测 */
 typedef enum
 {
-	MOTOR_ERROR_DETECTION_NONE  = 0b0000,
-	MOTOR_ERROR_DETECTION_CRASH = 0b0001,
-	MOTOR_ERROR_DETECTION_STUCK = 0b0010,
-	MOTOR_ERROR_DETECTION_LOST  = 0b0100,
-	MOTOR_ERROR_PROTECTED       = 0b1000,
-} motor_error_detection_type_e;
+	MOTOR_ERROR_NONE            = 0x00U,
+	MOTOR_BLOCKED_ERROR   = 0x01U,
+	MOTOR_LOST_ERROR      = 0x02U,
+	MOTOR_SUPERLOAD_ERROR = 0x03U,
+	MOTOR_CRASH_ERROR   = 0x04U,
+	MOTOR_ERROR_PROTECTED = 0x05U,
+} motor_error_e;
 
 /* 电机控制方式枚举 */
 typedef enum
 {
-	TORQUE_LOOP_CONTROL = 0, //扭矩开环控制
-	ANGLE_LOOP_CONTROL  = 1,  //位置闭环控制
-} motor_control_type_e;
+	TORQUE_DIRECT_CONTROL = 0, //扭矩直接开环控制
+	POLYCYCLIC_LOOP_CONTROL  = 1,  //多环嵌套闭合控制
+} motor_control_button_e;
 
 /* 电机控制设置,包括闭环类型,反转标志和反馈来源 */
 typedef struct
 {
 	closeloop_type_e outer_loop_type;    		// 最外层的闭环,未设置时默认为最高级的闭环
 	closeloop_type_e close_loop_type;             // 使用几个闭环(串级)
+	motor_control_button_e control_button;
 
 	motion_reverse_flag_e motor_reverse_flag;             // 电机转向是否反转(不改变原数据)
 	feedback_reverse_flag_e feedback_reverse_flag;        // 反馈数据是否反向(不改变原数据)
@@ -164,9 +166,8 @@ typedef struct
 {
 	motor_controller_t controller_param_init_config;
 	motor_control_setting_t controller_setting_init_config;
-	motor_type_e motor_type;
+	motor_model_e motor_type;
 	can_init_config_t can_init_config;
-	motor_control_type_e motor_control_type;  //控制类型
 } motor_init_config_t;
 
 #endif /* __DRV_MOTOR_H__ */

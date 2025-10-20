@@ -60,16 +60,17 @@ typedef struct
  */
 typedef struct
 {
-	motor_type_e motor_type;        // 电机类型
+	motor_model_e motor_type;        // 电机类型
 	motor_reference_e motor_reference;
 
 	motor_control_setting_t motor_settings; // 电机控制设置
 	motor_controller_t motor_controller;    // 电机控制器
 
+	motor_error_e error_code;
+
 	CAN_instance_t *motor_can_instance; // 电机CAN实例
 
 	motor_working_type_e motor_state_flag; // 启停标志
-	motor_error_detection_type_e motor_error_detection; // 异常检测
 
 	DJI_motor_callback_t receive_data;            // 电机测量值
 	DJI_motor_fillmessage_t transmit_data;  // 电机设定值
@@ -78,6 +79,7 @@ typedef struct
 	supervisor_t *supervisor;
 
 	uint32_t feed_cnt;
+	uint32_t error_beat;
 	float dt;
 
 	// 分组发送设置
@@ -124,13 +126,13 @@ void DJI_Motor_Change_Feedback(DJI_motor_instance_t *motor, closeloop_type_e loo
 /**
  * @brief 该函数被motor_task调用运行在rtos上,motor_stask内通过osDelay()确定控制频率
  */
-void DJI_Motor_Control(void);
+void DJI_Motor_Control(DJI_motor_instance_t *motor_s);
 
 /**
  * @brief 停止电机,注意不是将设定值设为零,而是直接给电机发送的电流值置零
  *
  */
-void DJI_Motor_Stop(DJI_motor_instance_t *motor);
+void DJI_Motor_Disable(DJI_motor_instance_t *motor);
 
 /**
  * @brief 启动电机,此时电机会响应设定值
@@ -146,5 +148,7 @@ void DJI_Motor_Enable(DJI_motor_instance_t *motor);
  * @param outer_loop 外层闭环类型
  */
 void DJI_Motor_Change_Outerloop(DJI_motor_instance_t *motor, closeloop_type_e outer_loop);
+
+uint8_t DJI_Motor_Error_Judge(DJI_motor_instance_t *motor);
 
 #endif /* __DJI_MOTOR_H__ */

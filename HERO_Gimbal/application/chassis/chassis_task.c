@@ -92,11 +92,11 @@ static void Chassis_Task(void *argument)
 		//		chassis_cnt++;
 		//		if((chassis_cnt % 1500) == 0) // 100Hz
 		//		{
-		//			DM_Motor_ENABLE(NULL);
+		//			DM_Motor_Enable(NULL);
 		//		}
 		//		else if((chassis_cnt % 1000) == 0)
 		//		{
-		//			DM_Motor_DISABLE(NULL);
+		//			DM_Motor_Disable(NULL);
 		//		}
 
 		/******************************底盘测试达妙收发代码*****************************/

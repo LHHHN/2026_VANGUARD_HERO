@@ -10,16 +10,19 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
 
 #include "lms.h"
+
+#include "stm32h7xx_hal.h"
 
 /**
  * @brief 初始化LMS滤波器权重（线性递减权重）
  * @param afd 指向滤波器结构体的指针（需确保非NULL）
  * @note 权重分配策略：距离当前时刻越近的样本权重越大
  */
-void Nlms_Init(nlms_t *const afd)
+void Nlms_Init(nlms_t *afd, uint8_t flag)
 {
 	/* 参数有效性检查（硬件开发必备） */
 	if (afd == NULL)
@@ -27,29 +30,32 @@ void Nlms_Init(nlms_t *const afd)
 		return;  /* 或触发硬件看门狗复位 */
 	}
 
+	memset(afd, 0, sizeof(nlms_t));
+
 	/* 初始化计数器 */
 	afd->cnt = 0;
+    afd->adapt_flag = flag;
 
 	/* 计算线性权重（使用float累加以避免double精度浪费） */
 	float w_sum = 0.0f;
 	for (int i = 0 ; i < MAX_LMS_FILTER_NUM ; i++)
 	{
-		const double wi = (double) (i + 1);  /* 显式类型转换 */
+		const float wi = (float) (i + 1);  /* 显式类型转换 */
 		w_sum += (float) wi;                 /* 累加阶段使用float */
 		afd->w[i] = wi;                     /* 暂存原始权重 */
 	}
 
 	/* 权重归一化（最终结果保持double精度） */
-	const float w_sum_inv = 1.0f / w_sum;  /* 除法转乘法优化 */
+	float w_sum_inv = 1.0f / w_sum;  /* 除法转乘法优化 */
 	for (int i = 0 ; i < MAX_LMS_FILTER_NUM ; i++)
 	{
-		afd->w[i] = (double) w_sum_inv * afd->w[i];  /* 最终权重计算 */
+		afd->w[i] = (float) w_sum_inv * afd->w[i];  /* 最终权重计算 */
 	}
 
-	/* 可选：硬件寄存器保护（防止初始化被中断打断） */
-	// __disable_irq();
-	// memset(afd->x, 0, sizeof(afd->x));  /* 清空输入队列 */
-	// __enable_irq();
+	/* 硬件寄存器保护（防止初始化被中断打断） */
+	__disable_irq( );
+	memset(afd->x, 0, sizeof(afd->x));  /* 清空输入队列 */
+	__enable_irq();
 }
 
 /**
@@ -68,15 +74,15 @@ void Nlms_Init(nlms_t *const afd)
  */
 void Nlms_Filter(nlms_t *afd, float new_x)
 {
-	// /* 参数有效性检查（硬件实时系统建议使用assert） */
-	// if (afd->a <= 0.0 || afd->a > 2.0)
-    // {
-	// 	afd->a = 1.0;  // 限制学习率范围
-    // }
-    // if (afd->mu < 1e-6)
-    // {
-	// 	afd->mu = 1e-6;         // 最小正则化值
-    // }
+	/* 参数有效性检查（硬件实时系统建议使用assert） */
+	if (afd->a <= 0.0 || afd->a > 2.0)
+	{
+		afd->a = 1.0;  // 限制学习率范围
+	}
+	if (afd->mu < 1e-6)
+	{
+		afd->mu = 1e-6;         // 最小正则化值
+	}
 
 	/* 样本队列维护（环形缓冲区优化） */
 	if (afd->cnt < MAX_LMS_FILTER_NUM)
@@ -90,33 +96,32 @@ void Nlms_Filter(nlms_t *afd, float new_x)
 		afd->x[MAX_LMS_FILTER_NUM - 1] = (float) new_x;
 	}
 
-	// /* 动态滤波处理 */
-	// if (afd->cnt == MAX_LMS_FILTER_NUM)
-	// {
-	// 	/* NLMS滤波核心计算 */
-	// 	double x_norm = afd->mu;  // 初始化正则化项
-	// 	afd->y        = 0.0;
+	/* 动态滤波处理 */
+	if ((afd->cnt == MAX_LMS_FILTER_NUM) && (afd->adapt_flag == 1))
+	{
+		/* NLMS滤波核心计算 */
+		float x_norm = afd->mu;  // 初始化正则化项
+		afd->y        = 0.0;
 
-	// 	/* 第一遍循环：计算能量项和预测输出 */
-	// 	for (int i = 0 ; i < MAX_LMS_FILTER_NUM ; i++)
-	// 	{
-	// 		const double xi = afd->x[i];
-	// 		afd->y += afd->w[i] * xi;       // 计算预测输出 y = w'*x
-	// 		x_norm += xi * xi;              // 计算输入能量 x'*x
-	// 	}
+		/* 第一遍循环：计算能量项和预测输出 */
+		for (int i = 0 ; i < MAX_LMS_FILTER_NUM ; i++)
+		{
+			afd->y += afd->w[i] * afd->x[i];       // 计算预测输出 y = w'*x
+			x_norm += afd->x[i] * afd->x[i];              // 计算输入能量 x'*x
+		}
 
-	// 	/* 误差计算与权重更新 */
-	// 	const double error     = afd->d - afd->y;
-	// 	const double step_size = afd->a / fmax(x_norm, afd->mu);  // 防止除以零
+		/* 误差计算与权重更新 */
+		float error     = afd->d - afd->y;
+		float step_size = afd->a / fmax(x_norm, afd->mu);  // 防止除以零
 
-	// 	/* 第二遍循环：并行更新权重（考虑定点数优化潜力） */
-	// 	for (int i = 0 ; i < MAX_LMS_FILTER_NUM ; i++)
-	// 	{
-	// 		afd->w[i] += step_size * error * afd->x[i];
-	// 	}
-	// }
-	// else
-	// {
+		/* 第二遍循环：并行更新权重（考虑定点数优化潜力） */
+		for (int i = 0 ; i < MAX_LMS_FILTER_NUM ; i++)
+		{
+			afd->w[i] += step_size * error * afd->x[i];
+		}
+	}
+	else
+	{
 		/* 启动阶段线性加权滤波（近期数据权重更高） */
 		float weighted_sum = 0.0f;
 		float weight_sum   = 0.0f;
@@ -128,26 +133,33 @@ void Nlms_Filter(nlms_t *afd, float new_x)
 			weight_sum += wi;
 		}
 
-        if(weight_sum == 0.0f)
-        {
-            weight_sum = 1.0f; // 防止除以零
-        } 
+		if (weight_sum == 0.0f)
+		{
+			weight_sum = 1.0f; // 防止除以零
+		}
 
 		afd->y = weighted_sum / weight_sum;
-	// }
+	}
 }
+
+#define BUFFER_SIZE 20       // 缓冲区大小
+#define GAUSSIAN_STD 2.0f    // 高斯分布标准差（控制权重衰减速度）
 
 float Nlms_Filter_Sensor(nlms_t *afd, float new_x)
 {
-	const uint8_t DELAY = 5;  // 延迟阶数（根据信号特性调整）
-	static float buffer[10] = {0};
+    // 环形缓冲区实现延迟参考信号
+	static float buffer[BUFFER_SIZE] = {0};
+    static uint8_t head = 0;
+    static uint8_t ref_index = 0;
+    uint8_t delay     = 9;  // 延迟阶数（根据信号特性调整）
 
-	// 构造延迟参考信号
-	afd->d = buffer[DELAY];
+    // 计算参考信号位置
+    ref_index = (head + delay) % BUFFER_SIZE;
+    afd->d = buffer[ref_index];
 
-	// 更新延迟队列
-	memmove(buffer, buffer+1, sizeof(buffer)-sizeof(float));
-	buffer[sizeof(buffer)/sizeof(float)-1] = new_x;
+    // 更新队列
+    buffer[head] = new_x;
+    head = (head + 1) % BUFFER_SIZE;
 
 	Nlms_Filter(afd, new_x);
 

@@ -1,0 +1,4 @@
+2026_vanguard_frame/mahonyahrs.o: \
+  ../algorithm/filter/AHRS/mahony/MahonyAHRS.c \
+  ../algorithm/filter/AHRS/mahony/MahonyAHRS.h \
+  D:\keil5\ARM\ARMCLANG\Bin\..\include\math.h

@@ -63,8 +63,6 @@ static void Frame_Device_Init(void)
 	Buzzer_Register( );
 	
 	ws2812_instance = WS2812_Register(&ws2812_config);
-
-	HAL_Delay(200);
 	
 	// BMI088_Init(&hspi2,0);
 	bmi088_h7 = BMI088_Register(&bmi088_init_h7);

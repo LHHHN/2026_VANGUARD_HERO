@@ -77,6 +77,7 @@ motor_init_config_t DM_right_back_motor_init = {
 		.speed_feedback_source = MOTOR_FEED,
 
 		.feedforward_flag = FEEDFORWARD_NONE,
+		.control_button = TORQUE_DIRECT_CONTROL,		
 	},
 
 	.motor_type = DM8009P,
@@ -87,7 +88,6 @@ motor_init_config_t DM_right_back_motor_init = {
 		.rx_id = 0x10,
 	},
 
-	.motor_control_type = TORQUE_LOOP_CONTROL,
 };
 
 motor_init_config_t DM_right_front_motor_init = {
@@ -117,6 +117,7 @@ motor_init_config_t DM_right_front_motor_init = {
 		.speed_feedback_source = MOTOR_FEED,
 
 		.feedforward_flag = FEEDFORWARD_NONE,
+		.control_button = TORQUE_DIRECT_CONTROL,		
 	},
 
 	.motor_type = DM8009P,
@@ -127,7 +128,6 @@ motor_init_config_t DM_right_front_motor_init = {
 		.rx_id = 0x11,
 	},
 
-	.motor_control_type = TORQUE_LOOP_CONTROL,
 };
 
 motor_init_config_t DM_left_front_motor_init = {
@@ -157,6 +157,7 @@ motor_init_config_t DM_left_front_motor_init = {
 		.speed_feedback_source = MOTOR_FEED,
 
 		.feedforward_flag = FEEDFORWARD_NONE,
+		.control_button = TORQUE_DIRECT_CONTROL,		
 	},
 
 	.motor_type = DM8009P,
@@ -167,7 +168,6 @@ motor_init_config_t DM_left_front_motor_init = {
 		.rx_id = 0x12,
 	},
 
-	.motor_control_type = TORQUE_LOOP_CONTROL,
 };
 
 motor_init_config_t DM_left_back_motor_init = {
@@ -197,6 +197,7 @@ motor_init_config_t DM_left_back_motor_init = {
 		.speed_feedback_source = MOTOR_FEED,
 
 		.feedforward_flag = FEEDFORWARD_NONE,
+		.control_button = TORQUE_DIRECT_CONTROL,
 	},
 
 	.motor_type = DM8009P,
@@ -206,8 +207,6 @@ motor_init_config_t DM_left_back_motor_init = {
 		.tx_id = 0x03,
 		.rx_id = 0x13,
 	},
-
-	.motor_control_type = TORQUE_LOOP_CONTROL,
 };
 
 motor_init_config_t DJI_right_motor_init = {
@@ -237,6 +236,7 @@ motor_init_config_t DJI_right_motor_init = {
 		.speed_feedback_source = MOTOR_FEED,
 
 		.feedforward_flag = FEEDFORWARD_NONE,
+		.control_button = TORQUE_DIRECT_CONTROL,
 	},
 
 	.motor_type = M3508,
@@ -247,7 +247,6 @@ motor_init_config_t DJI_right_motor_init = {
 		.rx_id = 0x00,
 	},
 
-	.motor_control_type = TORQUE_LOOP_CONTROL,
 };
 
 motor_init_config_t DJI_left_motor_init = {
@@ -277,6 +276,7 @@ motor_init_config_t DJI_left_motor_init = {
 		.speed_feedback_source = MOTOR_FEED,
 
 		.feedforward_flag = FEEDFORWARD_NONE,
+		.control_button = TORQUE_DIRECT_CONTROL,
 	},
 
 	.motor_type = M3508,
@@ -287,7 +287,6 @@ motor_init_config_t DJI_left_motor_init = {
 		.rx_id = 0x00,
 	},
 
-	.motor_control_type = TORQUE_LOOP_CONTROL,
 };
 
 /******************************底盘电机初始化结构体*****************************/
@@ -515,16 +514,16 @@ void Chassis_Reference(void)
 
 					break;
 				case WFLY_SW_MID:
-					DM_Motor_DISABLE(balance_chassis.joint_motor[0]);
-					DM_Motor_DISABLE(balance_chassis.joint_motor[1]);
-					DM_Motor_DISABLE(balance_chassis.joint_motor[2]);
-					DM_Motor_DISABLE(balance_chassis.joint_motor[3]);
+					DM_Motor_Disable(balance_chassis.joint_motor[0]);
+					DM_Motor_Disable(balance_chassis.joint_motor[1]);
+					DM_Motor_Disable(balance_chassis.joint_motor[2]);
+					DM_Motor_Disable(balance_chassis.joint_motor[3]);
 					break;
 				case WFLY_SW_DOWN:
-					DM_Motor_ENABLE(balance_chassis.joint_motor[0]);
-					DM_Motor_ENABLE(balance_chassis.joint_motor[1]);
-					DM_Motor_ENABLE(balance_chassis.joint_motor[2]);
-					DM_Motor_ENABLE(balance_chassis.joint_motor[3]);
+					DM_Motor_Enable(balance_chassis.joint_motor[0]);
+					DM_Motor_Enable(balance_chassis.joint_motor[1]);
+					DM_Motor_Enable(balance_chassis.joint_motor[2]);
+					DM_Motor_Enable(balance_chassis.joint_motor[3]);
 					break;
 				default:
 					break;
@@ -782,11 +781,11 @@ void Chassis_Send_Cmd(void)
 	//	chassis_cnt++;
 	//	if ((chassis_cnt % 1500) == 0) // 100Hz
 	//	{
-	//		DM_Motor_ENABLE(NULL);
+	//		DM_Motor_Enable(NULL);
 	//	}
 	//	else if ((chassis_cnt % 1000) == 0)
 	//	{
-	//		DM_Motor_DISABLE(NULL);
+	//		DM_Motor_Disable(NULL);
 	//	}
 }
 

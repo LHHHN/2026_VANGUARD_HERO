@@ -20,10 +20,10 @@ static publisher_t message_center = {
 
 static void Check_Name(char *name)
 {
-	if (strnlen(name, MAX_TOPIC_NAME_LEN + 1) >= MAX_TOPIC_NAME_LEN)
-	{
-		while (1); // 进入这里说明话题名超出长度限制
-	}
+//	if (strnlen(name, MAX_TOPIC_NAME_LEN + 1) >= MAX_TOPIC_NAME_LEN)
+//	{
+//		while (1); // 进入这里说明话题名超出长度限制
+//	}
 }
 
 static void Check_Len(uint8_t len1, uint8_t len2)

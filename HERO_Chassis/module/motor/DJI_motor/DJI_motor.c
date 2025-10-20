@@ -19,8 +19,6 @@ static uint8_t idx = 0; // register idx,是该文件的全局电机索引,在注
 /* DJI电机的实例,此处仅保存指针,内存的分配将通过电机实例初始化时通过malloc()进行 */
 static DJI_motor_instance_t *dji_motor_instances[DJI_MOTOR_CNT] = {NULL}; // 会在control任务中遍历该指针数组进行pid计算
 
-void DJI_Motor_Error_Detection(DJI_motor_instance_t *motor);
-
 /**
  * @brief 由于DJI电机发送以四个一组的形式进行,故对其进行特殊处理,用6个(2can*3group)can_instance专门负责发送
  *        该变量将在 DJI_Motor_Control() 中使用,分组在 Motor_Sender_Grouping()中进行
@@ -106,7 +104,7 @@ static void Motor_Sender_Grouping(DJI_motor_instance_t *motor, can_init_config_t
 				motor_send_num = motor_id;
 #if GM6020_VOLTAGE
 				motor_grouping = config->can_handle == &hfdcan1 ? 0 : (config->can_handle == &hfdcan2 ? 3 : 6);
-#elif GM6020_CURRENT 				
+#elif GM6020_CURRENT
 				motor_grouping = config->can_handle == &hfdcan1 ? 9 : (config->can_handle == &hfdcan2 ? 10 : 11);
 #endif
 			}
@@ -115,9 +113,9 @@ static void Motor_Sender_Grouping(DJI_motor_instance_t *motor, can_init_config_t
 				motor_send_num = motor_id - 4;
 #if GM6020_VOLTAGE
 				motor_grouping = config->can_handle == &hfdcan1 ? 2 : (config->can_handle == &hfdcan2 ? 5 : 8);
-#elif GM6020_CURRENT				
+#elif GM6020_CURRENT
 				motor_grouping = config->can_handle == &hfdcan1 ? 12 : (config->can_handle == &hfdcan2 ? 13 : 14);
-#endif				
+#endif
 			}
 
 			config->rx_id                      = 0x204 + motor_id + 1; // 把ID+1,进行分组设置
@@ -146,14 +144,14 @@ static void Motor_Sender_Grouping(DJI_motor_instance_t *motor, can_init_config_t
  * @todo  是否可以简化多圈角度的计算？
  * @brief 根据返回的can_instance对反馈报文进行解析
  *
- * @param _instance 收到数据的instance,通过遍历与所有电机进行对比以选择正确的实例
+ * @param motor_can 收到数据的instance,通过遍历与所有电机进行对比以选择正确的实例
  */
-static void Decode_DJI_Motor(CAN_instance_t *_instance)
+static void Decode_DJI_Motor(CAN_instance_t *motor_can)
 {
 	// 这里对can instance的id进行了强制转换,从而获得电机的instance实例地址
 	// _instance指针指向的id是对应电机instance的地址,通过强制转换为电机instance的指针,再通过->运算符访问电机的成员motor_measure,最后取地址获得指针
-	uint8_t *rxbuff               = _instance->rx_buff;
-	DJI_motor_instance_t *motor   = (DJI_motor_instance_t *) _instance->id;
+	uint8_t *rxbuff                    = motor_can->rx_buff;
+	DJI_motor_instance_t *motor        = (DJI_motor_instance_t *) motor_can->id;
 	DJI_motor_callback_t *receive_data = &motor->receive_data; // measure要多次使用,保存指针减小访存开销
 
 	Supervisor_Reload(motor->supervisor);
@@ -166,9 +164,9 @@ static void Decode_DJI_Motor(CAN_instance_t *_instance)
 
 	receive_data->angle_single_round = ECD_ANGLE_COEF_DJI * (float) receive_data->ecd;
 	receive_data->speed_aps          = (1.0f - SPEED_SMOOTH_COEF) * receive_data->speed_aps +
-	                              RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * (float) ((int16_t)(rxbuff[2] << 8 | rxbuff[3]));
+	                                   RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * (float) ((int16_t)(rxbuff[2] << 8 | rxbuff[3]));
 	receive_data->real_current = (1.0f - CURRENT_SMOOTH_COEF) * receive_data->real_current +
-	                        CURRENT_SMOOTH_COEF * (float) ((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
+	                             CURRENT_SMOOTH_COEF * (float) ((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
 	receive_data->temperature = rxbuff[6];
 
 	int16_t err = receive_data->ecd - receive_data->last_ecd;
@@ -190,7 +188,7 @@ static void Decode_DJI_Motor(CAN_instance_t *_instance)
 	receive_data->total_angle = receive_data->total_round * 360 + receive_data->angle_single_round;
 	receive_data->total_rad   = (receive_data->total_ecd / 8192.0f) * 2 * PI;
 
-	DJI_Motor_Error_Detection(motor);
+	DJI_Motor_Error_Judge(motor);
 }
 
 static void DJI_Motor_Lost_Callback(void *motor_ptr)
@@ -206,7 +204,7 @@ DJI_motor_instance_t *DJI_Motor_Init(motor_init_config_t *config)
 	DJI_motor_instance_t *instance = (DJI_motor_instance_t *) malloc(sizeof(DJI_motor_instance_t));
 	memset(instance, 0, sizeof(DJI_motor_instance_t));
 
-	if(instance == NULL)
+	if (instance == NULL)
 	{
 		return NULL;
 	}
@@ -216,18 +214,18 @@ DJI_motor_instance_t *DJI_Motor_Init(motor_init_config_t *config)
 	instance->motor_settings = config->controller_setting_init_config; // 正反转,闭环类型等
 
 	// motor controller init 电机控制器初始化
-	instance->motor_controller.current_PID              = PID_Init(config->controller_param_init_config.current_PID);
-	instance->motor_controller.speed_PID                = PID_Init(config->controller_param_init_config.speed_PID);
-	instance->motor_controller.angle_PID                = PID_Init(config->controller_param_init_config.angle_PID);
-	instance->motor_controller.torque_PID               = PID_Init(config->controller_param_init_config.torque_PID);
+	instance->motor_controller.current_PID = PID_Init(config->controller_param_init_config.current_PID);
+	instance->motor_controller.speed_PID   = PID_Init(config->controller_param_init_config.speed_PID);
+	instance->motor_controller.angle_PID   = PID_Init(config->controller_param_init_config.angle_PID);
+	instance->motor_controller.torque_PID  = PID_Init(config->controller_param_init_config.torque_PID);
 
 	//电机控制闭环时的非电机本身反馈数据指针
 	instance->motor_controller.other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
 	instance->motor_controller.other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
 
 	//电机控制闭环时的前馈控制器或前馈控制量指针
-	instance->motor_controller.torque_feedforward_ptr  = config->controller_param_init_config.torque_feedforward_ptr;
-	instance->motor_controller.speed_feedforward_ptr    = config->controller_param_init_config.speed_feedforward_ptr;
+	instance->motor_controller.torque_feedforward_ptr = config->controller_param_init_config.torque_feedforward_ptr;
+	instance->motor_controller.speed_feedforward_ptr  = config->controller_param_init_config.speed_feedforward_ptr;
 
 	// 后续增加电机前馈控制器(速度和电流)
 
@@ -243,11 +241,11 @@ DJI_motor_instance_t *DJI_Motor_Init(motor_init_config_t *config)
 	supervisor_init_config_t supervisor_config = {
 		.handler_callback = DJI_Motor_Lost_Callback,
 		.owner_id = instance,
-		.reload_count = 2, // 20ms未收到数据则丢失
+		.reload_count = 20, // 20ms未收到数据则丢失
 	};
 	instance->supervisor = Supervisor_Register(&supervisor_config);
 
-	DJI_Motor_Stop(instance);
+	DJI_Motor_Disable(instance);
 	dji_motor_instances[idx++] = instance;
 	return instance;
 }
@@ -262,7 +260,7 @@ void DJI_Motor_Change_Feedback(DJI_motor_instance_t *motor, closeloop_type_e loo
 	else;
 }
 
-void DJI_Motor_Stop(DJI_motor_instance_t *motor)
+void DJI_Motor_Disable(DJI_motor_instance_t *motor)
 {
 	motor->motor_state_flag = MOTOR_DISABLE;
 }
@@ -358,14 +356,78 @@ void DJI_Motor_SetTar(DJI_motor_instance_t *motor, float val, motor_reference_e 
 	}
 }
 
+#include "user_lib.h"
+
 // 异常检测
-void DJI_Motor_Error_Detection(DJI_motor_instance_t *motor)
+uint8_t DJI_Motor_Error_Judge(DJI_motor_instance_t *motor)
 {
-	;
+	uint8_t error_cnt;
+
+	error_cnt = 0;
+
+	if (motor == NULL)
+	{
+		for (size_t i = 0 ; i < idx ; ++i)
+		{
+			if (dji_motor_instances[i]->receive_data.temperature >= 80)
+			{
+				error_cnt++;
+				dji_motor_instances[i]->error_code |= MOTOR_SUPERLOAD_ERROR;
+			}
+			else
+			{
+				dji_motor_instances[i]->error_code &= ~(MOTOR_SUPERLOAD_ERROR);
+			}
+
+			if (user_abs(dji_motor_instances[i]->transmit_data.current) >= 15000)
+			{
+				dji_motor_instances[i]->error_beat++;
+				if (dji_motor_instances[i]->error_beat > 2000)
+				{
+					error_cnt++;
+					dji_motor_instances[i]->error_code |= MOTOR_BLOCKED_ERROR;
+				}
+			}
+			else
+			{
+				dji_motor_instances[i]->error_beat = 0;
+				dji_motor_instances[i]->error_code &= ~(MOTOR_BLOCKED_ERROR);
+			}
+		}
+	}
+	else
+	{
+		if (motor->receive_data.temperature >= 80)
+		{
+			error_cnt = 1;
+			motor->error_code |= MOTOR_SUPERLOAD_ERROR;
+		}
+		else
+		{
+			motor->error_code &= ~(MOTOR_SUPERLOAD_ERROR);
+		}
+
+		if (user_abs(motor->transmit_data.current) >= 20000)
+		{
+			motor->error_beat++;
+			if (motor->error_beat > 2000)
+			{
+				error_cnt = 1;
+				motor->error_code |= MOTOR_BLOCKED_ERROR;
+			}
+		}
+		else
+		{
+			motor->error_beat = 0;
+			motor->error_code &= ~(MOTOR_BLOCKED_ERROR);
+		}
+	}
+
+	return error_cnt;
 }
 
 // 为所有电机实例计算三环PID,发送控制报文
-void DJI_Motor_Control(void)
+void DJI_Motor_Control(DJI_motor_instance_t *motor_s)
 {
 	// 直接保存一次指针引用从而减小访存的开销,同样可以提高可读性
 	uint8_t group, num; // 电机组号和组内编号
@@ -375,94 +437,117 @@ void DJI_Motor_Control(void)
 	DJI_motor_callback_t *receive_data;     // 电机测量值
 	float pid_fab, pid_ref;		  // 电机PID测量值和设定值
 
+	uint8_t j = 0;
+	if (motor_s == NULL)
+	{
+		j = idx;
+	}
+	else
+	{
+		j = 1;
+	}
 	// 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
 	for (size_t i = 0 ; i < idx ; ++i)
 	{ // 减小访存开销,先保存指针引用
+		if (motor_s == NULL)
+		{
+			motor = dji_motor_instances[i];
+		}
+		else
+		{
+			motor = motor_s;
+		}
 		motor            = dji_motor_instances[i];
 		motor_setting    = &motor->motor_settings;
 		motor_controller = &motor->motor_controller;
 		receive_data     = &motor->receive_data;
 		pid_ref          = motor_controller->pid_ref; // 保存设定值,防止motor_controller->pid_ref在计算过程中被修改
 		// 多环目标值是上环输出为下环输入
-
 		if (motor_setting->motor_reverse_flag == MOTOR_DIRECTION_REVERSE)
 		{
 			pid_ref *= -1; // 目标值设置反转
 		}
-		// pid_ref会顺次通过被启用的闭环充当数据的载体
-		// 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
-		if ((motor_setting->close_loop_type & ANGLE_LOOP) && motor_setting->outer_loop_type == ANGLE_LOOP)
+		if (motor->motor_settings.control_button == TORQUE_DIRECT_CONTROL)
 		{
-			if (motor_setting->angle_feedback_source == OTHER_FEED)
-			{
-				pid_fab = *motor_controller->other_angle_feedback_ptr;
-			}
-			else
-			{
-				if (motor->motor_feedback == ORIGIN)
-				{
-					pid_fab = receive_data->total_ecd;
-				}
-				else if (motor->motor_feedback == RAD)
-				{
-					pid_fab = receive_data->total_rad;
-				}
-				else if (motor->motor_feedback == DEGREE)
-				{
-					pid_fab = receive_data->total_angle; // MOTOR_FEED,对total angle闭环,防止在边界处出现突跃
-				}
-			}
-			// 更新pid_ref进入下一个环
-			pid_ref = PID_Position(motor_controller->angle_PID,
-			                       pid_fab,
-			                       pid_ref);
+			motor->transmit_data.current = (int16_t) pid_ref;
 		}
+		else
+		{
+			// pid_ref会顺次通过被启用的闭环充当数据的载体
+			// 计算位置环,只有启用位置环且外层闭环为位置时会计算速度环输出
+			if ((motor_setting->close_loop_type & ANGLE_LOOP) && motor_setting->outer_loop_type == ANGLE_LOOP)
+			{
+				if (motor_setting->angle_feedback_source == OTHER_FEED)
+				{
+					pid_fab = *motor_controller->other_angle_feedback_ptr;
+				}
+				else
+				{
+					if (motor->motor_feedback == ORIGIN)
+					{
+						pid_fab = receive_data->total_ecd;
+					}
+					else if (motor->motor_feedback == RAD)
+					{
+						pid_fab = receive_data->total_rad;
+					}
+					else if (motor->motor_feedback == DEGREE)
+					{
+						pid_fab = receive_data->total_angle; // MOTOR_FEED,对total angle闭环,防止在边界处出现突跃
+					}
+				}
+				// 更新pid_ref进入下一个环
+				pid_ref = PID_Position(motor_controller->angle_PID,
+				                       pid_fab,
+				                       pid_ref);
+			}
 
-		// 计算速度环,(外层闭环为速度或位置)且(启用速度环)时会计算速度环
-		if ((motor_setting->close_loop_type & SPEED_LOOP) && (motor_setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP)))
-		{
-			if (motor_setting->feedforward_flag & SPEED_FEEDFORWARD)
+			// 计算速度环,(外层闭环为速度或位置)且(启用速度环)时会计算速度环
+			if ((motor_setting->close_loop_type & SPEED_LOOP) && (motor_setting->outer_loop_type & (ANGLE_LOOP | SPEED_LOOP)))
 			{
-				pid_ref += *motor_controller->speed_feedforward_ptr;
-			}
-			if (motor_setting->speed_feedback_source == OTHER_FEED)
-			{
-				pid_fab = *motor_controller->other_speed_feedback_ptr;
-			}
-			else
-			{
-				if (motor->motor_feedback == ORIGIN)
+				if (motor_setting->feedforward_flag & SPEED_FEEDFORWARD)
 				{
-					pid_fab = receive_data->speed;
+					pid_ref += *motor_controller->speed_feedforward_ptr;
 				}
-				else if (motor->motor_feedback == RAD)
+				if (motor_setting->speed_feedback_source == OTHER_FEED)
 				{
-					pid_fab = DJI_Motor_GetVal(motor,
-					                           MOTOR_SPEED,
-					                           motor->motor_feedback);
+					pid_fab = *motor_controller->other_speed_feedback_ptr;
 				}
-				else if (motor->motor_feedback == DEGREE)
+				else
 				{
-					pid_fab = receive_data->speed_aps;
+					if (motor->motor_feedback == ORIGIN)
+					{
+						pid_fab = receive_data->speed;
+					}
+					else if (motor->motor_feedback == RAD)
+					{
+						pid_fab = DJI_Motor_GetVal(motor,
+						                           MOTOR_SPEED,
+						                           motor->motor_feedback);
+					}
+					else if (motor->motor_feedback == DEGREE)
+					{
+						pid_fab = receive_data->speed_aps;
+					}
 				}
+				// 更新pid_ref进入下一个环
+				pid_ref = PID_Increment(motor_controller->speed_PID,
+				                        pid_fab,
+				                        pid_ref);
 			}
-			// 更新pid_ref进入下一个环
-			pid_ref = PID_Increment(motor_controller->speed_PID,
-			                        pid_fab,
-			                        pid_ref);
-		}
 
-		// 计算电流环,目前只要启用了电流环就计算,不管外层闭环是什么,并且电流只有电机自身传感器的反馈
-		if (motor_setting->feedforward_flag & TORQUE_FEEDFORWARD)
-		{
-			pid_ref += *motor_controller->torque_feedforward_ptr;
-		}
-		if (motor_setting->close_loop_type & TORQUE_LOOP)
-		{
-			//采用何种pid需要自己抉择
-			pid_ref = PID_Position(motor_controller->torque_PID,
-			                       receive_data->real_current,
-			                       pid_ref);
+			// 计算电流环,目前只要启用了电流环就计算,不管外层闭环是什么,并且电流只有电机自身传感器的反馈
+			if (motor_setting->feedforward_flag & TORQUE_FEEDFORWARD)
+			{
+				pid_ref += *motor_controller->torque_feedforward_ptr;
+			}
+			if (motor_setting->close_loop_type & TORQUE_LOOP)
+			{
+				//采用何种pid需要自己抉择
+				pid_ref = PID_Position(motor_controller->torque_PID,
+				                       receive_data->real_current,
+				                       pid_ref);
+			}
 		}
 
 		if (motor_setting->feedback_reverse_flag == FEEDBACK_DIRECTION_REVERSE)
@@ -486,14 +571,24 @@ void DJI_Motor_Control(void)
 			memset(sender_assignment[group].tx_buff + 2 * num, 0, sizeof(uint16_t));
 		}
 	}
-	/* ------------------------------handler------------------------------------*/
 
-	// 遍历flag,检查是否要发送这一帧报文TODO(GUATAI):后续应解耦，能够由开发者来选择何时发送，来达到每个模块不同控制频率的需求
-	for (size_t i = 0 ; i < 15 ; ++i)
+	/* ------------------------------handler------------------------------------*/
+	if (motor_s == NULL)
 	{
-		if (sender_enable_flag[i])
+		// 遍历flag,检查是否要发送这一帧报文TODO(GUATAI):后续应解耦，能够由开发者来选择何时发送，来达到每个模块不同控制频率的需求
+		for (size_t i = 0 ; i < 15 ; ++i)
 		{
-			CAN_Transmit(&sender_assignment[i], 2);
+			if (sender_enable_flag[i])
+			{
+				CAN_Transmit(&sender_assignment[i], 2);
+			}
+		}
+	}
+	else
+	{
+		if (sender_enable_flag[motor->sender_group])
+		{
+			CAN_Transmit(&sender_assignment[motor->sender_group], 2);
 		}
 	}
 }
