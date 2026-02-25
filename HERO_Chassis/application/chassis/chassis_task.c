@@ -26,6 +26,9 @@
 
 #include "bsp_dwt.h"
 
+#include "bsp_usart.h"
+#include "rs485.h"
+
 #define CHASSIS_TASK_PERIOD 1 // ms
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
@@ -74,12 +77,15 @@ void Chassis_Task_Init(void)
 
 uint32_t chassis_task_diff;
 
-float total_time;
+// float chassis_time;
+// float chassis_frq;
 
 static void Chassis_Task(void *argument)
 {
 	Chassis_Publish( );
 
+	HAL_UART_Receive_IT(&huart2, &uart2_current_byte, 1);
+	
 	uint32_t time = osKernelGetTickCount( );
 
 	osDelay(2);
@@ -102,28 +108,30 @@ static void Chassis_Task(void *argument)
 		/******************************底盘测试达妙收发代码*****************************/
 
 		/******************************底盘测试运行总时长代码*****************************/
-		TIME_ELAPSE(total_time, Chassis_Observer( );
-		Chassis_Handle_Exception( );
-		Chassis_Set_Mode( );
-		Chassis_Reference( );
-		Chassis_Console( );
-		Chassis_Send_Cmd( );
-		)
-		;
-
-		/******************************底盘测试运行总时长代码*****************************/
-		// // 更新状态量
-		// Chassis_Observer( );
-		// // 处理异常
+		// TIME_ELAPSE(chassis_time, Chassis_Observer( );
 		// Chassis_Handle_Exception( );
-		// // 设置底盘模式
 		// Chassis_Set_Mode( );
-		// // 更新目标量
 		// Chassis_Reference( );
-		// // 计算控制量
 		// Chassis_Console( );
-		// // 发送控制量
 		// Chassis_Send_Cmd( );
+		// )
+		// ;
+		// chassis_frq = 1.0f / chassis_time;
+		/******************************底盘测试运行总时长代码*****************************/
+		// 更新状态量
+		Chassis_Observer( );
+		// 处理异常
+		Chassis_Handle_Exception( );
+		// 设置底盘模式
+		Chassis_Set_Mode( );
+		// 更新目标量
+		Chassis_Reference( );
+		// 计算控制量
+		Chassis_Console( );
+		// 发送控制量
+		Chassis_Send_Cmd( );
+		//板间485通信
+		uart2_online_check();
 
 		chassis_task_diff = osKernelGetTickCount( ) - time;
 		time              = osKernelGetTickCount( );

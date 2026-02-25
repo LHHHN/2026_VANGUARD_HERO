@@ -16,12 +16,15 @@
 
 #include "defense_center.h"
 
+#define M3508_REDUCTION_RATIO (3591.0f/187.0f)  //M3508减速比
+
 #define DJI_MOTOR_CNT 12
 
 /* 滤波系数设置为1的时候即关闭滤波 */
 #define SPEED_SMOOTH_COEF 0.85f      // 最好大于0.85
 #define CURRENT_SMOOTH_COEF 0.9f     // 必须大于0.9
 #define ECD_ANGLE_COEF_DJI 0.043945f // (360/8192),将编码器值转化为角度制
+// #define ECD_RAD_COEF_DJI 0.00076699f // (2pi/8192),将编码器值转化为弧度制
 
 typedef enum
 {
@@ -36,8 +39,11 @@ typedef struct
 	uint16_t last_ecd;        // 上一次读取的编码器值
 	uint16_t ecd;             // 0-8191,刻度总共有8192格
 	uint16_t offset_ecd;
-	int16_t speed;	    // 转子转速RPM
+
 	float angle_single_round; // 单圈角度
+	// float rad_single_round; // 单圈弧度
+	float speed;	    // 转子转速RPM
+	float speed_rps;          // 转子转速rps
 	float speed_aps;          // 角速度,单位为:度/秒
 	int16_t real_current;     // 实际电流
 	uint8_t temperature;      // 温度 Celsius

@@ -14,14 +14,34 @@
 
 #include <stdint.h>
 
+#include "DM_motor.h"
+
+#define REMOTE_PITCH_SEN 0.000005f
+#define PTICH_MAX_ANGLE 1.166f // 云台俯仰最大角度，单位：弧度
+#define PTICH_MIN_ANGLE 0.01f  // 云台俯仰最小角度，单位：弧度
+
 typedef struct
 {
 	/* data */
 }__attribute__((packed)) gimbal_behaviour_t;
 
+typedef enum
+{
+	GIMBAL_DISABLE = 0,
+	GIMBAL_STOP = 1,
+	GIMBAL_ENABLE = 2,
+}gimbal_mode_e;
+
 typedef struct
 {
 	/* data */
+	gimbal_mode_e mode;
+	float pitch_diff;
+	float pitch_v;
+	float pitch_target;          //PITCH目标
 }__attribute__((packed)) gimbal_cmd_t;
+
+void Gimbal_Init(void);
+
 
 #endif /* __GIMBAL_H__ */

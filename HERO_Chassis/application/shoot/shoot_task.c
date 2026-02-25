@@ -22,7 +22,7 @@
 
 #include "message_center.h"
 
-#define SHOOT_TASK_PERIOD 5 // ms
+#define SHOOT_TASK_PERIOD 1 // ms
 
 #if INCLUDE_uxTaskGetStackHighWaterMark
 uint32_t shoot_high_water;

@@ -15,25 +15,28 @@
 
 #define BMI088_BSP_COM 1
 #define BMI088_AUTO_CS 1
-#define BMI088_EXTI 1
+#define BMI088_EXTI 0
 
-#define BMI088_Cali 0
+#define BMI088_CALI 0
+
+#define BMI088_TEMP_CONTROL 0
 
 #define TEST_FILTER 0
 
 bmi088_init_config_t bmi088_init_h7 = {
 	.heat_pid_config = {
-		.kp = 80.0f,
-		.ki = 0.5f,
+		.kp = 0.01f,
+		.ki = 0.0005f,
 		.kd = 0,
-		.integral_limit = 200.0f,
-		.output_limit = 2000.0f,
+		.dead_band = 0.0f,
+		.integral_limit = 0.025f,
+		.output_limit = 0.025f,
 	},
 	.heat_pwm_config = {
 		.htim = &htim3,
 		.channel = TIM_CHANNEL_4,
 		.dutyratio = 0,
-		.period = 5000 - 1,
+		.period = 20000 - 1,
 	},
 
 	.spi_acc_config = {
@@ -70,7 +73,7 @@ bmi088_init_config_t bmi088_init_h7 = {
 		.gpio_model_callback = NULL,
 	},
 
-#if BMI088_Cali
+#if BMI088_CALI
 	.cali_mode = BMI088_CALIBRATE_ONLINE_MODE,
 #else
 	.cali_mode = BMI088_LOAD_PRE_CALI_MODE,
@@ -104,7 +107,7 @@ static void BMI088_Kalman_Filter_Init(void)
 {
 	for (uint8_t i = 0 ; i < 3 ; i++)
 	{
-		Kalman_One_Init(&acc_kf[i], 0.01f, 200.0f);  // 加速度卡尔曼滤波器初始化
+		Kalman_One_Init(&acc_kf[i], 0.01f, 20.0f);  // 加速度卡尔曼滤波器初始化
 		Kalman_One_Init(&gyro_kf[i], 0.01f, 20.0f); // 陀螺仪卡尔曼滤波器初始化
 	}
 }
@@ -534,16 +537,29 @@ static uint8_t BMI088_Gyro_Init(bmi088_instance_t *bmi088)
  */
 void BMI088_Temp_Control(bmi088_instance_t *bmi088)
 {
+#if BMI088_TEMP_CONTROL	
 	static uint8_t temp_constant_time = 0;
 	static uint8_t first_temperate    = 0; // 第一次达到设定温度
 	static float target_temp          = 0;
-	target_temp                       = bmi088->ambient_temperature + 10; // 推荐比环境温度高10度
-	if (target_temp > 45.0f)
-		target_temp = 45.0f;                         // 限制在45度以内
+	// target_temp                       = bmi088->ambient_temperature + 10; // 推荐比环境温度高10度
 
+	target_temp = bmi088->cali_temperature; // 使用标定温度作为目标温度
+
+	// if((target_temp - bmi088->temperature) < 20.0f)
+	// {
+		first_temperate    = 1;
+	// }
+
+	if (target_temp > 45.0f || bmi088->temperature > 50.0f)
+	{
+		target_temp = 45.0f;                         // 限制在45度以内
+		PWM_Set_DutyRatio(bmi088->heat_pwm, 0.0f);
+		return ; 
+	}
+		
 	if (first_temperate)
 	{
-		PID_Position(bmi088->heat_pid, target_temp, bmi088->temperature);
+		PID_Position(bmi088->heat_pid, bmi088->temperature, target_temp);
 		// 限制在正数范围
 		if (bmi088->heat_pid->output < 0.0f)
 		{
@@ -553,12 +569,13 @@ void BMI088_Temp_Control(bmi088_instance_t *bmi088)
 		{
 			bmi088->heat_pid->i_out = 0;
 		}
+		
 		PWM_Set_DutyRatio(bmi088->heat_pwm, bmi088->heat_pid->output);
 	}
 	else
 	{
-		// 在没有达到设置的温度-4，一直最大功率加热
-		PWM_Set_DutyRatio(bmi088->heat_pwm, 0.95f);
+		// 在没有达到设置的温度-4，一直最大半半半功率加热
+		PWM_Set_DutyRatio(bmi088->heat_pwm, 0.005f);
 		if (bmi088->temperature > target_temp - 4)
 		{
 			temp_constant_time++;
@@ -566,10 +583,14 @@ void BMI088_Temp_Control(bmi088_instance_t *bmi088)
 			{
 				// 达到设置温度，设置积分项，加速收敛
 				first_temperate         = 1;
-				bmi088->heat_pid->i_out = 0.05f;
+				bmi088->heat_pid->i_out = 0.005f;
 			}
 		}
 	}
+#else 
+	// 不进行温度控制，直接关闭加热
+	PWM_Set_DutyRatio(bmi088->heat_pwm, 0.0f);
+#endif	
 }
 
 // -------------------------以下为私有函数,private用于IT模式下的中断处理---------------------------------//
@@ -601,7 +622,7 @@ static void BMI088_Accel_SPI_Finish_Callback(SPI_instance_t *spi)
 		{
 			bmi088->ambient_temperature = bmi088->temperature;
 		}
-		BMI088_Temp_Control(bmi088);
+//		BMI088_Temp_Control(bmi088);
 		callback_time = 0;
 	}
 	callback_time++;
@@ -1036,7 +1057,7 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 		_bmi088->acc_offset[1]    = ACCEL_Y_OFFSET;
 		_bmi088->acc_offset[2]    = ACCEL_Z_OFFSET;
 		_bmi088->g_norm           = G_NORM;
-		_bmi088->cali_temperature = 40.0F; // 40度
+		_bmi088->cali_temperature = BMI088_AMBIENT_TEMPERATURE; // 40度
 		_bmi088->accel_scale      = 9.81f / _bmi088->g_norm;
 	}
 
@@ -1047,7 +1068,9 @@ void BMI088_Calibrate_IMU(bmi088_instance_t *_bmi088)
 
 bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config)
 {
+	DWT_Delay(0.005);
 	__disable_irq( ); // 关闭全局中断,防止注册过程中被打断
+	DWT_Delay(0.005);
 	// 申请内存
 	bmi088_instance_t *bmi088_instance = (bmi088_instance_t *) malloc(sizeof(bmi088_instance_t));
 	memset(bmi088_instance, 0, sizeof(bmi088_instance_t)); // 清零
@@ -1083,7 +1106,7 @@ bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config)
 	bmi088_instance->heat_pwm = PWM_Register(&config->heat_pwm_config);
 
 	bmi088_instance->heat_pid = PID_Init(&config->heat_pid_config);
-
+	PWM_Set_DutyRatio(bmi088_instance->heat_pwm, 0.0f);
 	bmi088_instance->ambient_temperature = -273; // 环境温度初值
 	DWT_GetDeltaT(&bmi088_instance->bias_dwt_cnt);
 	// 初始化时使用阻塞模式
@@ -1094,7 +1117,9 @@ bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config)
 	{
 		static uint8_t error_count = 0;
 		error                      = BMI088_NO_ERROR;
+		DWT_Delay(0.05f);
 		error |= BMI088_Accel_Init(bmi088_instance);
+		DWT_Delay(0.05f);
 		error |= BMI088_Gyro_Init(bmi088_instance);
 		error_count++;
 		if (error_count == 10)
@@ -1112,6 +1137,8 @@ bmi088_instance_t *BMI088_Register(bmi088_init_config_t *config)
 	BMI088_Calibrate_IMU(bmi088_instance);               // 标定acc和gyro
 	BMI088_Set_Mode(bmi088_instance, config->work_mode); // 恢复工作模式
 
+	DWT_Delay(0.005);
 	__enable_irq( ); // 开启全局中断
+	DWT_Delay(0.005);
 	return bmi088_instance;
 }

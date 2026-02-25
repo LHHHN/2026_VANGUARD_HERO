@@ -31,7 +31,7 @@ static void Rectify_RC_joystick(void)
 {
 	for (uint8_t i = 0 ; i < 5 ; ++i)
 	{
-		if (abs(*(&rc_ctrl[TEMP].rc.rocker_l_ + i)) > 660)
+		if (abs(*(&rc_ctrl[TEMP].rc.rocker_l_ + i)) > 700)
 		{
 			*(&rc_ctrl[TEMP].rc.rocker_l_ + i) = 0;
 		}
@@ -46,7 +46,7 @@ static void Rectify_RC_joystick(void)
 static void sbus_to_rc(const uint8_t *sbus_buf)
 {
 	// 摇杆,直接解算时减去偏置
-	rc_ctrl[TEMP].rc.rocker_r_ = ((sbus_buf[0] | (sbus_buf[1] << 8)) & 0x07ff) - RC_CH_VALUE_OFFSET; //!< Channel 0
+	rc_ctrl[TEMP].rc.rocker_r_ = ((sbus_buf[0] | (sbus_buf[1] << 8)) & 0x07ff) - RC_CH_VALUE_OFFSET ; //!< Channel 0
 	rc_ctrl[TEMP].rc.rocker_r1 = (((sbus_buf[1] >> 3) | (sbus_buf[2] << 5)) & 0x07ff) - RC_CH_VALUE_OFFSET; //!< Channel 1
 	rc_ctrl[TEMP].rc.rocker_l_ = (((sbus_buf[2] >> 6) | (sbus_buf[3] << 2) | (sbus_buf[4] << 10)) & 0x07ff) - RC_CH_VALUE_OFFSET; //!< Channel 2
 	rc_ctrl[TEMP].rc.rocker_l1 = (((sbus_buf[4] >> 1) | (sbus_buf[5] << 7)) & 0x07ff) - RC_CH_VALUE_OFFSET; //!< Channel 3

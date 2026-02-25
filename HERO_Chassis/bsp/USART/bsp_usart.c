@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bsp_usart.h"
+#include "rs485.h"
 
 /* usart service instance, modules' info would be recoreded here using USART_Register() */
 /* usart服务实例,所有注册了usart的模块信息会被保存在这里 */
@@ -246,5 +247,9 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 			__HAL_DMA_DISABLE_IT(usart_instances[i]->usart_handle->hdmarx, DMA_IT_HT);
 			return;
 		}
+	}
+	if(huart == &huart2)
+	{
+		HAL_UART_Receive_IT(&huart2, &uart2_current_byte, 1);
 	}
 }

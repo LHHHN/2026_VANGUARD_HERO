@@ -67,6 +67,9 @@
 "2026_vanguard_frame\dm_motor.o"
 "2026_vanguard_frame\remote_control.o"
 "2026_vanguard_frame\wfly_control.o"
+"2026_vanguard_frame\lk_motor.o"
+"2026_vanguard_frame\rs485.o"
+"2026_vanguard_frame\robot_frame_config.o"
 "2026_vanguard_frame\pid.o"
 "2026_vanguard_frame\user_lib.o"
 "2026_vanguard_frame\signal_generator.o"
@@ -84,7 +87,6 @@
 "2026_vanguard_frame\ols.o"
 "2026_vanguard_frame\rls.o"
 "2026_vanguard_frame\lms.o"
-"2026_vanguard_frame\robot_frame_config.o"
 "2026_vanguard_frame\robot_frame_init.o"
 "2026_vanguard_frame\chassis.o"
 "2026_vanguard_frame\chassis_task.o"
@@ -102,6 +104,7 @@
 "2026_vanguard_frame\bmi088driver.o"
 "2026_vanguard_frame\bmi088middleware.o"
 "2026_vanguard_frame\balance_chassis.o"
---strict --scatter "2026_VANGUARD_Frame.sct"
+"2026_vanguard_frame\omni_mecanum_chassis.o"
+--library_type=microlib --strict --scatter "2026_VANGUARD_Frame.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --symbols
 --list ".\2026_VANGUARD_Frame.map" -o 2026_VANGUARD_Frame\2026_VANGUARD_Frame.axf

@@ -24,18 +24,19 @@
 #define POS_MODE	0x100
 #define SPEED_MODE	0x200
 
-#define DM_P_MIN  (-3.141593)
-#define DM_P_MAX  3.141593
+//以下参数需要根据具体电机进行修改
+#define DM_P_MIN  (-3.141593f)
+#define DM_P_MAX  3.141593f
 #define DM_V_MIN  (-10.0f)
 #define DM_V_MAX  10.0f
-#define DM_T_MIN  (-10.0f)
-#define DM_T_MAX   10.0f
+#define DM_T_MIN  (-28.0f)
+#define DM_T_MAX   28.0f
 #define DM_KP_MIN 0.0f
 #define DM_KP_MAX 500.0f
 #define DM_KD_MIN 0.0f
 #define DM_KD_MAX 5.0f
 
-#define SPEED_RAMP_COEF 0.85f
+#define DM_DATA_PRAMP_COEF 0.7f
 
 typedef struct
 {
@@ -73,6 +74,13 @@ typedef enum
 	DM_MOTOR_ABSOLUTE = 1,
 } DM_motor_feedback_data_e;
 
+typedef enum
+{
+	SINGLE_TORQUE = 0, 	// 纯扭矩模式
+	TARCE_STATE  = 1, 	// 跟踪轨迹模式 kd != 0
+	ABSOLUTE_STATE = 2,	// 绝对定点模式 kd != 0 v = 0
+} DM_motor_mit_state_e;
+
 typedef struct
 {
     motor_model_e motor_type;        // 电机类型
@@ -100,7 +108,7 @@ typedef struct
 	uint8_t dm_tx_id;
 	uint8_t dm_rx_id;
 	uint16_t dm_mode;
-	uint16_t contorl_mode_state;
+	DM_motor_mit_state_e contorl_mode_state;
 	float dm_offset_control;
 } DM_motor_instance_t;
 

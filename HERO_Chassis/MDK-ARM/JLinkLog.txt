@@ -1,0 +1,100 @@
+TC6EC 000:006.718   SEGGER J-Link V8.16 Log File
+TC6EC 000:007.204   DLL Compiled: Feb 26 2025 12:07:26
+TC6EC 000:007.222   Logging started @ 2025-12-23 12:14
+TC6EC 000:007.238   Process: D:\keil5_543\UV4\UV4.exe
+TC6EC 000:007.556 - 7.253ms 
+TC6EC 000:007.682 JLINK_SetWarnOutHandler(...)
+TC6EC 000:007.717 - 0.134ms 
+TC6EC 000:007.740 JLINK_OpenEx(...)
+TC6EC 000:013.788   Firmware: J-Link V9 compiled May  7 2021 16:26:12
+TC6EC 000:014.685   Firmware: J-Link V9 compiled May  7 2021 16:26:12
+TC6EC 000:015.205   Decompressing FW timestamp took 333 us
+TC6EC 000:021.115   Hardware: V9.20
+TC6EC 000:021.168   S/N: 29250201
+TC6EC 000:021.193   OEM: SEGGER
+TC6EC 000:021.218   Feature(s): GDB, RDI, FlashBP, FlashDL, JFlash
+TC6EC 000:022.187   Bootloader: (FW returned invalid version)
+TC6EC 000:023.094   TELNET listener socket opened on port 19021
+TC6EC 000:023.159   WEBSRV WEBSRV_Init(): Starting webserver thread(s)
+TC6EC 000:023.259   WEBSRV Webserver running on local port 19080
+TC6EC 000:023.342   Looking for J-Link GUI Server exe at: D:\keil5_543\ARM\Segger\JLinkGUIServer.exe
+TC6EC 000:023.506   Looking for J-Link GUI Server exe at: \JLinkGUIServer.exe
+TC6EC 000:329.302   Failed to connect to J-Link GUI Server.
+TC6EC 000:329.574 - 321.611ms returns "O.K."
+TC6EC 000:329.612 JLINK_GetEmuCaps()
+TC6EC 000:329.796 - 0.007ms returns 0xB9FF7BBF
+TC6EC 000:329.826 JLINK_TIF_GetAvailable(...)
+TC6EC 000:330.045 - 0.222ms 
+TC6EC 000:330.087 JLINK_SetErrorOutHandler(...)
+TC6EC 000:330.095 - 0.007ms 
+TC6EC 000:330.482 JLINK_ExecCommand("ProjectFile = "D:\1ARM\Electronic_Control\2026_VANGUARD_HERO\HERO_Chassis\MDK-ARM\JLinkSettings.ini"", ...). 
+TC6EC 000:458.097 - 127.617ms returns 0x00
+TC6EC 000:460.195 JLINK_ExecCommand("Device = STM32H723VGTx", ...). 
+TC6EC 000:461.224   Flash bank @ 0x08000000: SFL: Parsing sectorization info from ELF file
+TC6EC 000:461.248     FlashDevice.SectorInfo[0]: .SectorSize = 0x00020000, .SectorStartAddr = 0x00000000
+TC6EC 000:461.259   FlashBank @0x08000000: Sectorization info from SFL ELF file ignored because sectorization override from DLL / XML file is active.
+TC6EC 000:462.089   Flash bank @ 0x90000000: SFL: Parsing sectorization info from ELF file
+TC6EC 000:462.111     FlashDevice.SectorInfo[0]: .SectorSize = 0x00010000, .SectorStartAddr = 0x00000000
+TC6EC 000:469.709   Device "STM32H723VG" selected.
+TC6EC 000:469.992 - 9.772ms returns 0x00
+TC6EC 000:470.010 JLINK_ExecCommand("DisableConnectionTimeout", ...). 
+TC6EC 000:470.150   ERROR: Unknown command
+TC6EC 000:470.162 - 0.142ms returns 0x01
+TC6EC 000:470.171 JLINK_GetHardwareVersion()
+TC6EC 000:470.179 - 0.007ms returns 92000
+TC6EC 000:470.187 JLINK_GetDLLVersion()
+TC6EC 000:470.194 - 0.006ms returns 81600
+TC6EC 000:470.201 JLINK_GetOEMString(...)
+TC6EC 000:470.210 JLINK_GetFirmwareString(...)
+TC6EC 000:470.217 - 0.007ms 
+TC6EC 000:474.611 JLINK_GetDLLVersion()
+TC6EC 000:474.638 - 0.025ms returns 81600
+TC6EC 000:474.647 JLINK_GetCompileDateTime()
+TC6EC 000:474.654 - 0.006ms 
+TC6EC 000:475.859 JLINK_GetFirmwareString(...)
+TC6EC 000:475.873 - 0.013ms 
+TC6EC 000:477.703 JLINK_GetHardwareVersion()
+TC6EC 000:477.727 - 0.024ms returns 92000
+TC6EC 000:478.999 JLINK_GetSN()
+TC6EC 000:479.018 - 0.018ms returns 29250201
+TC6EC 000:484.820 JLINK_GetOEMString(...)
+TC6EC 000:491.848 JLINK_TIF_Select(JLINKARM_TIF_JTAG)
+TC6EC 000:492.648 - 0.961ms returns 0x00
+TC6EC 000:492.675 JLINK_HasError()
+TC6EC 000:492.699 JLINK_SetSpeed(5000)
+TC6EC 000:492.800 - 0.103ms 
+TC6EC 000:492.811 JLINK_GetIdData(pIdData)
+TC6EC 000:495.989   ConfigTargetSettings() start
+TC6EC 000:496.172    J-Link Script File: Executing ConfigTargetSettings()
+TC6EC 000:499.140   ConfigTargetSettings() end - Took 188us
+TC6EC 000:502.554   InitTarget() start
+TC6EC 000:502.587    J-Link Script File: Executing InitTarget()
+TC6EC 000:505.559   JTAG selected. Identifying JTAG Chain...
+TC6EC 000:509.406   TotalIRLen = ?, IRPrint = 0x..000000000000000000000000
+TC6EC 000:512.431   Error: Scanning JTAG chain failed.
+TC6EC 000:515.659   Can not attach to CPU. Trying connect under reset.
+TC6EC 000:570.536   JTAG selected. Identifying JTAG Chain...
+TC6EC 000:575.643   TotalIRLen = ?, IRPrint = 0x..000000000000000000000000
+TC6EC 000:579.508   Error: Scanning JTAG chain failed.
+TC6EC 000:583.348   Connecting to CPU via connect under reset failed.
+TC6EC 000:636.503   InitTarget() end - Took 131ms
+TC6EC 000:638.791   Connect failed. Resetting via Reset pin and trying again.
+TC6EC 000:702.997   ConfigTargetSettings() start
+TC6EC 000:703.032    J-Link Script File: Executing ConfigTargetSettings()
+TC6EC 000:705.156   ConfigTargetSettings() end - Took 13us
+TC6EC 000:707.782   InitTarget() start
+TC6EC 000:707.810    J-Link Script File: Executing InitTarget()
+TC6EC 000:710.510   JTAG selected. Identifying JTAG Chain...
+TC6EC 000:713.987   TotalIRLen = ?, IRPrint = 0x..000000000000000000000000
+TC6EC 000:716.633   Error: Scanning JTAG chain failed.
+TC6EC 000:719.625   Can not attach to CPU. Trying connect under reset.
+TC6EC 000:773.887   JTAG selected. Identifying JTAG Chain...
+TC6EC 000:778.010   TotalIRLen = ?, IRPrint = 0x..000000000000000000000000
+TC6EC 000:781.204   Error: Scanning JTAG chain failed.
+TC6EC 000:783.924   Connecting to CPU via connect under reset failed.
+TC6EC 000:837.023   InitTarget() end - Took 126ms
+TC6EC 000:837.070 - 344.258ms 
+TC6EC 002:934.233 JLINK_Close()
+TC6EC 002:950.415 - 16.181ms
+TC6EC 002:950.451   
+TC6EC 002:950.461   Closed

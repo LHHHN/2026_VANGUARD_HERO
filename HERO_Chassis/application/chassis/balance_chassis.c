@@ -789,7 +789,6 @@ void Chassis_Send_Cmd(void)
 	//	}
 }
 
-#endif
 
 static float vaEstimateKF_F[4] = {
 	1.0f, 0.001f,
@@ -999,3 +998,5 @@ static void Chassis_Control_Leg(void)
 	// leg_turn_pid.dt = 0.001f;
 	// balance_chassis.turn_T = Digital_PID_Position(&leg_turn_pid, INS.YawTotalAngle, balance_chassis.turn_set);
 }
+
+#endif

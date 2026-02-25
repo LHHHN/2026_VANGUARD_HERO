@@ -20,3 +20,4 @@ extern void VOFA_FireWater(const char *format, ...);
 extern void VOFA_JustFloat(float *_data, uint8_t _num);
 
 #endif /* __VOFA_H__ */
+

@@ -1,55 +1,53 @@
 2026_vanguard_frame/procotol.o: \
-  ../application/communication_bond/procotol.c \
-  D:\keil5\ARM\ARMCLANG\Bin\..\include\string.h \
-  D:\keil5\ARM\ARMCLANG\Bin\..\include\stdlib.h \
-  ../application/communication_bond/procotol.h \
-  D:\keil5\ARM\ARMCLANG\Bin\..\include\stdint.h ../application/INS\INS.h \
-  ../module/vofa\vofa.h ../bsp/USART\bsp_usart.h ../Core/Inc\main.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal.h \
-  ../Core/Inc\stm32h7xx_hal_conf.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_rcc.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_def.h \
-  ../Drivers/CMSIS/Device/ST/STM32H7xx/Include\stm32h7xx.h \
-  ../Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h723xx.h \
-  ../Drivers/CMSIS/Include\core_cm7.h \
-  ../Drivers/CMSIS/Include/cmsis_version.h \
-  ../Drivers/CMSIS/Include/cmsis_compiler.h \
-  ../Drivers/CMSIS/Include/cmsis_armclang_ltm.h \
-  D:\keil5\ARM\ARMCLANG\Bin\..\include\arm_compat.h \
-  ../Drivers/CMSIS/Include/mpu_armv7.h \
-  ../Drivers/CMSIS/Device/ST/STM32H7xx/Include/system_stm32h7xx.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h \
-  D:\keil5\ARM\ARMCLANG\Bin\..\include\stddef.h \
-  D:\keil5\ARM\ARMCLANG\Bin\..\include\math.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rcc_ex.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_gpio.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_gpio_ex.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_dma.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_dma_ex.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_mdma.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_exti.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_cortex.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_fdcan.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_flash.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_flash_ex.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_hsem.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_i2c.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_i2c_ex.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_pwr.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pwr_ex.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_rng.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_rng_ex.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_spi.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_spi_ex.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_tim.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_tim_ex.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc\stm32h7xx_hal_uart.h \
-  ../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_uart_ex.h \
-  ../Core/Inc\usart.h ../module/imu\bmi088.h ../bsp/PWM\bsp_pwm.h \
-  ../Core/Inc\tim.h ../bsp/SPI\bsp_spi.h ../Core/Inc\spi.h \
-  ../bsp/GPIO\bsp_gpio.h ../Core/Inc\gpio.h \
-  ../algorithm/controller/PID\pid.h \
-  ../Middlewares/ST/ARM/DSP/Inc\arm_math.h \
-  D:\keil5\ARM\ARMCLANG\Bin\..\include\float.h \
-  D:\keil5\ARM\ARMCLANG\Bin\..\include\limits.h \
-  ../module/remote/WFLY\wfly_control.h
+  ..\application\communication_bond\procotol.c \
+  ..\application\communication_bond\procotol.h ..\application\INS\INS.h \
+  ..\module\vofa\vofa.h ..\bsp\USART\bsp_usart.h ..\Core\Inc\main.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
+  ..\Core\Inc\stm32h7xx_hal_conf.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_rcc.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_def.h \
+  ..\Drivers\CMSIS\Device\ST\STM32H7xx\Include\stm32h7xx.h \
+  ..\Drivers\CMSIS\Device\ST\STM32H7xx\Include\stm32h723xx.h \
+  ..\Drivers\CMSIS\Include\core_cm7.h \
+  ..\Drivers\CMSIS\Device\ST\STM32H7xx\Include\system_stm32h7xx.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\Legacy\stm32_hal_legacy.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_rcc_ex.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_gpio.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_gpio_ex.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_dma.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_dma_ex.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_mdma.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_exti.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_cortex.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_fdcan.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_flash.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_flash_ex.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_hsem.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_i2c.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_i2c_ex.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_pwr.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_pwr_ex.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_rng.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_rng_ex.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_spi.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_spi_ex.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_tim.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_tim_ex.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
+  ..\Core\Inc\usart.h ..\module\imu\bmi088.h ..\bsp\PWM\bsp_pwm.h \
+  ..\Core\Inc\tim.h ..\bsp\SPI\bsp_spi.h ..\Core\Inc\spi.h \
+  ..\bsp\GPIO\bsp_gpio.h ..\Core\Inc\gpio.h \
+  ..\algorithm\controller\PID\pid.h \
+  ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
+  ..\Drivers\CMSIS\Include\cmsis_compiler.h \
+  ..\module\remote\WFLY\wfly_control.h \
+  ..\application\chassis\omni_mecanum_chassis.h \
+  ..\application\robot_frame_config.h \
+  ..\module\motor\DM_motor\dm_motor.h ..\module\motor\drv_motor.h \
+  ..\bsp\CAN\bsp_can.h ..\Core\Inc\fdcan.h \
+  ..\module\defense_center\defense_center.h \
+  ..\module\motor\DJI_motor\dji_motor.h \
+  ..\algorithm\controller\VMC\vmc.h \
+  ..\algorithm\filter\normal\normal_filter.h \
+  ..\application\gimbal\gimbal.h ..\application\shoot\shoot.h

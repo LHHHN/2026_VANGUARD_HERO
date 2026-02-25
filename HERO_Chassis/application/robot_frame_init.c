@@ -34,6 +34,7 @@
 #include "buzzer.h"
 #include "remote_control.h"
 #include "wfly_control.h"
+#include "referee.h"
 #include "vofa.h"
 
 #include "bsp_dwt.h"
@@ -45,7 +46,17 @@
 
 float init_time;
 
+#if(REMOTE_TYPE == WFLY_SBUS)
+
 wfly_t *rc_data;
+
+#elif(REMOTE_TYPE == DT7)
+
+RC_ctrl_t *rc_data;
+
+#endif
+
+Referee_InfoTypedef *referee_data;
 
 static void Frame_MCU_Init(void)
 {
@@ -67,9 +78,16 @@ static void Frame_Device_Init(void)
 	// BMI088_Init(&hspi2,0);
 	bmi088_h7 = BMI088_Register(&bmi088_init_h7);
 
-	rc_data = WFLY_SBUS_Register( );
+
+#if(REMOTE_TYPE == DT7)
+	rc_data = Remote_Control_Init(&huart5);
+#elif(REMOTE_TYPE == WFLY_SBUS)
+	rc_data = WFLY_SBUS_Register();	
+#endif
 	
-	VOFA_Register( );
+	referee_data = Referee_Init(&huart7);
+	
+	// VOFA_Register( );
 
 	/******************************module模块初始化*****************************/
 
@@ -77,6 +95,9 @@ static void Frame_Device_Init(void)
 
 	Chassis_Init( );
 
+	Gimbal_Init( );
+
+	Shoot_Init( );
 	/******************************application组件初始化*****************************/
 }
 

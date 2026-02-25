@@ -11,6 +11,7 @@
 #include "DJI_motor.h"
 
 #include "bsp_dwt.h"
+#include "bsp_can.h"
 
 #define GM6020_VOLTAGE 1
 #define GM6020_CURRENT 1
@@ -163,8 +164,13 @@ static void Decode_DJI_Motor(CAN_instance_t *motor_can)
 	receive_data->ecd      = ((receive_data->ecd >= receive_data->offset_ecd) ? (receive_data->ecd - receive_data->offset_ecd) : (receive_data->ecd + 8191 - receive_data->offset_ecd));
 
 	receive_data->angle_single_round = ECD_ANGLE_COEF_DJI * (float) receive_data->ecd;
+	// receive_data->rad_single_round = ECD_RAD_COEF_DJI * (float) receive_data->ecd;
+
+	receive_data->speed = (1.0f - SPEED_SMOOTH_COEF) * receive_data->speed +
+	                                   SPEED_SMOOTH_COEF * (float) ((int16_t)(rxbuff[2] << 8 | rxbuff[3]));//rpm
+	receive_data->speed_rps = receive_data->speed / 60.0f; //rps								   								   
 	receive_data->speed_aps          = (1.0f - SPEED_SMOOTH_COEF) * receive_data->speed_aps +
-	                                   RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * (float) ((int16_t)(rxbuff[2] << 8 | rxbuff[3]));
+	                                   RPM_2_ANGLE_PER_SEC * SPEED_SMOOTH_COEF * (float) ((int16_t)(rxbuff[2] << 8 | rxbuff[3]));//angle/s
 	receive_data->real_current = (1.0f - CURRENT_SMOOTH_COEF) * receive_data->real_current +
 	                             CURRENT_SMOOTH_COEF * (float) ((int16_t)(rxbuff[4] << 8 | rxbuff[5]));
 	receive_data->temperature = rxbuff[6];
@@ -447,7 +453,7 @@ void DJI_Motor_Control(DJI_motor_instance_t *motor_s)
 		j = 1;
 	}
 	// 遍历所有电机实例,进行串级PID的计算并设置发送报文的值
-	for (size_t i = 0 ; i < idx ; ++i)
+	for (size_t i = 0 ; i < j ; ++i)
 	{ // 减小访存开销,先保存指针引用
 		if (motor_s == NULL)
 		{
@@ -457,7 +463,6 @@ void DJI_Motor_Control(DJI_motor_instance_t *motor_s)
 		{
 			motor = motor_s;
 		}
-		motor            = dji_motor_instances[i];
 		motor_setting    = &motor->motor_settings;
 		motor_controller = &motor->motor_controller;
 		receive_data     = &motor->receive_data;

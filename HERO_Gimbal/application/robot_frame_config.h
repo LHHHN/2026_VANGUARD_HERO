@@ -20,12 +20,17 @@
 
 #define BMI088_Frame 1
 
+//使用的遥控器类型
+#define WFLY_SBUS 1
+#define DT7      2
+
 // 可用底盘硬件类型
 #define CHASSIS_NONE            0  // 无底盘
 #define CHASSIS_MECANUM_WHEEL   1  // 麦克纳姆轮底盘
 #define CHASSIS_OMNI_WHEEL      2  // 全向轮底盘
 #define CHASSIS_STEERING_WHEEL  3  // 舵轮底盘
 #define CHASSIS_BALANCE         4  // 平衡底盘
+#define CHASSIS_OMNI_MECANUM   5  // 平衡底盘
 
 // 可用云台硬件类型
 #define GIMBAL_NONE                0  // 无云台
@@ -35,7 +40,8 @@
 #define SHOOT_NONE               0  // 无发射机构
 #define SHOOT_FRIC_TRIGGER       1  // 摩擦轮+拨弹盘发射机构
 
-#define CHASSIS_TYPE CHASSIS_BALANCE             // 选择底盘类型
+#define REMOTE_TYPE DT7  // 选择遥控器类型
+#define CHASSIS_TYPE CHASSIS_OMNI_MECANUM             // 选择底盘类型
 #define GIMBAL_TYPE GIMBAL_NONE                  // 选择云台类型
 #define SHOOT_TYPE SHOOT_NONE                    // 选择发射机构类型
 #define CONTROL_TYPE CHASSIS_AND_GIMBAL          // 选择控制类型
