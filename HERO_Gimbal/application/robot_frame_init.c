@@ -35,6 +35,7 @@
 #include "remote_control.h"
 #include "wfly_control.h"
 #include "vofa.h"
+#include "VPC.h"
 
 #include "bsp_dwt.h"
 #include "bsp_usart.h"
@@ -95,6 +96,8 @@ static void Frame_Device_Init(void)
 	Gimbal_Init( );
 
 	Shoot_Init( );
+
+	VPC_Init();
 	/******************************application组件初始化*****************************/
 }
 
