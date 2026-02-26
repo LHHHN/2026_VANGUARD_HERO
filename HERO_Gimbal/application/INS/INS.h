@@ -77,6 +77,8 @@ typedef struct
 	/* data */
 }__attribute__((packed)) INS_cmd_t;
 
+extern INS_behaviour_t INS;
+
 extern void INS_Data_Update(void);
 
 extern void INS_Init(void);

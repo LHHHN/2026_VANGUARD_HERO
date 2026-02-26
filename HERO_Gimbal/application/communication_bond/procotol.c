@@ -28,13 +28,6 @@ extern INS_behaviour_t INS;
 extern float test_data_acc[3];
 extern float test_data_gyro[3];
 
-// extern DJI_motor_instance_t *chassis_m3508[4];
-// extern LK_motor_instance_t *gimbal_MF9025_motor;
-// extern DM_motor_instance_t *DM_arthrosis_motor[2];
-// extern DJI_motor_instance_t *shoot_stir_motor;
-// extern float shoot_stir_tar;
-// extern float leg_tar;
-
 void VOFA_Display_IMU(void)
 {
 	// vofa_data_view[0] = imu_data.acc[0];
