@@ -22,6 +22,9 @@
 #include "gimbal.h"
 #include "shoot.h"
 
+#include "VPC.h"
+#include "Serial.h"
+
 extern bmi088_data_t imu_data;
 extern wfly_t *rc_data;
 extern INS_behaviour_t INS;
@@ -69,5 +72,6 @@ void VOFA_Display_IMU(void)
 
 void RC_Receive_Control(void)
 {
-	
+	VPC_UpdatePackets();
+	VS_Pack_And_Send_Data_ROS2(&vs_aim_packet_to_nuc); // 视觉数据包发送
 }

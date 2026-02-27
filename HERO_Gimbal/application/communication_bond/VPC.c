@@ -28,17 +28,17 @@ void VPC_Init(void)
 void VPC_UpdatePackets(void)
 {
   /*导航传输数据区*/
-  nv_aim_packet_to_nuc.header = 0x5A; // 帧头赋值
-  // nv_aim_packet_to_nuc.imu_roll = INS.Roll;
-  nv_aim_packet_to_nuc.imu_pitch = INS.Pitch;
-  nv_aim_packet_to_nuc.imu_yaw = INS.Yaw;
+//   nv_aim_packet_to_nuc.header = 0x5A; // 帧头赋值
+//   // nv_aim_packet_to_nuc.imu_roll = INS.Roll;
+//   nv_aim_packet_to_nuc.imu_pitch = INS.Pitch;
+//   nv_aim_packet_to_nuc.imu_yaw = INS.Yaw;
 
-//   nv_aim_packet_to_nuc.joint_pitch = gimbal_motor_pitch->measure.rad; //lhn:；联调时增加
-  nv_aim_packet_to_nuc.joint_yaw = INS.Yaw;
+// //   nv_aim_packet_to_nuc.joint_pitch = gimbal_motor_pitch->measure.rad; //lhn:；联调时增加
+//   nv_aim_packet_to_nuc.joint_yaw = INS.Yaw;
 
-  nv_aim_packet_to_nuc.timestamp = 0; // 时间戳
-  nv_aim_packet_to_nuc.robot_hp = 0;  // 血量
-  nv_aim_packet_to_nuc.game_time = 0; // 比赛时间
+//   nv_aim_packet_to_nuc.timestamp = 0; // 时间戳
+//   nv_aim_packet_to_nuc.robot_hp = 0;  // 血量
+//   nv_aim_packet_to_nuc.game_time = 0; // 比赛时间
 
   /*新视觉传输数据区*/ //(同济大学版本)
 

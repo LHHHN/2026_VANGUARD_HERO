@@ -56,6 +56,19 @@
   ..\module\led\WS2812\ws2812.h ..\module\buzzer\buzzer.h \
   ..\module\remote\DT7\remote_control.h ..\bsp\USART\bsp_usart.h \
   ..\Core\Inc\usart.h ..\module\remote\WFLY\wfly_control.h \
-  ..\module\vofa\vofa.h ..\bsp\DWT\bsp_dwt.h \
-  ..\application\chassis\balance_chassis.h \
+  ..\module\vofa\vofa.h ..\application\communication_bond\VPC.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h \
+  ..\Core\Inc\FreeRTOSConfig.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\portmacro.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h \
+  ..\bsp\DWT\bsp_dwt.h ..\application\chassis\balance_chassis.h \
   ..\module\imu\BMI088\BMI088driver.h
