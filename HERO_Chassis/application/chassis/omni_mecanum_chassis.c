@@ -17,6 +17,7 @@
 #include "user_lib.h"
 #include "bsp_dwt.h"
 #include "rs485.h"
+#include "gimbal.h"
 
 //底板轮毂电机初始化参数
 
@@ -189,6 +190,16 @@ motor_init_config_t DM_track_motor_init = {
 
 };
 
+//底盘跟随pid
+PID_t chasiss_follow_pid = {
+    .kp = 10.0f,
+    .ki = 0.0f,
+    .kd = 2.5f,
+    .output_limit = 25.0f, 
+    .integral_limit = 5.0f,
+    .dead_band = 0.1f,
+};
+
 void Chassis_Init(void)
 {
     //底盘轮毂3508电机初始化
@@ -230,6 +241,8 @@ void Chassis_Init(void)
 
 extern INS_behaviour_t INS;
 extern RC_ctrl_t *rc_data;
+
+extern LK_motor_instance_t *gimbal_MF9025_motor; //用来计算底盘跟随时的角速度
 
 static void Chassis_Enable(void);
 static void Chassis_Disable(void);
@@ -322,18 +335,19 @@ void Chassis_Reference(void)
 
     if(chassis_cmd.mode == CHASSIS_SPIN)
     {
-        chassis_cmd.omega_z = 2.5f;
+        chassis_cmd.omega_z = 8.0f;
     }
     else if(chassis_cmd. mode == CHASSIS_FOLLOW)
     {  
-        chassis_cmd. omega_z = rc_data->rc . rocker_r_ * REMOTE_OMEGA_Z_SEN ;
+        chassis_cmd.omega_follow = PID_Position(&chasiss_follow_pid, gimbal_MF9025_motor->receive_data.RAD_single_round, FOLLOW_OMEGA_Z);
+        // chassis_cmd. omega_z = rc_data->rc . rocker_r_ * REMOTE_OMEGA_Z_SEN ;
         // chassis_cmd. omega_z = uart2_rx_message.rocker_r_ * REMOTE_OMEGA_Z_SEN ;
     }
     else if(chassis_cmd.mode == CHASSIS_UPSTEP)
     {
         if(rc_data->rc . rocker_r1 > 0 && chassis_cmd.leg_state == LEG_NORMAL)
         {
-            chassis_cmd.leg_angle = rc_data->rc . rocker_r1 * 0.001394f ;
+            chassis_cmd.leg_angle = rc_data->rc . rocker_r1 * 0.001394f ; //660换算成弧度
         }
         // if(uart2_rx_message.rocker_r1 > 0 && chassis_cmd.leg_state == LEG_NORMAL)
         // {
@@ -344,6 +358,7 @@ void Chassis_Reference(void)
     else if(chassis_cmd.mode == CHASSIS_STOP_C)
     {
         chassis_cmd.omega_z = 0.0f;
+        chassis_cmd.omega_follow = 0.0f;
         chassis_cmd.vx = 0.0f;
         chassis_cmd.vy = 0.0f;
         chassis_cmd.leg_angle = 0.0f ; 

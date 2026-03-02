@@ -40,6 +40,8 @@ typedef struct
 
 	float v_shoot_stir;
 
+	float angle_shoot_stir;
+
 }__attribute__((packed)) shoot_cmd_t;
 
 void Shoot_Init(void);

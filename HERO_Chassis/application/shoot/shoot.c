@@ -24,28 +24,37 @@ shoot_cmd_t shoot_cmd;
 
 float shoot_stir_tar = -10800; //固定目标转速
 
-// PID_t shoot_stir_angle_pid = {
-//     .kp = 0.0f, //5.0f,
-//     .ki = 0.0f,
-//     .kd = 0.0f, // 0.01f,
-//     .output_limit = 10000.0f, 
-//     .integral_limit = 5000.0f,
-//     .dead_band = 0.0f,
-// };
-
-PID_t shoot_stir_speed_pid = {
-    .kp = 1.0f, //1.0f,
-    .ki = 0.15f, //0.5f,
-    .kd = 0.1f,
-    .output_limit = 15000.0f, 
-    .integral_limit = 7500.0f,
+PID_t shoot_stir_angle_pid = {
+    .kp = 14.0f, //5.0f,
+    .ki = 0.0f,
+    .kd = 0.1f, // 0.01f,
+    .output_limit = 20000.0f, 
+    .integral_limit = 3600.0f,
     .dead_band = 0.0f,
 };
 
+PID_t shoot_stir_speed_pid = {
+    .kp = 0.5f, //1.0f,
+    .ki = 0.075f, //0.5f,
+    .kd = 0.0f,
+    .output_limit = 15000.0f, 
+    .integral_limit = 100000.0f,
+    .dead_band = 0.0f,
+};
+
+// PID_t shoot_stir_speed_pid = {
+//     .kp = 1.0f, //1.0f,
+//     .ki = 0.15f, //0.5f,
+//     .kd = 0.1f,
+//     .output_limit = 15000.0f, 
+//     .integral_limit = 7500.0f,
+//     .dead_band = 0.0f,
+// };
+
 motor_init_config_t shoot_stir_init = {
     .controller_param_init_config = {
-        // .angle_PID = &shoot_stir_angle_pid,
-        .angle_PID = NULL,
+        .angle_PID = &shoot_stir_angle_pid,
+        // .angle_PID = NULL,
         .speed_PID = &shoot_stir_speed_pid,
         .current_PID = NULL,
         .torque_PID = NULL,
@@ -61,10 +70,10 @@ motor_init_config_t shoot_stir_init = {
         .pid_ref = 0.0f,
     },
     .controller_setting_init_config = {
-        // .outer_loop_type = ANGLE_LOOP,
-        // .close_loop_type = SPEED_LOOP | ANGLE_LOOP,
-        .outer_loop_type = SPEED_LOOP,
-        .close_loop_type = SPEED_LOOP,
+        .outer_loop_type = ANGLE_LOOP,
+        .close_loop_type = SPEED_LOOP | ANGLE_LOOP,
+        // .outer_loop_type = SPEED_LOOP,
+        // .close_loop_type = SPEED_LOOP,
 
         .motor_reverse_flag = MOTOR_DIRECTION_NORMAL,
         .feedback_reverse_flag = FEEDBACK_DIRECTION_NORMAL,
@@ -129,32 +138,58 @@ void Shoot_Set_Mode(void)
     }
 }
 
-// float shoot_kp_test;
-// float shoot_ki_test;
-// float shoot_kd_test;
-// float shoot_stir_speed_test;
+float speed_kp_test = 0.45f;
+float speed_ki_test = 0.01f;
+float speed_kd_test = 0.0f;
+
+float angle_kp_test = 14.0f;
+float angle_ki_test = 0.0f;
+float angle_kd_test = 0.1f;
+
+float shoot_stir_speed_test;
+float shoot_stir_angle_test;
+float shoot_stir_angle_tar ;
 
 float stir_state ;
 
+float stir_buchang = 240.0f; //发射补偿角度,可以根据实际情况调整
 void Shoot_Reference(void)
 {
-    // shoot_stir_motor->motor_controller.speed_PID->kp = shoot_kp_test;
-    // shoot_stir_motor->motor_controller.speed_PID->ki = shoot_ki_test;
-    // shoot_stir_motor->motor_controller.speed_PID->kd = shoot_kd_test;
-    // shoot_stir_speed_test = shoot_stir_motor->receive_data.speed;
+    static uint8_t shoot_laser_cnt = 0;
+
+    shoot_stir_motor->motor_controller.speed_PID->kp = speed_kp_test;
+    shoot_stir_motor->motor_controller.speed_PID->ki = speed_ki_test;
+    shoot_stir_motor->motor_controller.speed_PID->kd = speed_kd_test;
+
+    shoot_stir_motor->motor_controller.angle_PID->kp = angle_kp_test;
+    shoot_stir_motor->motor_controller.angle_PID->ki = angle_ki_test;
+    shoot_stir_motor->motor_controller.angle_PID->kd = angle_kd_test;
+
+    shoot_stir_speed_test = shoot_stir_motor->receive_data.speed;
+    shoot_stir_angle_test = shoot_stir_motor->receive_data.total_angle;
+    shoot_stir_angle_tar = shoot_cmd.angle_shoot_stir;
 
 	GPIO_PinState stir_read_temp;	
     stir_read_temp = HAL_GPIO_ReadPin(GPIOE,GPIO_PIN_13);
 
     shoot_cmd.fire_arrive_last = shoot_cmd.fire_arrive_current;
-    if(stir_read_temp == GPIO_PIN_SET)
-    {
+
+    if(stir_read_temp == GPIO_PIN_SET) {
         shoot_cmd.fire_arrive_current = 1;
-    }
-    else
-    {
+    } else {
         shoot_cmd.fire_arrive_current = 0;
     }
+
+    if(shoot_cmd.fire_arrive_last)
+    {
+        if(!shoot_cmd.fire_arrive_current) 
+        {
+            shoot_cmd.angle_shoot_stir = shoot_stir_motor->receive_data.total_angle - stir_buchang; // 5度的补偿,可以根据实际情况调整
+            // shoot_cmd.angle_shoot_stir = 0.0f;
+            // shoot_stir_motor->receive_data.total_angle = 0.0f;
+        }
+    }
+
     
     if(shoot_cmd.mode == SHOOT_ENABLE)
     {
@@ -163,7 +198,8 @@ void Shoot_Reference(void)
         {
             if(shoot_cmd.fire_single == 1)
             {
-                shoot_cmd.v_shoot_stir = shoot_stir_tar ;
+                // shoot_cmd.v_shoot_stir = shoot_stir_tar ;
+                shoot_cmd.angle_shoot_stir -= SHOOT_SINGLE_ANGLE_DEF * 19.8f;
             }
             shoot_cmd.fire_single = 0;
         }
@@ -171,29 +207,30 @@ void Shoot_Reference(void)
         // else if( uart2_rx_message.dial == 0)
         {
             shoot_cmd.fire_single = 1;
-            shoot_cmd.v_shoot_stir = 0;
+            // shoot_cmd.v_shoot_stir = 0;
+            shoot_cmd.angle_shoot_stir = shoot_stir_motor->receive_data.total_angle; 
         }
 
-        if(shoot_cmd.fire_arrive_current == 1 && shoot_cmd.fire_arrive_last == 0)
-        {
-            shoot_cmd.v_shoot_stir = 0 ;
-        }
-
-        //shoot pid test
-
-        // shoot_cmd.v_shoot_stir = shoot_stir_tar ;
+        // if(shoot_cmd.fire_arrive_current == 0 && shoot_cmd.fire_arrive_last == 1)
+        // {
+        //     // shoot_cmd.v_shoot_stir = 0 ;
+        //     shoot_cmd.angle_shoot_stir = 0 ;
+        //     shoot_stir_motor->receive_data.total_angle = 0; 
+        // }
 
     }
     else if( shoot_cmd.mode == SHOOT_DISABLE)
     {
-        shoot_cmd.v_shoot_stir = 0;
+        // shoot_cmd.v_shoot_stir = 0;
+        shoot_cmd.angle_shoot_stir = shoot_stir_motor->receive_data.total_angle;
     }
 
 }
 
 void Shoot_Console(void)
 {
-    DJI_Motor_Set_Ref(shoot_stir_motor, shoot_cmd.v_shoot_stir);
+    // DJI_Motor_Set_Ref(shoot_stir_motor, shoot_cmd.v_shoot_stir);
+    DJI_Motor_Set_Ref(shoot_stir_motor, shoot_cmd.angle_shoot_stir);
 }
 
 void Shoot_Send_Cmd(void)

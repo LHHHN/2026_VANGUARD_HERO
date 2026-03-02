@@ -56,9 +56,9 @@ typedef struct
 	float i_term;
 	float i_out;
 	float d_out;
+	float f_out;
 
 	float output;
-	float f_out;
 	float last_output;
 	float last_d_out;
 } PID_t;

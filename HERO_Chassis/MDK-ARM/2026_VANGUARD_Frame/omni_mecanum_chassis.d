@@ -58,4 +58,5 @@
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
-  ..\bsp\DWT\bsp_dwt.h
+  ..\bsp\DWT\bsp_dwt.h ..\application\gimbal\gimbal.h \
+  ..\module\motor\LK_motor\LK_motor.h

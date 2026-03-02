@@ -81,9 +81,11 @@ motor_init_config_t shoot_m3508_init = {
     },
 };
 
-float shoot_tar_1 = 3000.0f;
-float shoot_tar_2 = 4050.0f;
+float shoot_tar_1 = 3750.0f;
+float shoot_tar_2 = 3950.0f;
 
+float shoot_tar_16mps_1 = 4750.0f; 
+float shoot_tar_16mps_2 = 4950.0f;
 
 void Shoot_Init(void)
 {

@@ -37,6 +37,8 @@
 //#define REMOTE_YAW_SEN 0.000015f       
 #define REMOTE_PITCH_SEN 0.000002f
 
+#define FOLLOW_OMEGA_Z 2.16f //底盘跟随0点
+
 typedef enum
 {
     CHASSIS_DISABLE = 0, //底盘失能
