@@ -108,7 +108,12 @@ float PID_Increment(PID_t *pid, float measure, float target)
 {
 	// 保存上次的测量值和误差,计算当前error
 	pid->measure = measure;
-	pid->target  = target;
+	if (pid->target != target)
+    {
+        pid->last_target = pid->target;
+        pid->target = target;
+    }
+	// pid->target  = target;
 	pid->error   = pid->target - pid->measure;
 
 	// 如果在死区外,则计算PID
@@ -122,7 +127,9 @@ float PID_Increment(PID_t *pid, float measure, float target)
 
 		pid->i_out = Value_Limit(pid->i_out, -pid->integral_limit, pid->integral_limit); // 积分限幅
 
-		pid->output += (pid->p_out + pid->i_out + pid->d_out); // 计算输出
+		pid->f_out = pid->kf * (pid->target - pid->last_target); // 前馈项
+
+		pid->output += (pid->p_out + pid->i_out + pid->d_out + pid->f_out); // 计算输出
 
 		pid->output = Value_Limit(pid->output, -pid->output_limit, pid->output_limit); // 输出限幅
 	}
@@ -139,6 +146,8 @@ float PID_Increment(PID_t *pid, float measure, float target)
 	pid->last_d_out   = pid->d_out;
 	pid->pre_error    = pid->last_error;
 	pid->last_error   = pid->error;
+
+	pid->last_target  = pid->target;
 
 	return pid->output;
 }

@@ -239,28 +239,28 @@ float leg_cnt = 0.0f; //离地时间计数
 void Chassis_Set_Mode(void)
 {
     //遥控器控制
-    // if( rc_data -> rc . switch_left == 1 && rc_data -> rc . switch_right == 1)
-    if( uart2_rx_message.switch_left == 1 && uart2_rx_message.switch_right == 1)
+    if( rc_data -> rc . switch_left == 1 && rc_data -> rc . switch_right == 1)
+    // if( uart2_rx_message.switch_left == 1 && uart2_rx_message.switch_right == 1)
 	{
         chassis_cmd.mode = CHASSIS_DISABLE;
 	}
-    // else if( rc_data -> rc . switch_left == 1 && rc_data -> rc . switch_right == 3)
-	else if( uart2_rx_message.switch_left == 1 &&  uart2_rx_message.switch_right == 3)
+    else if( rc_data -> rc . switch_left == 1 && rc_data -> rc . switch_right == 3)
+	// else if( uart2_rx_message.switch_left == 1 &&  uart2_rx_message.switch_right == 3)
 	{
         chassis_cmd.mode = CHASSIS_STOP_C;
 	}
-    // else if( rc_data -> rc . switch_left == 1 && rc_data -> rc . switch_right == 2)
-    else if( uart2_rx_message.switch_left == 1 &&  uart2_rx_message.switch_right == 2)
+    else if( rc_data -> rc . switch_left == 1 && rc_data -> rc . switch_right == 2)
+    // else if( uart2_rx_message.switch_left == 1 &&  uart2_rx_message.switch_right == 2)
 	{
         chassis_cmd.mode = CHASSIS_UPSTEP;//上台阶
 	}
-    // else if( rc_data -> rc . switch_left == 3 && rc_data -> rc . switch_right == 1)
-    else if( uart2_rx_message.switch_left == 3 &&  uart2_rx_message.switch_right == 1)
+    else if( rc_data -> rc . switch_left == 3 && rc_data -> rc . switch_right == 1)
+    // else if( uart2_rx_message.switch_left == 3 &&  uart2_rx_message.switch_right == 1)
 	{
         chassis_cmd.mode = CHASSIS_SPIN;
 	}
-    // else if( rc_data -> rc . switch_left == 3 && rc_data -> rc . switch_right == 2)
-    else if( uart2_rx_message.switch_left == 3 &&  uart2_rx_message.switch_right == 2)
+    else if( rc_data -> rc . switch_left == 3 && rc_data -> rc . switch_right == 2)
+    // else if( uart2_rx_message.switch_left == 3 &&  uart2_rx_message.switch_right == 2)
 	{
         chassis_cmd.mode = CHASSIS_FOLLOW;
 	}
@@ -309,10 +309,10 @@ void Chassis_Reference(void)
         Chassis_Enable();
     }
     
-    // chassis_cmd. vx = (float) rc_data -> rc . rocker_l1 * REMOTE_X_SEN ;
-	// chassis_cmd. vy = (float) rc_data -> rc . rocker_l_ * REMOTE_Y_SEN ;
-    chassis_cmd. vx = (float) uart2_rx_message.rocker_l1 * REMOTE_X_SEN ;
-    chassis_cmd. vy = (float) uart2_rx_message.rocker_l_ * REMOTE_Y_SEN ;
+    chassis_cmd. vx = (float) rc_data -> rc . rocker_l1 * REMOTE_X_SEN ;
+	chassis_cmd. vy = (float) rc_data -> rc . rocker_l_ * REMOTE_Y_SEN ;
+    // chassis_cmd. vx = (float) uart2_rx_message.rocker_l1 * REMOTE_X_SEN ;
+    // chassis_cmd. vy = (float) uart2_rx_message.rocker_l_ * REMOTE_Y_SEN ;
     chassis_cmd.v_track = 0.0f;
     // chassis_cmd.leg_angle = 0.0f ;
     if(chassis_cmd.leg_state == LEG_NORMAL)
@@ -326,19 +326,19 @@ void Chassis_Reference(void)
     }
     else if(chassis_cmd. mode == CHASSIS_FOLLOW)
     {  
-        // chassis_cmd. omega_z = rc_data->rc . rocker_r_ * REMOTE_OMEGA_Z_SEN ;
-        chassis_cmd. omega_z = uart2_rx_message.rocker_r_ * REMOTE_OMEGA_Z_SEN ;
+        chassis_cmd. omega_z = rc_data->rc . rocker_r_ * REMOTE_OMEGA_Z_SEN ;
+        // chassis_cmd. omega_z = uart2_rx_message.rocker_r_ * REMOTE_OMEGA_Z_SEN ;
     }
     else if(chassis_cmd.mode == CHASSIS_UPSTEP)
     {
-        // if(rc_data->rc . rocker_r1 > 0 && chassis_cmd.leg_state == LEG_NORMAL)
-        // {
-        //     chassis_cmd.leg_angle = rc_data->rc . rocker_r1 * 0.001394f ;
-        // }
-        if(uart2_rx_message.rocker_r1 > 0 && chassis_cmd.leg_state == LEG_NORMAL)
+        if(rc_data->rc . rocker_r1 > 0 && chassis_cmd.leg_state == LEG_NORMAL)
         {
-            chassis_cmd.leg_angle = uart2_rx_message.rocker_r1 * 0.001394f ;
+            chassis_cmd.leg_angle = rc_data->rc . rocker_r1 * 0.001394f ;
         }
+        // if(uart2_rx_message.rocker_r1 > 0 && chassis_cmd.leg_state == LEG_NORMAL)
+        // {
+        //     chassis_cmd.leg_angle = uart2_rx_message.rocker_r1 * 0.001394f ;
+        // }
         chassis_cmd.v_track = 15.0f ;
     }
     else if(chassis_cmd.mode == CHASSIS_STOP_C)

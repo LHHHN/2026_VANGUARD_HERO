@@ -42,6 +42,7 @@
   ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
   ..\Drivers\CMSIS\Include\cmsis_compiler.h \
   ..\module\remote\WFLY\wfly_control.h \
+  ..\module\remote\DT7\remote_control.h \
   ..\application\chassis\omni_mecanum_chassis.h \
   ..\application\robot_frame_config.h \
   ..\module\motor\DM_motor\dm_motor.h ..\module\motor\drv_motor.h \

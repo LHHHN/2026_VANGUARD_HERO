@@ -1266,7 +1266,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_speed_kp_test</member>
-			<member name="last_addr" type="uint32">0x24001018</member>
+			<member name="last_addr" type="uint32">0x24001034</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1315,7 +1315,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_speed_ki_test</member>
-			<member name="last_addr" type="uint32">0x24001014</member>
+			<member name="last_addr" type="uint32">0x24001030</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1364,7 +1364,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_speed_kd_test</member>
-			<member name="last_addr" type="uint32">0x24001010</member>
+			<member name="last_addr" type="uint32">0x2400102C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1413,7 +1413,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_speed_test</member>
-			<member name="last_addr" type="uint32">0x2400101C</member>
+			<member name="last_addr" type="uint32">0x24001038</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1511,7 +1511,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_speed_kp_test</member>
-			<member name="last_addr" type="uint32">0x24001018</member>
+			<member name="last_addr" type="uint32">0x24001034</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1560,7 +1560,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_speed_ki_test</member>
-			<member name="last_addr" type="uint32">0x24001014</member>
+			<member name="last_addr" type="uint32">0x24001030</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1609,7 +1609,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_speed_kd_test</member>
-			<member name="last_addr" type="uint32">0x24001010</member>
+			<member name="last_addr" type="uint32">0x2400102C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1707,7 +1707,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_angle_kp_test</member>
-			<member name="last_addr" type="uint32">0x24001004</member>
+			<member name="last_addr" type="uint32">0x24001010</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1756,7 +1756,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_angle_ki_test</member>
-			<member name="last_addr" type="uint32">0x24001000</member>
+			<member name="last_addr" type="uint32">0x2400100C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1805,7 +1805,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_angle_kd_test</member>
-			<member name="last_addr" type="uint32">0x24000FFC</member>
+			<member name="last_addr" type="uint32">0x24001008</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1854,7 +1854,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_angle_test</member>
-			<member name="last_addr" type="uint32">0x24001008</member>
+			<member name="last_addr" type="uint32">0x24001014</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1903,7 +1903,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_angle_kp_test</member>
-			<member name="last_addr" type="uint32">0x24001004</member>
+			<member name="last_addr" type="uint32">0x24001010</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -1952,7 +1952,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_angle_ki_test</member>
-			<member name="last_addr" type="uint32">0x24001000</member>
+			<member name="last_addr" type="uint32">0x2400100C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2001,7 +2001,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">gimbal_angle_kd_test</member>
-			<member name="last_addr" type="uint32">0x24000FFC</member>
+			<member name="last_addr" type="uint32">0x24001008</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -2156,9 +2156,9 @@
 		</object>
 		<object name="ObjId0024" type="CPrjDoc_Hi509FileType"/>
 		<object name="ObjId0025" type="CObList">
-			<member name="item0" type="CObject_ptr">ObjId0026</member>
+			<member name="item0" type="CObject_ptr">ObjId0174</member>
 		</object>
-		<object name="ObjId0026" type="CPrjDoc_MapFileInfo">
+		<object name="ObjId0174" type="CPrjDoc_MapFileInfo">
 			<member name="file_name" type="string">D:\1ARM\Electronic_Control\2026_VANGUARD_HERO\HERO_Chassis\MDK-ARM\2026_VANGUARD_Frame\2026_VANGUARD_Frame.axf</member>
 			<member name="file_type" type="CObject_ptr">ObjId0023</member>
 		</object>
@@ -2223,10 +2223,11 @@
 			<member name="graph_x_min_auto" type="sint32">1</member>
 			<member name="graph_x_max_auto" type="sint32">1</member>
 			<member name="graph_break_line" type="sint32">0</member>
-			<member name="graph_var_count" type="sint32">2</member>
-			<member name="var_count" type="sint32">2</member>
+			<member name="graph_var_count" type="sint32">3</member>
+			<member name="var_count" type="sint32">3</member>
 			<member name="var0_info" type="CPrjItemRS_VarInfo">ObjId0103</member>
 			<member name="var1_info" type="CPrjItemRS_VarInfo">ObjId0104</member>
+			<member name="var2_info" type="CPrjItemRS_VarInfo">ObjId0175</member>
 			<member name="yblock0_info" type="CPrjItemRS_YBlockInfo">ObjId0105</member>
 			<member name="yblock1_info" type="CPrjItemRS_YBlockInfo">ObjId0106</member>
 			<member name="yblock2_info" type="CPrjItemRS_YBlockInfo">ObjId0107</member>
@@ -2245,8 +2246,14 @@
 			<member name="color" type="uint32">0xA95918</member>
 		</object>
 		<object name="ObjId0104" type="CPrjItemRS_VarInfo">
-			<member name="variable" type="CObject_ptr">ObjId0101</member>
+			<member name="variable" type="CObject_ptr">ObjId0118</member>
 			<member name="visible" type="sint32">1</member>
+			<member name="y_block" type="sint32">0</member>
+			<member name="color" type="uint32">0xA95918</member>
+		</object>
+		<object name="ObjId0175" type="CPrjItemRS_VarInfo">
+			<member name="variable" type="CObject_ptr">ObjId0101</member>
+			<member name="visible" type="sint32">0</member>
 			<member name="y_block" type="sint32">0</member>
 			<member name="color" type="uint32">0x227DF3</member>
 		</object>

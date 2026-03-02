@@ -17,6 +17,7 @@
 #include "remote_control.h"
 #include "pid.h"
 #include "bsp_can.h"
+#include "rs485.h"
 
 DJI_motor_instance_t *shoot_m3508_motor[3];
 shoot_cmd_t shoot_cmd;
@@ -102,11 +103,13 @@ extern RC_ctrl_t *rc_data;
 
 void Shoot_Set_Mode(void)
 {
-    if( rc_data -> rc . switch_left == 1 &&  rc_data -> rc . switch_right == 1)
+    // if( rc_data -> rc . switch_left == 1 &&  rc_data -> rc . switch_right == 1)
+    if((uart2_rx_message.rc_switch & 0x09) == 0x09) //0x00001001
     {
         shoot_cmd.mode = SHOOT_DISABLE;
     }
-    else if( rc_data -> rc . switch_left == 2 &&  rc_data -> rc . switch_right == 3)
+    // else if( rc_data -> rc . switch_left == 2 &&  rc_data -> rc . switch_right == 3)
+    else if((uart2_rx_message.rc_switch & 0x14) == 0x14) //0b00010100
     {
         shoot_cmd.mode = SHOOT_ENABLE;
     }

@@ -74,7 +74,7 @@ void VS_UnPack_Data_ROS2(uint8_t *receive_buf, vs_receive_packet_t *receive_pack
 {
     // /*Len为原始接收数据长度，如果要排除末尾的换行符，则需要减去最后一位数据包*/
     // uint16_t actual_Len = Len - 1;
-    if (receive_buf[0] == 0xA6)
+    if (receive_buf[0] == 'S' && receive_buf[1] == 'P')
     {
         uint16_t w_expected;
         w_expected = Get_CRC16_Check_Sum(receive_buf, Len - 2, 0xFFFF);

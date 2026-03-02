@@ -18,7 +18,7 @@ uint8_t frame_buf[1024];
 
 void VPC_Init(void)
 {
-  NV_Send_Packet_Init(&nv_aim_packet_to_nuc);
+  // NV_Send_Packet_Init(&nv_aim_packet_to_nuc);
   VS_Send_Packet_Init(&vs_aim_packet_to_nuc);
   VS_Receive_Packet_Init(&vs_aim_packet_from_nuc);
   // Send_Packet_Init(&aim_packet_to_nuc);
@@ -52,9 +52,21 @@ void VPC_UpdatePackets(void)
   vs_aim_packet_to_nuc.yaw = INS.Yaw;
   vs_aim_packet_to_nuc.yaw_vel = 0;   //未定
   vs_aim_packet_to_nuc.pitch = INS.Pitch;
-//   vs_aim_packet_to_nuc.pitch_vel = gimbal_motor_pitch->measure.speed; //lhn:；联调时增加
+  vs_aim_packet_to_nuc.pitch_vel = 0; //lhn:；联调时增加
   vs_aim_packet_to_nuc.bullet_speed = 0; //未定
   vs_aim_packet_to_nuc.bullet_count = 0; //未定
+
+  // vs_aim_packet_to_nuc.mode = 0;
+  // vs_aim_packet_to_nuc.q[0] = 0;
+  // vs_aim_packet_to_nuc.q[1] = 0;
+  // vs_aim_packet_to_nuc.q[2] = 0;
+  // vs_aim_packet_to_nuc.q[3] = 0;
+  // vs_aim_packet_to_nuc.yaw = 0;
+  // vs_aim_packet_to_nuc.yaw_vel = 0;   //未定
+  // vs_aim_packet_to_nuc.pitch = 0 ;
+  // vs_aim_packet_to_nuc.pitch_vel = 0; //lhn:；联调时增加
+  // vs_aim_packet_to_nuc.bullet_speed = 0; //未定
+  // vs_aim_packet_to_nuc.bullet_count = 0; //未定
 
   /*深圳大学版本*/
   // vs_aim_packet_to_nuc.output_data.config = 1.0f;

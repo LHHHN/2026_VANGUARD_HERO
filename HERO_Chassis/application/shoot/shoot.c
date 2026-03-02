@@ -105,8 +105,8 @@ extern RC_ctrl_t *rc_data;
 
 void Shoot_Set_Mode(void)
 {
-    // if( rc_data -> rc . switch_left == 2 &&  rc_data -> rc . switch_right == 3)
-    if( uart2_rx_message.switch_left == 2 &&  uart2_rx_message.switch_right == 3)
+    if( rc_data -> rc . switch_left == 2 &&  rc_data -> rc . switch_right == 3)
+    // if( uart2_rx_message.switch_left == 2 &&  uart2_rx_message.switch_right == 3)
     {
         shoot_cmd.mode = SHOOT_ENABLE;
     }
@@ -158,8 +158,8 @@ void Shoot_Reference(void)
     
     if(shoot_cmd.mode == SHOOT_ENABLE)
     {
-        // if( rc_data -> rc .dial == 660) 
-        if( uart2_rx_message.dial == 660)
+        if( rc_data -> rc .dial == 660) 
+        // if( uart2_rx_message.dial == 660)
         {
             if(shoot_cmd.fire_single == 1)
             {
@@ -167,8 +167,8 @@ void Shoot_Reference(void)
             }
             shoot_cmd.fire_single = 0;
         }
-        // else if( rc_data -> rc .dial == 0)
-        else if( uart2_rx_message.dial == 0)
+        else if( rc_data -> rc .dial == 0)
+        // else if( uart2_rx_message.dial == 0)
         {
             shoot_cmd.fire_single = 1;
             shoot_cmd.v_shoot_stir = 0;

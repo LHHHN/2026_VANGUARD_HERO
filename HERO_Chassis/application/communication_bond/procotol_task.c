@@ -53,7 +53,7 @@ static void Procotol_Task(void *argument)
     for (; ;)
     {
         VOFA_Display_IMU( );
-        RC_Receive_Control( );
+        RC_Transfer_Control( );
 
         procotol_task_diff = osKernelGetTickCount( ) - time;
         time               = osKernelGetTickCount( );

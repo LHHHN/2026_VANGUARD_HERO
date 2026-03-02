@@ -45,6 +45,7 @@
   ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
   ..\Drivers\CMSIS\Include\cmsis_compiler.h \
   ..\module\remote\WFLY\wfly_control.h \
+  ..\module\remote\DT7\remote_control.h \
   ..\application\chassis\omni_mecanum_chassis.h \
   ..\application\robot_frame_config.h \
   ..\module\motor\DM_motor\dm_motor.h ..\module\motor\drv_motor.h \
@@ -68,4 +69,4 @@
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h \
-  ..\module\serial\Serial.h
+  ..\module\serial\Serial.h ..\module\rs485\rs485.h

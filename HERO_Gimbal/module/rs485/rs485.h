@@ -17,13 +17,16 @@ typedef struct
     // float target_y_speed;
     // float target_omega_speed;
 
-    int16_t rocker_l_; // 左水平
-    int16_t rocker_l1; // 左竖直
-    int16_t rocker_r_; // 右水平
-    int16_t rocker_r1; // 右竖直
-    int16_t dial;      // 侧边拨轮
-    uint8_t switch_left;  // 左侧开关
-    uint8_t switch_right; // 右侧开关
+    // int16_t rocker_l_; // 左水平
+    // int16_t rocker_l1; // 左竖直
+    // int16_t rocker_r_; // 右水平
+    // int16_t rocker_r1; // 右竖直
+    // int16_t dial;      // 侧边拨轮
+    // uint8_t switch_left;  // 左侧开关
+    // uint8_t switch_right; // 右侧开关
+
+    float speed_yaw;
+    float angle_yaw;
 
     uint8_t frame_tailer; // 帧尾
     uint8_t check_sum; // 校验和
@@ -32,7 +35,14 @@ typedef struct
 typedef struct
 {
     uint8_t frame_header;
-    float chassis_omega_speed;
+    
+    // float chassis_omega_speed;
+
+    int16_t rocker_r_; // 右水平
+    int16_t rocker_r1; // 右竖直
+    uint8_t rc_switch;  // 两侧拨杆
+    float angle_tar;
+
     uint8_t frame_tailer;
     uint8_t check_sum;
 } __attribute__((packed)) Rx_packed_t;

@@ -16,7 +16,7 @@
 
 #include "LK_motor.h"
 
-#define REMOTE_YAW_SEN 0.000015f
+#define REMOTE_YAW_SEN 0.000010f
 
 typedef struct
 {
@@ -39,7 +39,8 @@ typedef struct
 	float v_yaw;          //YAW_角速度
 }__attribute__((packed)) gimbal_cmd_t;
 
-void Gimbal_Init(void);
+extern float target_yaw;
 
+void Gimbal_Init(void);
 
 #endif /* __GIMBAL_H__ */

@@ -19,7 +19,6 @@
 #include "pid.h"
 
 gimbal_cmd_t gimbal_cmd;
-extern RC_ctrl_t *rc_data;
 
 DM_motor_instance_t *pitch_motor;
 
@@ -76,13 +75,13 @@ void Gimbal_Init(void)
 
 void Gimbal_Observer( )
 {
-    uart2_tx_message.rocker_l_ = rc_data->rc.rocker_l_;
-    uart2_tx_message.rocker_l1 = rc_data->rc.rocker_l1;
-    uart2_tx_message.rocker_r_ = rc_data->rc.rocker_r_;
-    uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
-    uart2_tx_message.dial = rc_data->rc.dial;
-    uart2_tx_message.switch_left = rc_data->rc.switch_left;
-    uart2_tx_message.switch_right = rc_data->rc.switch_right;
+    // uart2_tx_message.rocker_l_ = rc_data->rc.rocker_l_;
+    // uart2_tx_message.rocker_l1 = rc_data->rc.rocker_l1;
+    // uart2_tx_message.rocker_r_ = rc_data->rc.rocker_r_;
+    // uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
+    // uart2_tx_message.dial = rc_data->rc.dial;
+    // uart2_tx_message.switch_left = rc_data->rc.switch_left;
+    // uart2_tx_message.switch_right = rc_data->rc.switch_right;
 }
 
 static void Gimbal_Enable(void);
@@ -91,11 +90,13 @@ static void Gimbal_Disable(void);
 // 设置云台模式
 void Gimbal_Set_Mode( )
 {
-    if( rc_data -> rc . switch_right == 3)
+    // if( rc_data -> rc . switch_right == 3)
+    if((uart2_rx_message.rc_switch & 0x04) == 0x04) // 0b00000100
     {
         gimbal_cmd.mode = GIMBAL_ENABLE;
     }
-    else if( rc_data -> rc . switch_left == 1 &&  rc_data -> rc . switch_right == 1)
+    // else if( rc_data -> rc . switch_left == 1 &&  rc_data -> rc . switch_right == 1)
+    else if((uart2_rx_message.rc_switch & 0x09) == 0x09) //0x00001001
     {
         // gimbal_cmd.mode = GIMBAL_STOP;
         gimbal_cmd.mode = GIMBAL_DISABLE;
@@ -127,7 +128,8 @@ void Gimbal_Reference( )
 {
     if( gimbal_cmd.mode == GIMBAL_ENABLE )
     {
-        gimbal_cmd.pitch_v = (float)rc_data->rc.rocker_r1 * REMOTE_PITCH_SEN;
+        // gimbal_cmd.pitch_v = (float)rc_data->rc.rocker_r1 * REMOTE_PITCH_SEN;
+        gimbal_cmd.pitch_v = (float)uart2_rx_message.rocker_r1 * REMOTE_PITCH_SEN;
     }
     else
     {

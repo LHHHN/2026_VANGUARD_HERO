@@ -18,22 +18,18 @@
 #include "vofa.h"
 #include "bmi088.h"
 #include "wfly_control.h"
+#include "remote_control.h"
 #include "omni_mecanum_chassis.h"
 #include "gimbal.h"
 #include "shoot.h"
+#include "rs485.h"
 
 extern bmi088_data_t imu_data;
-extern wfly_t *rc_data;
+// extern wfly_t *rc_data;
+extern RC_ctrl_t *rc_data;
 extern INS_behaviour_t INS;
 extern float test_data_acc[3];
 extern float test_data_gyro[3];
-
-// extern DJI_motor_instance_t *chassis_m3508[4];
-// extern LK_motor_instance_t *gimbal_MF9025_motor;
-// extern DM_motor_instance_t *DM_arthrosis_motor[2];
-extern DJI_motor_instance_t *shoot_stir_motor;
-extern float shoot_stir_tar;
-// extern float leg_tar;
 
 void VOFA_Display_IMU(void)
 {
@@ -59,22 +55,13 @@ void VOFA_Display_IMU(void)
 //	vofa_data_view[13] = INS.Roll;
 //	vofa_data_view[14] = INS.Yaw;
 	
-	// vofa_data_view[0] = tar;
-	// vofa_data_view[1] = gimbal_MF9025_motor->receive_data.speed_rps;
-	// vofa_data_view[2] = gimbal_MF9025_motor->receive_data.RAD_single_round;
-
-	// vofa_data_view[0] = leg_tar;
-	// vofa_data_view[1] = DM_arthrosis_motor[0]->receive_data.position;
-	// vofa_data_view[2] = DM_arthrosis_motor[1]->receive_data.position;
-	
-	// vofa_data_view[0] = shoot_stir_tar;
-	// vofa_data_view[1] = shoot_stir_motor->receive_data.speed_aps;
-
-	// VOFA_JustFloat(vofa_data_view, 6);
-	// VOFA_JustFloat(vofa_data_view, 15);
 }
 
-void RC_Receive_Control(void)
+void RC_Transfer_Control(void)
 {
-	
+	uart2_tx_message.angle_tar = target_yaw;
+	uart2_tx_message.rocker_r_ = rc_data->rc.rocker_r_;
+    uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
+	uart2_tx_message.rc_switch = 0x01 << (rc_data->rc.switch_right - 1) | 0x08 << (rc_data->rc.switch_left - 1) ;
+
 }

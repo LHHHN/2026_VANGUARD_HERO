@@ -30,6 +30,9 @@ typedef struct
 	float kp;
 	float ki;
 	float kd;
+	float kf;
+
+
 
 	float output_limit;
 	float integral_limit;     // 积分限幅
@@ -55,6 +58,7 @@ typedef struct
 	float d_out;
 
 	float output;
+	float f_out;
 	float last_output;
 	float last_d_out;
 } PID_t;

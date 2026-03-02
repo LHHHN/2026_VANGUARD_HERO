@@ -28,4 +28,6 @@ extern void VOFA_Display_IMU(void);
 
 extern void RC_Receive_Control(void);
 
+extern void VS_Receive_Control(void);
+
 #endif /* __PROCOTOL_H__ */

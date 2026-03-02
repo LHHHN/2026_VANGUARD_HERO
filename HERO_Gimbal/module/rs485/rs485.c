@@ -126,7 +126,10 @@ void uart2_online_check(void)
         uart2_transmit_control();
         if (uwTick - last_uart2_uwTick > 50)
         {
-            uart2_rx_message.chassis_omega_speed = 0;
+            // uart2_rx_message.chassis_omega_speed = 0;
+            uart2_rx_message.rocker_r_ = 0;
+            uart2_rx_message.rocker_r1 = 0;
+            uart2_rx_message.rc_switch = 0x09; // 0b00001001
         }
     }
 }

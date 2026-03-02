@@ -128,13 +128,17 @@ void uart2_online_check(void)
         // uart2_rx_message.target_x_speed = 0;
         // uart2_rx_message.target_y_speed = 0;
         // uart2_rx_message.target_omega_speed = 0;
-        uart2_rx_message.rocker_l_ = 0;
-        uart2_rx_message.rocker_l1 = 0;
-        uart2_rx_message.rocker_r_ = 0;
-        uart2_rx_message.rocker_r1 = 0;
-        uart2_rx_message.dial = 0;
-        uart2_rx_message.switch_left = 1;
-        uart2_rx_message.switch_right = 1;
+
+        // uart2_rx_message.rocker_l_ = 0;
+        // uart2_rx_message.rocker_l1 = 0;
+        // uart2_rx_message.rocker_r_ = 0;
+        // uart2_rx_message.rocker_r1 = 0;
+        // uart2_rx_message.dial = 0;
+        // uart2_rx_message.switch_left = 1;
+        // uart2_rx_message.switch_right = 1;
+
+        uart2_rx_message.speed_yaw = 0;
+        uart2_rx_message.angle_yaw = uart2_rx_message.angle_yaw;
     }
 }
 

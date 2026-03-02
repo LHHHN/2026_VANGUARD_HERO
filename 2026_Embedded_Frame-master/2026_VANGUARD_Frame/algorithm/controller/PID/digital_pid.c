@@ -378,7 +378,7 @@ static void F_Derivative_Filter(digital_PID_t *hpid)
 // 前馈输出
 static void F_Feedforward_Out(digital_PID_t *hpid)
 {
-    hpid->f_out = 0.0f;
+    hpid->f_out = hpid->Kf * (hpid->target - hpid->last_target);
     if (hpid->p_out > hpid->output_max)
     {
         hpid->p_out = hpid->output_max;

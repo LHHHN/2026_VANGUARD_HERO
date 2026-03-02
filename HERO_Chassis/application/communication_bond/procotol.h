@@ -26,6 +26,6 @@ typedef struct
 
 extern void VOFA_Display_IMU(void);
 
-extern void RC_Receive_Control(void);
+extern void RC_Transfer_Control(void);
 
 #endif /* __PROCOTOL_H__ */
