@@ -42,4 +42,4 @@
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_pcd_ex.h \
   ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
   ..\module\remote\DT7\remote_control.h ..\bsp\USART\bsp_usart.h \
-  ..\Core\Inc\usart.h ..\module\rs485\rs485.h
+  ..\Core\Inc\usart.h ..\module\rs485\rs485.h ..\module\serial\serial.h

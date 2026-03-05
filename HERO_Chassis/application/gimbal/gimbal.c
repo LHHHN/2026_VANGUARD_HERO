@@ -118,13 +118,51 @@ static void Gimbal_Stop(void);
 // float target_yaw = 2.166f;
 float target_yaw = 0.0f;
 
+#include "kalman_filter.h"
+#include "bsp_dwt.h"
+
+KalmanFilter_t vaEstimateKF;
+
+static float vaEstimateKF_F[4] = {
+	1.0f, 0.001f,
+	0.0f, 1.0f}; // 状态转移矩阵，控制周期为0.001s
+
+static float vaEstimateKF_P[4] = {
+	1.0f, 0.0f,
+	0.0f, 1.0f}; // 后验估计协方差初始值
+
+static float vaEstimateKF_Q[4] = {
+	0.05f, 0.0f,
+	0.0f, 0.01f}; // Q预测矩阵初始值 0--速度噪声 3--加速度噪声  增益
+
+static float vaEstimateKF_R[4] = {
+	1200.0f, 0.0f,
+	0.0f, 2000.0f}; // R量测噪声矩阵初始值 0--速度噪声 3--加速度噪声  惩罚
+
+static const float vaEstimateKF_H[4] = {
+	1.0f, 0.0f,
+	0.0f, 1.0f}; // 设置矩阵H为常量
+
+static float vaEstimateKF_K[4];
+
+static void xvEstimateKF_Init(KalmanFilter_t *EstimateKF)
+{
+	Kalman_Filter_Init(EstimateKF, 2, 0, 2); // 状态向量2维 没有控制量 测量向量2维
+
+	memcpy(EstimateKF->F_data, vaEstimateKF_F, sizeof(vaEstimateKF_F));
+	memcpy(EstimateKF->P_data, vaEstimateKF_P, sizeof(vaEstimateKF_P));
+	memcpy(EstimateKF->Q_data, vaEstimateKF_Q, sizeof(vaEstimateKF_Q));
+	memcpy(EstimateKF->R_data, vaEstimateKF_R, sizeof(vaEstimateKF_R));
+	memcpy(EstimateKF->H_data, vaEstimateKF_H, sizeof(vaEstimateKF_H));
+}
+
 void Gimbal_Init(void)
 {
     gimbal_MF9025_motor = LK_Motor_Init(&gimbal_motor_init);
     gimbal_MF9025_motor->lk_ctrl_mode = TORQUE_MODE;
     // gimbal_MF9025_motor->motor_feedback = LK_MOTOR_DIFF;
     gimbal_MF9025_motor->motor_feedback = LK_MOTOR_ABSOLUTE;
-
+    xvEstimateKF_Init(&vaEstimateKF);
     Gimbal_Enable();
     LK_Motor_GetData(gimbal_MF9025_motor);
     // target_yaw = gimbal_MF9025_motor ->receive_data.RAD_single_round;
@@ -134,25 +172,32 @@ extern RC_ctrl_t *rc_data;
 
 void Gimbal_Set_Mode()
 {
-    if( rc_data -> rc . switch_left == 3)
+    if( rc_data -> rc . switch_left == 3 || rc_data -> rc . switch_left == 2)
     // if(uart2_rx_message.switch_right == 3 )
     {
         gimbal_cmd.mode = GIMBAL_ENABLE;
     }
+    else if( rc_data -> rc . switch_left == 1 && (rc_data -> rc . switch_right == 2 || rc_data -> rc . switch_right == 3))
+    {
+        gimbal_cmd.mode = GIMBAL_AUTO_AIMING;
+    }
     else if( rc_data -> rc . switch_left == 1 &&  rc_data -> rc . switch_right == 1)
     // else if( uart2_rx_message.switch_left == 1 &&  uart2_rx_message.switch_right == 1)
     {
-        // gimbal_cmd.mode = GIMBAL_STOP;
         gimbal_cmd.mode = GIMBAL_DISABLE;
     }
     else
     {
-        // gimbal_cmd.mode = GIMBAL_DISABLE;
         gimbal_cmd.mode = GIMBAL_STOP;
     }
 
     if( gimbal_cmd.mode == GIMBAL_ENABLE && gimbal_MF9025_motor->motor_state_flag != MOTOR_ENABLE)
     // if( gimbal_cmd.mode == GIMBAL_ENABLE )
+    {
+        Gimbal_Enable();
+    }
+    else if( gimbal_cmd.mode == GIMBAL_AUTO_AIMING && gimbal_MF9025_motor->motor_state_flag != MOTOR_ENABLE)
+    // else if( gimbal_cmd.mode == GIMBAL_STOP )
     {
         Gimbal_Enable();
     }
@@ -168,17 +213,71 @@ void Gimbal_Set_Mode()
     }
 }
 
-void Gimbal_Reference( )
+static void xvEstimateKF_Update(KalmanFilter_t *EstimateKF, float acc, float vel, float fusion_v_data[])
 {
-    if(gimbal_cmd.mode == GIMBAL_ENABLE)
-    {
-        gimbal_cmd.v_yaw = -(float) rc_data -> rc . rocker_r_ * REMOTE_YAW_SEN;
-        // gimbal_cmd.v_yaw = -(float) uart2_rx_message.rocker_r_ * REMOTE_YAW_SEN;
-    }
-    else if(gimbal_cmd.mode == GIMBAL_STOP)
-    {
-        gimbal_cmd.v_yaw = 0.0f;
-    }
+	// 卡尔曼滤波器测量值更新
+	EstimateKF->MeasuredVector[0] = vel; // 测量速度
+	EstimateKF->MeasuredVector[1] = acc; // 测量加速度
+
+	// 卡尔曼滤波器更新函数
+	Kalman_Filter_Update(EstimateKF);
+
+	// 提取估计值
+	for (uint8_t i = 0 ; i < 2 ; i++)
+	{
+		fusion_v_data[i] = EstimateKF->FilteredValue[i];
+	}
+}
+
+#define MAX_LMS_FILTER_NUM 20
+
+float w_ob = 0.0f;
+float d_gyro = 0.0F;
+float new_x = 0.0f;
+float INS_yaw_speed = 0.0f;
+
+float Q_1 = 0.2f, Q_3 = 0.01f, R_1 = 100.0f, R_3 = 3000.0f;
+
+float fusion_v_data[2];
+
+uint8_t test_cnt = 1;
+
+static void Gimbal_Speed_Update(void)
+{
+
+
+    static float x[MAX_LMS_FILTER_NUM] = {0.0f}; // 输入队列
+	static uint32_t observe_dwt = 0;
+	static float dt             = 0.0F;
+
+    new_x = gimbal_MF9025_motor->receive_data.speed_rps; // 转速转换为线速度，假设轮子半径为0.033m
+    INS_yaw_speed = uart2_rx_message.speed_yaw;
+
+    memmove(&x[0], &x[1], (MAX_LMS_FILTER_NUM - 1) * sizeof(float));
+	x[MAX_LMS_FILTER_NUM - 1] = (float) INS_yaw_speed;
+
+	dt = DWT_GetDeltaT(&observe_dwt);
+
+    d_gyro = ((x[test_cnt] - x[0]) * 0.8f) / (dt * 10) + d_gyro * 0.2f; // 计算差值
+
+	vaEstimateKF_F[1] = dt;
+
+    vaEstimateKF_Q[0] = Q_1;
+	vaEstimateKF_Q[3] = Q_3;
+	vaEstimateKF_R[0] = R_1;
+	vaEstimateKF_R[3] = R_3;
+
+	memcpy(vaEstimateKF.Q_data, vaEstimateKF_Q, sizeof(vaEstimateKF_Q));
+	memcpy(vaEstimateKF.R_data, vaEstimateKF_R, sizeof(vaEstimateKF_R));
+
+	xvEstimateKF_Update(&vaEstimateKF, d_gyro, gimbal_MF9025_motor->receive_data.speed_rps, fusion_v_data);
+
+	w_ob = fusion_v_data[0];
+}
+
+void Gimbal_Observer(void)
+{
+    Gimbal_Speed_Update();
 }
 
 //云台pid调整临时变量
@@ -196,15 +295,8 @@ float gimbal_angle_test;
 // float frq = 0.0f;
 // float val = 0.0f;
 
-void Gimbal_Console( )
+void Gimbal_Reference( )
 {
-    target_yaw += gimbal_cmd.v_yaw ;
-    while(target_yaw - uart2_rx_message.angle_yaw> PI)
-        target_yaw -= 2 * PI ;
-    while(target_yaw - uart2_rx_message.angle_yaw < -PI)
-        target_yaw += 2 * PI ;
-
-
     // if((arm_sin_f32(2.0f * PI * 0.1f * (float)sin_cnt / 1000.0f) * 6.28f) >= 0)
     // {
     //     target_yaw = arm_sin_f32(2.0f * PI * 0.1f * (float)sin_cnt / 1000.0f) * 6.28f ;
@@ -228,6 +320,47 @@ void Gimbal_Console( )
     // gimbal_MF9025_motor->motor_controller.angle_PID->kd = gimbal_angle_kd_test; 
     // gimbal_angle_test = gimbal_MF9025_motor->receive_data.RAD_single_round;
     gimbal_angle_test = uart2_rx_message.angle_yaw;
+}
+
+void Gimbal_Console( )
+{
+
+    if(gimbal_cmd.mode == GIMBAL_ENABLE)
+    {
+        gimbal_cmd.v_yaw = -(float) rc_data -> rc . rocker_r_ * REMOTE_YAW_SEN;
+        // gimbal_cmd.v_yaw = -(float) uart2_rx_message.rocker_r_ * REMOTE_YAW_SEN;
+        target_yaw += gimbal_cmd.v_yaw ;
+    }
+    else if(gimbal_cmd.mode == GIMBAL_AUTO_AIMING)
+    {
+        if(uart2_rx_message.vs_mode == 0)
+        {
+            gimbal_cmd.v_yaw = -(float) rc_data -> rc . rocker_r_ * REMOTE_YAW_SEN;
+            // gimbal_cmd.v_yaw = -(float) uart2_rx_message.rocker_r_ * REMOTE_YAW_SEN;
+            target_yaw += gimbal_cmd.v_yaw ;
+        }
+        else if(uart2_rx_message.vs_mode == 1 || uart2_rx_message.vs_mode == 2)
+        {
+            gimbal_cmd.v_yaw = 0.0f;
+            target_yaw = uart2_rx_message.vs_yaw_tar;
+        }
+        else
+        {
+            gimbal_cmd.v_yaw = 0.0f;
+            target_yaw =  target_yaw ;
+        }
+        
+    }
+    else if(gimbal_cmd.mode == GIMBAL_STOP)
+    {
+        gimbal_cmd.v_yaw = 0.0f;
+    }
+
+    while(target_yaw - uart2_rx_message.angle_yaw> PI)
+        target_yaw -= 2 * PI ;
+    while(target_yaw - uart2_rx_message.angle_yaw < -PI)
+        target_yaw += 2 * PI ;
+    
 
 //    gimbal_MF9025_motor->receive_data.lk_diff = - gimbal_cmd.v_yaw;
 }

@@ -17,6 +17,7 @@
 
 #include "rs485.h"
 #include "pid.h"
+#include "serial.h"
 
 gimbal_cmd_t gimbal_cmd;
 
@@ -91,9 +92,14 @@ static void Gimbal_Disable(void);
 void Gimbal_Set_Mode( )
 {
     // if( rc_data -> rc . switch_right == 3)
-    if((uart2_rx_message.rc_switch & 0x04) == 0x04) // 0b00000100
+    if(((uart2_rx_message.rc_switch & 0x20) == 0x20) || ((uart2_rx_message.rc_switch & 0x11) == 0x11) 
+    || ((uart2_rx_message.rc_switch & 0x12) == 0x12)) // 0b00100000 0b00010001 0b00010100
     {
         gimbal_cmd.mode = GIMBAL_ENABLE;
+    }
+    else if(((uart2_rx_message.rc_switch & 0x0C) == 0x0C) || ((uart2_rx_message.rc_switch & 0x0A) == 0x0A)) // 0b00001100 和0b00001010
+    {
+        gimbal_cmd.mode = GIMBAL_AUTO_AIMING ;
     }
     // else if( rc_data -> rc . switch_left == 1 &&  rc_data -> rc . switch_right == 1)
     else if((uart2_rx_message.rc_switch & 0x09) == 0x09) //0x00001001
@@ -107,7 +113,7 @@ void Gimbal_Set_Mode( )
         gimbal_cmd.mode = GIMBAL_STOP;
     }
 
-    if(gimbal_cmd.mode == GIMBAL_ENABLE)
+    if(gimbal_cmd.mode == GIMBAL_ENABLE || gimbal_cmd.mode == GIMBAL_AUTO_AIMING)
     {
         Gimbal_Enable();
         DM_Motor_Start(pitch_motor);
@@ -130,6 +136,25 @@ void Gimbal_Reference( )
     {
         // gimbal_cmd.pitch_v = (float)rc_data->rc.rocker_r1 * REMOTE_PITCH_SEN;
         gimbal_cmd.pitch_v = (float)uart2_rx_message.rocker_r1 * REMOTE_PITCH_SEN;
+        gimbal_cmd.pitch_target += gimbal_cmd.pitch_v ;
+    }
+    else if(gimbal_cmd.mode == GIMBAL_AUTO_AIMING)
+    {
+        if(vs_aim_packet_from_nuc.mode == 1 || vs_aim_packet_from_nuc.mode == 2)
+        {
+            gimbal_cmd.pitch_v = 0.0f;
+            gimbal_cmd.pitch_target = - vs_aim_packet_from_nuc.pitch;
+        }
+        else if(vs_aim_packet_from_nuc.mode == 0)
+        {
+            gimbal_cmd.pitch_v = (float)uart2_rx_message.rocker_r1 * REMOTE_PITCH_SEN;
+            gimbal_cmd.pitch_target += gimbal_cmd.pitch_v ;
+        }
+        else
+        {
+            gimbal_cmd.pitch_v = 0.0f;
+            gimbal_cmd.pitch_target = gimbal_cmd.pitch_target ;
+        }
     }
     else
     {
@@ -140,7 +165,6 @@ void Gimbal_Reference( )
 void Gimbal_Console( )
 {
     pitch_motor ->transmit_data.velocity_des = 1.5f;
-    gimbal_cmd.pitch_target += gimbal_cmd.pitch_v ;
     if(gimbal_cmd.pitch_target < PTICH_MIN_ANGLE)
     {
         gimbal_cmd.pitch_target = PTICH_MIN_ANGLE ;

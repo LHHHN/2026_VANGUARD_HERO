@@ -230,6 +230,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>vs_aim_packet_from_nuc</ItemText>
         </Ww>
+        <Ww>
+          <count>15</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>w_ob</ItemText>
+        </Ww>
       </WatchWindow1>
       <Tracepoint>
         <THDelay>0</THDelay>

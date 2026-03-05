@@ -15,7 +15,7 @@ typedef struct
     int16_t rocker_r_; // 右水平
     int16_t rocker_r1; // 右竖直
     uint8_t rc_switch;  // 两侧拨杆
-    float angle_tar;
+    float angle_tar; 
 
     uint8_t frame_tailer;
     uint8_t check_sum;
@@ -40,8 +40,11 @@ typedef struct
     // uint8_t switch_left;  // 左侧开关
     // uint8_t switch_right; // 右侧开关
 
-    float speed_yaw;
-    float angle_yaw;
+    float speed_yaw; //imu反馈的速度
+    float angle_yaw; //imu反馈的速度
+
+    uint8_t vs_mode; // 0: 不控制, 1: 控制云台但不开火，2: 控制云台且开火
+    float vs_yaw_tar; //视觉给定的yaw目标角度
     
     uint8_t frame_tailer;
     uint8_t check_sum;

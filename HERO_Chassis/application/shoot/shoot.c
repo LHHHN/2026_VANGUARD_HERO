@@ -114,21 +114,21 @@ extern RC_ctrl_t *rc_data;
 
 void Shoot_Set_Mode(void)
 {
-    if( rc_data -> rc . switch_left == 2 &&  rc_data -> rc . switch_right == 3)
+    if( rc_data -> rc . switch_left == 3 && (rc_data -> rc . switch_right == 3 || rc_data -> rc . switch_right == 2))
     // if( uart2_rx_message.switch_left == 2 &&  uart2_rx_message.switch_right == 3)
     {
         shoot_cmd.mode = SHOOT_ENABLE;
     }
-    // else if( rc_data -> rc . switch_left == 3 &&  rc_data -> rc . switch_right == 3)
-    // {
-    //     shoot_cmd.mode = SHOOT_STOP;
-    // }
+    else if( rc_data -> rc . switch_left == 1 && (rc_data -> rc . switch_right == 3 || rc_data -> rc . switch_right == 2))
+    {
+        shoot_cmd.mode = SHOOT_AUTO_AIMING;
+    }
     else 
     {
         shoot_cmd.mode = SHOOT_DISABLE;
     }
 
-    if( shoot_cmd.mode == SHOOT_ENABLE)
+    if( shoot_cmd.mode == SHOOT_ENABLE || shoot_cmd.mode == SHOOT_AUTO_AIMING)
     {
         Shoot_Enable();
     }
@@ -153,6 +153,9 @@ float shoot_stir_angle_tar ;
 float stir_state ;
 
 float stir_buchang = 240.0f; //发射补偿角度,可以根据实际情况调整
+
+float vs_shoot_cnt = 0.0f;
+float vs_shoot_later = 0.0f;
 void Shoot_Reference(void)
 {
     static uint8_t shoot_laser_cnt = 0;
@@ -218,6 +221,23 @@ void Shoot_Reference(void)
         //     shoot_stir_motor->receive_data.total_angle = 0; 
         // }
 
+    }
+    else if( shoot_cmd.mode == SHOOT_AUTO_AIMING)
+    {
+        if(uart2_rx_message.vs_mode == 3)
+        {
+            vs_shoot_cnt ++ ;
+            if(vs_shoot_later > 5)
+            {
+                vs_shoot_later = 0;
+                shoot_cmd.angle_shoot_stir -= SHOOT_SINGLE_ANGLE_DEF * 19.8f;
+            }
+        }
+        else
+        {
+            vs_shoot_later =0 ;
+        }
+        
     }
     else if( shoot_cmd.mode == SHOOT_DISABLE)
     {

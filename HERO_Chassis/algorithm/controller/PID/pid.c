@@ -80,7 +80,7 @@ float PID_Position(PID_t *pid, float measure, float target)
 		pid->i_out += pid->i_term;
 		pid->d_out = pid->kd * (pid->error - pid->last_error);
 
-		pid->i_out = Value_Limit(pid->i_out, -pid->integral_limit, pid->integral_limit); // 积分限幅
+		pid->i_out = Value_Limit(pid->i_out, -pid->integral_limit, pid->integral_limit); // 位置式不需要积分限幅，一般给大数值
 
 		pid->f_out = pid->kf * (pid->target - pid->last_target); // 前馈项
 

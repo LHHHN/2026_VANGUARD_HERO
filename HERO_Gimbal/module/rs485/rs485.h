@@ -28,6 +28,9 @@ typedef struct
     float speed_yaw;
     float angle_yaw;
 
+    uint8_t vs_mode; // 0: 不控制, 1: 控制云台但不开火，2: 控制云台且开火
+    float vs_yaw_tar; //视觉给定的yaw目标角度
+
     uint8_t frame_tailer; // 帧尾
     uint8_t check_sum; // 校验和
 } __attribute__((packed)) Tx_packed_t;

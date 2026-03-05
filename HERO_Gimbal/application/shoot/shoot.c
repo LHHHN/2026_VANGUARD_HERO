@@ -111,9 +111,15 @@ void Shoot_Set_Mode(void)
         shoot_cmd.mode = SHOOT_DISABLE;
     }
     // else if( rc_data -> rc . switch_left == 2 &&  rc_data -> rc . switch_right == 3)
-    else if((uart2_rx_message.rc_switch & 0x14) == 0x14) //0b00010100
+    else if(((uart2_rx_message.rc_switch & 0x0C) == 0x0C) || ((uart2_rx_message.rc_switch & 0x24) == 0x24)) //0b00001100 0b00100100
     {
         shoot_cmd.mode = SHOOT_ENABLE;
+        shoot_cmd.shoot_speed_set = SHOOT_SPEED_12MPS;
+    }
+    else if(((uart2_rx_message.rc_switch & 0x0A) == 0x0A) || ((uart2_rx_message.rc_switch & 0x22) == 0x22)) //0b00001010 0b00100010
+    {
+        shoot_cmd.mode = SHOOT_ENABLE;
+        shoot_cmd.shoot_speed_set = SHOOT_SPEED_16MPS;
     }
     else 
     {
@@ -154,17 +160,35 @@ void Shoot_Console(void)
 {
     if(shoot_cmd.mode == SHOOT_ENABLE)
     {
-        DJI_Motor_Set_Ref(shoot_m3508_motor[0], shoot_tar_1);
-        DJI_Motor_Set_Ref(shoot_m3508_motor[1], shoot_tar_1);
-        DJI_Motor_Set_Ref(shoot_m3508_motor[2], -shoot_tar_1);
-        shoot_m3519_motor.tx_buff[0] = ((int16_t)shoot_tar_2) >> 8;
-        shoot_m3519_motor.tx_buff[1] = ((int16_t)shoot_tar_2) ;
-        shoot_m3519_motor.tx_buff[2] = ((int16_t)shoot_tar_2) >> 8;
-        shoot_m3519_motor.tx_buff[3] = ((int16_t)shoot_tar_2) ;
-        shoot_m3519_motor.tx_buff[4] = ((int16_t)-shoot_tar_2) >> 8;
-        shoot_m3519_motor.tx_buff[5] = ((int16_t)-shoot_tar_2) ;
-        shoot_m3519_motor.tx_buff[6] = 0;
-        shoot_m3519_motor.tx_buff[7] = 0;
+        if(shoot_cmd.shoot_speed_set == SHOOT_SPEED_12MPS)
+        {
+            DJI_Motor_Set_Ref(shoot_m3508_motor[0], shoot_tar_1);
+            DJI_Motor_Set_Ref(shoot_m3508_motor[1], shoot_tar_1);
+            DJI_Motor_Set_Ref(shoot_m3508_motor[2], -shoot_tar_1);
+            shoot_m3519_motor.tx_buff[0] = ((int16_t)shoot_tar_2) >> 8;
+            shoot_m3519_motor.tx_buff[1] = ((int16_t)shoot_tar_2) ;
+            shoot_m3519_motor.tx_buff[2] = ((int16_t)shoot_tar_2) >> 8;
+            shoot_m3519_motor.tx_buff[3] = ((int16_t)shoot_tar_2) ;
+            shoot_m3519_motor.tx_buff[4] = ((int16_t)-shoot_tar_2) >> 8;
+            shoot_m3519_motor.tx_buff[5] = ((int16_t)-shoot_tar_2) ;
+            shoot_m3519_motor.tx_buff[6] = 0;
+            shoot_m3519_motor.tx_buff[7] = 0;
+        }
+        else if(shoot_cmd.shoot_speed_set == SHOOT_SPEED_16MPS)
+        {
+            DJI_Motor_Set_Ref(shoot_m3508_motor[0], shoot_tar_16mps_1);
+            DJI_Motor_Set_Ref(shoot_m3508_motor[1], shoot_tar_16mps_1);
+            DJI_Motor_Set_Ref(shoot_m3508_motor[2], -shoot_tar_16mps_1);
+            shoot_m3519_motor.tx_buff[0] = ((int16_t)shoot_tar_16mps_2) >> 8;
+            shoot_m3519_motor.tx_buff[1] = ((int16_t)shoot_tar_16mps_2) ;
+            shoot_m3519_motor.tx_buff[2] = ((int16_t)shoot_tar_16mps_2) >> 8;
+            shoot_m3519_motor.tx_buff[3] = ((int16_t)shoot_tar_16mps_2) ;
+            shoot_m3519_motor.tx_buff[4] = ((int16_t)-shoot_tar_16mps_2) >> 8;
+            shoot_m3519_motor.tx_buff[5] = ((int16_t)-shoot_tar_2) ;
+            shoot_m3519_motor.tx_buff[6] = 0;
+            shoot_m3519_motor.tx_buff[7] = 0;
+        }
+        
     }
     else if(shoot_cmd.mode == SHOOT_STOP)
     {

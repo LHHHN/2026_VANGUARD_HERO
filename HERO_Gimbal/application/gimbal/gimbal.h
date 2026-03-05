@@ -17,8 +17,8 @@
 #include "DM_motor.h"
 
 #define REMOTE_PITCH_SEN 0.000005f
-#define PTICH_MAX_ANGLE 1.166f // 云台俯仰最大角度，单位：弧度
-#define PTICH_MIN_ANGLE 0.01f  // 云台俯仰最小角度，单位：弧度
+#define PTICH_MAX_ANGLE 0.796f // 云台俯仰最大角度，单位：弧度
+#define PTICH_MIN_ANGLE -0.36f  // 云台俯仰最小角度，单位：弧度
 
 typedef struct
 {
@@ -30,6 +30,7 @@ typedef enum
 	GIMBAL_DISABLE = 0,
 	GIMBAL_STOP = 1,
 	GIMBAL_ENABLE = 2,
+	GIMBAL_AUTO_AIMING = 3,
 }gimbal_mode_e;
 
 typedef struct

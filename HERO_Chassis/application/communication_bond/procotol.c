@@ -64,4 +64,7 @@ void RC_Transfer_Control(void)
     uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
 	uart2_tx_message.rc_switch = 0x01 << (rc_data->rc.switch_right - 1) | 0x08 << (rc_data->rc.switch_left - 1) ;
 
+	//板间485通信
+	uart2_online_check();
+
 }

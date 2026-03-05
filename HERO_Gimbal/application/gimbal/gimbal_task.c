@@ -111,9 +111,6 @@ static void Gimbal_Task(void *argument)
 		// 发送控制量
 		Gimbal_Send_Cmd( );
 
-		//板间485通信
-		uart2_online_check();
-
 		gimbal_task_diff = osKernelGetTickCount( ) - time;
 		time             = osKernelGetTickCount( );
 		osDelayUntil(time + GIMBAL_TASK_PERIOD);

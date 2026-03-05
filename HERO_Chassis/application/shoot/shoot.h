@@ -27,6 +27,7 @@ typedef enum
 {
 	SHOOT_DISABLE = 0,
 	SHOOT_ENABLE = 1,
+	SHOOT_AUTO_AIMING = 2,
 }shoot_mode_e;
 
 typedef struct

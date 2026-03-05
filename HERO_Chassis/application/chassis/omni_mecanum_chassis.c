@@ -79,19 +79,30 @@ motor_init_config_t chassis_3508_init = {
 
 DM_motor_instance_t *DM_arthrosis_motor[2]; // 0为左腿id=2 方向+ ，1为右腿id=3 方向-
 
+//关节角度环pid
 PID_t arthrosis_angle_pid = {
-    .kp = 500.0f,
-    .ki = 1.0f,
-    .kd = 750.0f,
+    .kp = 10.0f,
+    .ki = 0.0f,
+    .kd = 5.0f,
+    .output_limit = 10.0f, 
+    .integral_limit = 10.0f,
+    .dead_band = 0.0f,
+};
+
+//关节速度环pid
+PID_t arthrosis_speed_pid = {
+    .kp = 4.0f,
+    .ki = 0.2f,
+    .kd = 0.0f,
     .output_limit = 28.0f, 
-    .integral_limit = 1.0f,
+    .integral_limit = 7.0f,
     .dead_band = 0.0f,
 };
 
 motor_init_config_t DM_arthrosis_motor_init = {
 	.controller_param_init_config = {
 		.angle_PID = &arthrosis_angle_pid,
-		.speed_PID = NULL,
+		.speed_PID = &arthrosis_speed_pid,
 		.current_PID = NULL, 
 		.torque_PID = NULL,
 
@@ -108,7 +119,8 @@ motor_init_config_t DM_arthrosis_motor_init = {
 	.controller_setting_init_config = {
 		// .close_loop_type = TORQUE_LOOP,
         .outer_loop_type = ANGLE_LOOP,
-        .close_loop_type = ANGLE_LOOP,
+        .close_loop_type = SPEED_LOOP | ANGLE_LOOP,
+        // .close_loop_type = ANGLE_LOOP,
 
 		.motor_reverse_flag = MOTOR_DIRECTION_NORMAL,
 		.feedback_reverse_flag = FEEDBACK_DIRECTION_NORMAL,
@@ -132,17 +144,16 @@ motor_init_config_t DM_arthrosis_motor_init = {
 };
 
 //底盘关节电机斜坡函数
-ramp_function_source_t *leg_angle_ramp[2]; // 0为左腿 1为右腿
+ramp_function_source_t *leg_angle_ramp[2]; // 0为左腿，1为右腿
 
 ramp_init_config_t leg_angle_ramp_init = {
     .frame_period = 0.001f,        // 1ms控制周期
-    .max_value = 0.92f,           // 最大输出
-    .min_value = -0.92f,          // 最小输出
+    .max_value = 0.88f,           // 最大输出
+    .min_value = 0.0f,          // 最小输出
     .increase_value = 0.003f,        // 加速度
     .decrease_value = 0.0015f,        // 减速度
     .ramp_state = SLOPE_FIRST_REAL // 工作模式
 };
-
 
 //履带电机DM3519初始化参数
 DM_motor_instance_t *DM_track_motor[2]; // 0为左腿id=1 方向+ ，1为右腿id=4 方向-
@@ -211,7 +222,7 @@ void Chassis_Init(void)
         chassis_m3508[i]->motor_feedback = RAD;
     }
 
-    //底盘关节电机DM4340初始化 & 斜坡函数初始化    
+    //底盘关节电机DM4340初始化   
     for(int i = 0 ; i< 2 ; i++)
     {
         DM_arthrosis_motor_init.can_init_config.tx_id = 0x02 + i ;
@@ -221,12 +232,12 @@ void Chassis_Init(void)
         DM_arthrosis_motor[i]->dm_mode = MIT_MODE;
         DM_arthrosis_motor[i]->contorl_mode_state = SINGLE_TORQUE ;
         DM_Motor_Enable(DM_arthrosis_motor[i]);
-
-        leg_angle_ramp[i] = ramp_init(&leg_angle_ramp_init);
     }
 
     //底盘关节角度斜坡函数初始化
-    
+    leg_angle_ramp[0] = ramp_init(&leg_angle_ramp_init);
+    leg_angle_ramp_init.max_value = -0.88f; // 右腿反向
+    leg_angle_ramp[1] = ramp_init(&leg_angle_ramp_init);
 
     //底盘履带电机DM3519初始化
     DM_track_motor[0] = DM_Motor_Init(&DM_track_motor_init) ;
@@ -245,6 +256,8 @@ extern RC_ctrl_t *rc_data;
 extern LK_motor_instance_t *gimbal_MF9025_motor; //用来计算底盘跟随时的角速度
 
 static void Chassis_Enable(void);
+static void Leg_Start(void);
+static void Leg_Stop(void);
 static void Chassis_Disable(void);
 
 float leg_cnt = 0.0f; //离地时间计数
@@ -257,26 +270,31 @@ void Chassis_Set_Mode(void)
 	{
         chassis_cmd.mode = CHASSIS_DISABLE;
 	}
-    else if( rc_data -> rc . switch_left == 1 && rc_data -> rc . switch_right == 3)
+    else if( (rc_data -> rc . switch_left == 3 && rc_data -> rc . switch_right == 2) || 
+             (rc_data -> rc . switch_left == 3 && rc_data -> rc . switch_right == 3))
 	// else if( uart2_rx_message.switch_left == 1 &&  uart2_rx_message.switch_right == 3)
 	{
         chassis_cmd.mode = CHASSIS_STOP_C;
 	}
-    else if( rc_data -> rc . switch_left == 1 && rc_data -> rc . switch_right == 2)
+    else if( rc_data -> rc . switch_left == 2 && rc_data -> rc . switch_right == 3)
     // else if( uart2_rx_message.switch_left == 1 &&  uart2_rx_message.switch_right == 2)
 	{
         chassis_cmd.mode = CHASSIS_UPSTEP;//上台阶
 	}
-    else if( rc_data -> rc . switch_left == 3 && rc_data -> rc . switch_right == 1)
+    else if( rc_data -> rc . switch_left == 2 && rc_data -> rc . switch_right == 2)
     // else if( uart2_rx_message.switch_left == 3 &&  uart2_rx_message.switch_right == 1)
 	{
         chassis_cmd.mode = CHASSIS_SPIN;
 	}
-    else if( rc_data -> rc . switch_left == 3 && rc_data -> rc . switch_right == 2)
+    else if( rc_data -> rc . switch_left == 3 && rc_data -> rc . switch_right == 1)
     // else if( uart2_rx_message.switch_left == 3 &&  uart2_rx_message.switch_right == 2)
 	{
         chassis_cmd.mode = CHASSIS_FOLLOW;
 	}
+    else if(rc_data -> rc . switch_left == 2 && rc_data -> rc . switch_right == 1)
+    {
+        chassis_cmd.mode = CHASSIS_ONLY ;
+    }
     else 
     {
         chassis_cmd.mode = CHASSIS_DISABLE;
@@ -309,17 +327,63 @@ void Chassis_Set_Mode(void)
     // }
 }
 
+float leg_angle_test_L ;
+float leg_angle_test_R ;
+float leg_angle_kp = 0.0f;
+float leg_angle_ki = 0.0f;
+float leg_angle_kd = 0.0f;
+float leg_speed_test_L;
+float leg_speed_test_R;
+float leg_speed_kp = 0.0f;
+float leg_speed_ki = 0.0f;
+float leg_speed_kd = 0.0f;
+float leg_torque_test_L;
+float leg_torque_test_R;
+float leg_angle_tar;
+float leg_output_limit_test;
+
+void Chassis_Observer( )
+{
+    leg_angle_test_L = DM_arthrosis_motor[0]->receive_data.position;
+    leg_angle_test_R = -DM_arthrosis_motor[1]->receive_data.position;
+    leg_speed_test_L = DM_arthrosis_motor[0]->receive_data.velocity;
+    leg_speed_test_R = -DM_arthrosis_motor[1]->receive_data.velocity;
+    leg_torque_test_L = DM_arthrosis_motor[0]->receive_data.torque;
+    leg_torque_test_R = -DM_arthrosis_motor[1]->receive_data.torque;
+    leg_angle_tar = chassis_cmd.leg_angle;
+    
+    // for(int i = 0; i < 2; i++)
+    // {
+    //     DM_arthrosis_motor[i]->motor_controller.angle_PID->kp = leg_angle_kp;
+    //     DM_arthrosis_motor[i]->motor_controller.angle_PID->ki = leg_angle_ki;
+    //     DM_arthrosis_motor[i]->motor_controller.angle_PID->kd = leg_angle_kd;
+    //     DM_arthrosis_motor[i]->motor_controller.speed_PID->kp = leg_speed_kp;
+    //     DM_arthrosis_motor[i]->motor_controller.speed_PID->ki = leg_speed_ki;
+    //     DM_arthrosis_motor[i]->motor_controller.speed_PID->kd = leg_speed_kd;
+    //     DM_arthrosis_motor[i]->motor_controller.speed_PID->output_limit = leg_output_limit_test ;
+    // }
+}
 
 //更新目标值
 void Chassis_Reference(void)
 {
-    if(chassis_cmd.mode == CHASSIS_DISABLE)
+    if(chassis_cmd.mode != CHASSIS_DISABLE)
     {
-        Chassis_Disable();
+        Chassis_Enable();
+        
     }
     else
     {
-        Chassis_Enable();
+        Chassis_Disable();
+    }
+
+    if(chassis_cmd.mode == CHASSIS_UPSTEP)
+    {
+        Leg_Start();
+    }
+    else
+    {
+        Leg_Stop();
     }
     
     chassis_cmd. vx = (float) rc_data -> rc . rocker_l1 * REMOTE_X_SEN ;
@@ -345,12 +409,14 @@ void Chassis_Reference(void)
     }
     else if(chassis_cmd.mode == CHASSIS_UPSTEP)
     {
-        if(rc_data->rc . rocker_r1 > 0 && chassis_cmd.leg_state == LEG_NORMAL)
+        chassis_cmd.omega_z = 0.0f;
+        chassis_cmd.omega_follow = PID_Position(&chasiss_follow_pid, gimbal_MF9025_motor->receive_data.RAD_single_round, FOLLOW_OMEGA_Z);
+        if(rc_data->rc . rocker_r1 >= 0 && chassis_cmd.leg_state == LEG_NORMAL)
         {
-            chassis_cmd.leg_angle = rc_data->rc . rocker_r1 * 0.001394f ; //660换算成弧度
+            chassis_cmd.leg_angle = rc_data->rc . rocker_r1 * 0.0013 ; //660换算成弧度0-0.88rad
         }
         // if(uart2_rx_message.rocker_r1 > 0 && chassis_cmd.leg_state == LEG_NORMAL)
-        // {
+        // {    
         //     chassis_cmd.leg_angle = uart2_rx_message.rocker_r1 * 0.001394f ;
         // }
         chassis_cmd.v_track = 15.0f ;
@@ -362,6 +428,10 @@ void Chassis_Reference(void)
         chassis_cmd.vx = 0.0f;
         chassis_cmd.vy = 0.0f;
         chassis_cmd.leg_angle = 0.0f ; 
+    }
+    else if(chassis_cmd.mode == CHASSIS_ONLY)
+    {
+        chassis_cmd. omega_z = rc_data->rc . rocker_r_ * REMOTE_OMEGA_Z_SEN ;
     }
 
     if(chassis_cmd.leg_state == LEG_LIFTOFF)
@@ -426,15 +496,14 @@ void Chassis_Send_Cmd()
     // DM_arthrosis_motor[0]->motor_controller.angle_PID->kd = legkd ;
     // DM_arthrosis_motor[0]->motor_controller.angle_PID->output_limit = legoutputlimit ;
     // DM_arthrosis_motor[0]->motor_controller.angle_PID->integral_limit = legioutlimit ;
-
-    leg_angle_ramp[0]->real_value = DM_arthrosis_motor[0]->receive_data.position ; //斜坡函数当前值更新
-    DM_Motor_SetTar(DM_arthrosis_motor[0], ramp_calc(leg_angle_ramp[0],chassis_cmd.leg_angle));
-    // DM_Motor_SetTar(DM_arthrosis_motor[0], chassis_cmd.leg_angle);
+    leg_angle_ramp[0]->real_value = DM_arthrosis_motor[1]->receive_data.position ; //斜坡函数当前值更新
+    // DM_Motor_SetTar(DM_arthrosis_motor[0], ramp_calc(leg_angle_ramp[0],chassis_cmd.leg_angle));
+    DM_Motor_SetTar(DM_arthrosis_motor[0], chassis_cmd.leg_angle);
     DM_Motor_Control(DM_arthrosis_motor[0]);
 
     leg_angle_ramp[1]->real_value = DM_arthrosis_motor[1]->receive_data.position ; //斜坡函数当前值更新
-    DM_Motor_SetTar(DM_arthrosis_motor[1], -ramp_calc(leg_angle_ramp[1],chassis_cmd.leg_angle));
-    // DM_Motor_SetTar(DM_arthrosis_motor[1], -chassis_cmd.leg_angle);
+    // DM_Motor_SetTar(DM_arthrosis_motor[1], -ramp_calc(leg_angle_ramp[1],chassis_cmd.leg_angle));
+    DM_Motor_SetTar(DM_arthrosis_motor[1], -chassis_cmd.leg_angle);
     DM_Motor_Control(DM_arthrosis_motor[1]);
 
     DM_Motor_SetTar(DM_track_motor[0], -chassis_cmd.v_track);
@@ -454,12 +523,34 @@ static void Chassis_Enable(void)
     for(int i = 0; i <2; i++)
     {
         DM_Motor_Enable(DM_arthrosis_motor[i]);
-        DM_Motor_Start(DM_arthrosis_motor[i]);
     }
     for(int i = 0; i <2; i++)
     {
         DM_Motor_Enable(DM_track_motor[i]);
+    }
+}
+
+static void Leg_Start(void)
+{
+    for(int i = 0; i <2; i++)
+    {
+        DM_Motor_Start(DM_arthrosis_motor[i]);
+    }
+    for(int i = 0; i <2; i++)
+    {
         DM_Motor_Start(DM_track_motor[i]);
+    }
+}
+
+static void Leg_Stop(void)
+{
+    for(int i = 0; i <2; i++)
+    {
+        DM_Motor_Stop(DM_arthrosis_motor[i]);
+    }
+    for(int i = 0; i <2; i++)
+    {
+        DM_Motor_Stop(DM_track_motor[i]);
     }
 }
 
@@ -471,7 +562,7 @@ static void Chassis_Disable(void)
     }
     for(int i = 0; i <2; i++)
     {
-        DM_Motor_Stop(DM_track_motor[i]);
+        DM_Motor_Disable(DM_track_motor[i]);
         DM_Motor_Disable(DM_track_motor[i]);
     }
 }

@@ -130,8 +130,7 @@ static void Chassis_Task(void *argument)
 		Chassis_Console( );
 		// 发送控制量
 		Chassis_Send_Cmd( );
-		//板间485通信
-		uart2_online_check();
+		
 
 		chassis_task_diff = osKernelGetTickCount( ) - time;
 		time              = osKernelGetTickCount( );

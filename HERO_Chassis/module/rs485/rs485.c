@@ -139,6 +139,8 @@ void uart2_online_check(void)
 
         uart2_rx_message.speed_yaw = 0;
         uart2_rx_message.angle_yaw = uart2_rx_message.angle_yaw;
+        uart2_rx_message.vs_mode = 0;
+        uart2_rx_message.vs_yaw_tar = uart2_rx_message.vs_yaw_tar;
     }
 }
 

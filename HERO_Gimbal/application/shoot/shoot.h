@@ -31,11 +31,18 @@ typedef enum
 	SHOOT_ENABLE  = 2,
 }shoot_mode_e;
 
+typedef enum
+{
+	SHOOT_SPEED_12MPS = 0,
+	SHOOT_SPEED_16MPS = 1,
+}shoot_speed_e;
+
 typedef struct
 {
 	/* data */
 	shoot_mode_e mode;
 	uint8_t fire_allow;
+	shoot_speed_e shoot_speed_set;
 	float shoot_angle_def;
 }__attribute__((packed)) shoot_cmd_t;
 

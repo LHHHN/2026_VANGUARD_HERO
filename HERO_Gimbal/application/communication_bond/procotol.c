@@ -75,6 +75,12 @@ void RC_Receive_Control(void)
 	YAW_tar = uart2_rx_message.angle_tar;
 	INS_YAW_angle_test = INS.Yaw;
 	INS_YAW_speed_test = INS.Gyro[2];
+
 	uart2_tx_message.speed_yaw = INS.Gyro[2];
 	uart2_tx_message.angle_yaw = INS.Yaw;
+	uart2_tx_message.vs_yaw_tar = vs_aim_packet_from_nuc.yaw;
+	uart2_tx_message.vs_mode = vs_aim_packet_from_nuc.mode;
+
+	//板间485通信
+	uart2_online_check();
 }

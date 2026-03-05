@@ -22,7 +22,7 @@
 
 #include "message_center.h"
 
-#define PROCOTOL_TASK_PERIOD 10 // ms
+#define PROCOTOL_TASK_PERIOD 1 // ms
 
 osThreadId_t procotol_task_handel;
 
