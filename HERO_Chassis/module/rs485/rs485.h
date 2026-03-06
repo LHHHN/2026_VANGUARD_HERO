@@ -40,11 +40,13 @@ typedef struct
     // uint8_t switch_left;  // 左侧开关
     // uint8_t switch_right; // 右侧开关
 
-    float speed_yaw; //imu反馈的速度
-    float angle_yaw; //imu反馈的速度
+    float speed_yaw;
+    float angle_yaw;
 
     uint8_t vs_mode; // 0: 不控制, 1: 控制云台但不开火，2: 控制云台且开火
     float vs_yaw_tar; //视觉给定的yaw目标角度
+
+    uint8_t shoot_launched; // 0: 没有发射，1: 发射了
     
     uint8_t frame_tailer;
     uint8_t check_sum;

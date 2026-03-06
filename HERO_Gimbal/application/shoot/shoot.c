@@ -81,11 +81,11 @@ motor_init_config_t shoot_m3508_init = {
     },
 };
 
-float shoot_tar_1 = 3750.0f;
-float shoot_tar_2 = 3950.0f;
+float shoot_tar_1 = 3550.0f;
+float shoot_tar_2 = 3775.0f;
 
-float shoot_tar_16mps_1 = 4750.0f; 
-float shoot_tar_16mps_2 = 4950.0f;
+float shoot_tar_16mps_1 = 4720.0f; 
+float shoot_tar_16mps_2 = 4905.0f;
 
 void Shoot_Init(void)
 {
@@ -154,6 +154,31 @@ void Shoot_Reference(void)
     shoot_speed_test_0 = shoot_m3508_motor[0]->receive_data.speed;
     shoot_speed_test_1 = shoot_m3508_motor[1]->receive_data.speed;
     shoot_speed_test_2 = - shoot_m3508_motor[2]->receive_data.speed;
+
+    float shoot_speed_average = (shoot_speed_test_0 + shoot_speed_test_1 + shoot_speed_test_2) / 3.0f;
+    if(shoot_cmd.shoot_speed_set == SHOOT_SPEED_12MPS)
+    {
+        if(shoot_speed_average < (shoot_tar_1 - 500.0f))
+        {
+            shoot_cmd.fire_launched = 1;
+        }
+        else if(shoot_speed_average > (shoot_tar_1 - 100.0f))
+        {
+            shoot_cmd.fire_launched = 0;
+        }
+    }
+    else if(shoot_cmd.shoot_speed_set == SHOOT_SPEED_16MPS)
+    {
+        if(shoot_speed_average < (shoot_tar_16mps_1 - 500.0f))
+        {
+            shoot_cmd.fire_launched = 1;
+        }
+        else if(shoot_speed_average > (shoot_tar_16mps_1 - 100.0f))
+        {
+            shoot_cmd.fire_launched = 0;
+        }
+    }
+    
 }
 
 void Shoot_Console(void)

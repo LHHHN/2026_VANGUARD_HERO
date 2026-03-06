@@ -34,6 +34,7 @@ extern RC_ctrl_t *rc_data;
 extern INS_behaviour_t INS;
 extern float test_data_acc[3];
 extern float test_data_gyro[3];
+extern shoot_cmd_t shoot_cmd;
 
 float INS_YAW_angle_test;
 float INS_YAW_speed_test;
@@ -80,6 +81,7 @@ void RC_Receive_Control(void)
 	uart2_tx_message.angle_yaw = INS.Yaw;
 	uart2_tx_message.vs_yaw_tar = vs_aim_packet_from_nuc.yaw;
 	uart2_tx_message.vs_mode = vs_aim_packet_from_nuc.mode;
+	uart2_tx_message.shoot_launched = shoot_cmd.fire_launched;
 
 	//板间485通信
 	uart2_online_check();

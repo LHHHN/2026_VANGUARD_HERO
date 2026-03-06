@@ -41,9 +41,10 @@ typedef struct
 {
 	/* data */
 	shoot_mode_e mode;
-	uint8_t fire_allow;
+
+	uint8_t fire_launched;
 	shoot_speed_e shoot_speed_set;
-	float shoot_angle_def;
+
 }__attribute__((packed)) shoot_cmd_t;
 
 extern DJI_motor_instance_t *shoot_m3508_motor[3];

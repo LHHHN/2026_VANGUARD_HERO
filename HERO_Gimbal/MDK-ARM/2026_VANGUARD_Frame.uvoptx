@@ -213,27 +213,22 @@
         <Ww>
           <count>11</count>
           <WinNumber>1</WinNumber>
-          <ItemText>INS_YAW_angle_test</ItemText>
+          <ItemText>vs_aim_packet_to_nuc</ItemText>
         </Ww>
         <Ww>
           <count>12</count>
           <WinNumber>1</WinNumber>
-          <ItemText>INS_YAW_speed_test</ItemText>
+          <ItemText>vs_aim_packet_from_nuc</ItemText>
         </Ww>
         <Ww>
           <count>13</count>
           <WinNumber>1</WinNumber>
-          <ItemText>vs_aim_packet_to_nuc</ItemText>
+          <ItemText>shoot_tar_16mps_1</ItemText>
         </Ww>
         <Ww>
           <count>14</count>
           <WinNumber>1</WinNumber>
-          <ItemText>vs_aim_packet_from_nuc</ItemText>
-        </Ww>
-        <Ww>
-          <count>15</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>w_ob</ItemText>
+          <ItemText>shoot_tar_16mps_2</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>
