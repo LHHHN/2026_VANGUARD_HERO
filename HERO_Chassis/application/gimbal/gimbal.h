@@ -18,6 +18,9 @@
 
 #define REMOTE_YAW_SEN 0.000005f
 
+#define GIMBAL_FEEDBACK_TYPE IMU_FEEDBACK
+//#define GIMBAL_FEEDBACK_TYPE MOTOR_FEEDBACK
+
 typedef struct
 {
 	/* data */
@@ -29,6 +32,7 @@ typedef enum
 	GIMBAL_ENABLE  = 1,
 	GIMBAL_STOP	= 2,
 	GIMBAL_AUTO_AIMING = 3,
+	GIMBAL_ZERO = 4,
 }gimbal_mode_e;
 
 typedef struct

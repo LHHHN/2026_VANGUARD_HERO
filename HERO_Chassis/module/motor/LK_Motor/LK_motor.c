@@ -328,8 +328,11 @@ void LK_Motor_Control(LK_motor_instance_t *motor_s)
             {
                 motor->transmit_data.position_des = motor->receive_data.RAD_single_round;
                 motor->transmit_data.velocity_des = 0.0f;
-								motor->transmit_data.torque_des = 0.0f;
+				motor->transmit_data.torque_des = 0.0f;
                 pid_ref = 0.0f;
+				PID_Clear(motor_controller->angle_PID);
+				PID_Clear(motor_controller->speed_PID);
+				PID_Clear(motor_controller->torque_PID);
             }
             else
             {

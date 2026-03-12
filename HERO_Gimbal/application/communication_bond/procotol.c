@@ -71,17 +71,21 @@ void VS_Receive_Control(void)
 	VS_Pack_And_Send_Data_ROS2(&vs_aim_packet_to_nuc); // 视觉数据包发送
 }
 
+float vs_yaw_tar;
+float vs_pitch_tar;
 void RC_Receive_Control(void)
 {
 	YAW_tar = uart2_rx_message.angle_tar;
 	INS_YAW_angle_test = INS.Yaw;
 	INS_YAW_speed_test = INS.Gyro[2];
-
 	uart2_tx_message.speed_yaw = INS.Gyro[2];
 	uart2_tx_message.angle_yaw = INS.Yaw;
 	uart2_tx_message.vs_yaw_tar = vs_aim_packet_from_nuc.yaw;
 	uart2_tx_message.vs_mode = vs_aim_packet_from_nuc.mode;
 	uart2_tx_message.shoot_launched = shoot_cmd.fire_launched;
+
+	vs_yaw_tar = vs_aim_packet_from_nuc.yaw;
+	vs_pitch_tar = vs_aim_packet_from_nuc.pitch;
 
 	//板间485通信
 	uart2_online_check();

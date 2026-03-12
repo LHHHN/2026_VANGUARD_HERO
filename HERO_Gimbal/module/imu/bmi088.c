@@ -107,8 +107,8 @@ static void BMI088_Kalman_Filter_Init(void)
 {
 	for (uint8_t i = 0 ; i < 3 ; i++)
 	{
-		Kalman_One_Init(&acc_kf[i], 0.01f, 20.0f);  // 加速度卡尔曼滤波器初始化
-		Kalman_One_Init(&gyro_kf[i], 0.01f, 20.0f); // 陀螺仪卡尔曼滤波器初始化
+		Kalman_One_Init(&acc_kf[i], 0.01f, 1.0f);  // 加速度卡尔曼滤波器初始化
+		Kalman_One_Init(&gyro_kf[i], 0.01f, 1.0f); // 陀螺仪卡尔曼滤波器初始化
 	}
 }
 #elif BMI088_USE_FILTER == 2

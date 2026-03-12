@@ -22,7 +22,7 @@
 DJI_motor_instance_t *shoot_stir_motor;
 shoot_cmd_t shoot_cmd;
 
-float shoot_stir_tar = -12200; //固定目标转速
+float shoot_stir_tar = -14400; //固定目标转速
 
 PID_t shoot_stir_angle_pid = {
     .kp = 14.0f, //5.0f,
@@ -34,11 +34,12 @@ PID_t shoot_stir_angle_pid = {
 };
 
 PID_t shoot_stir_speed_pid = {
-    .kp = 0.45f, //1.0f,
+    .kp = 0.5f, //1.0f,
     .ki = 0.01f, //0.5f,
     .kd = 0.1f,
+    .kf = 0.1f,
     .output_limit = 15000.0f, 
-    .integral_limit = 7500.0f,
+    .integral_limit = 10000.0f,
     .dead_band = 0.0f,
 };
 
@@ -139,11 +140,11 @@ void Shoot_Set_Mode(void)
 }
 
 float speed_kp_test = 0.45f;
-float speed_ki_test = 0.01f;
+float speed_ki_test = 0.02f;
 float speed_kd_test = 0.05;
-float speed_kf_test = 0.1f;
-float speed_output_limit_test = 15000.0f;
-float speed_integral_limit_test = 7500.0f;
+float speed_kf_test = 0.2f;
+float speed_output_limit_test = 20000.0f;
+float speed_integral_limit_test = 15000.0f;
 
 float angle_kp_test = 14.0f;
 float angle_ki_test = 0.0f;
@@ -163,8 +164,8 @@ float stir_state ;
 
 float stir_buchang = 240.0f; //发射补偿角度,可以根据实际情况调整
 
-float vs_shoot_cnt = 0.0f;
-float vs_shoot_later = 0.0f;
+float vs_shoot_cnt = 1.0f;
+// float vs_shoot_later = 0.0f;
 
 void Shoot_Reference(void)
 {
@@ -204,12 +205,11 @@ void Shoot_Reference(void)
     //     }
     // }
 
+    static float shoot_angle_last = 0.0f;
+    static float shoot_angle_now = 0.0f;
     
     if(shoot_cmd.mode == SHOOT_ENABLE)
     {
-        static float shoot_angle_last = 0.0f;
-        static float shoot_angle_now = 0.0f;
-
         if(uart2_rx_message.shoot_launched == 0)
         {
             shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
@@ -260,7 +260,7 @@ void Shoot_Reference(void)
             shoot_cmd.v_shoot_stir = 0 ;
         }
 
-        if(((shoot_angle_now - shoot_angle_last) < -75.0f * 19.8f))
+        if(((shoot_angle_now - shoot_angle_last) < -70.0f * 19.8f))
         {
             shoot_cmd.v_shoot_stir = 0;
         }
@@ -268,18 +268,51 @@ void Shoot_Reference(void)
     }
     else if( shoot_cmd.mode == SHOOT_AUTO_AIMING)
     {
-        if(uart2_rx_message.vs_mode == 2)
-        {
-            vs_shoot_cnt ++ ;
-            if(vs_shoot_later > 5)
+        if(uart2_rx_message.vs_mode == 2 && rc_data->rc.dial == 660)
+        {				
+            if(vs_shoot_cnt <= 0)
             {
-                vs_shoot_later = 0;
-                shoot_cmd.angle_shoot_stir -= SHOOT_SINGLE_ANGLE_DEF * 19.8f;
+								shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
+                vs_shoot_cnt = 0.0f;
+            }
+            else
+            {
+                shoot_angle_limit_flag = 0;
+                vs_shoot_cnt --;
+            }
+            if(uart2_rx_message.shoot_launched == 0 && vs_shoot_cnt == 0.0f)
+            {
+                if(shoot_angle_limit_flag == 0)
+                {
+                    shoot_angle_last = shoot_stir_motor->receive_data.total_angle;
+                    shoot_angle_limit_flag = 1;
+                }
+								
+                shoot_cmd.v_shoot_stir = shoot_stir_tar ;
+            }
+            
+            if(uart2_rx_message.shoot_launched == 1)
+            {
+                shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
+                shoot_cmd.v_shoot_stir = 0 ;
+                if(vs_shoot_cnt == 0.0f)
+                {
+                        vs_shoot_cnt = 200.0f;
+                }
+            }
+
+            if(((shoot_angle_now - shoot_angle_last) < -70.0f * 19.8f))
+            {
+                shoot_cmd.v_shoot_stir = 0;
+                if(vs_shoot_cnt == 0.0f)
+                {
+                        vs_shoot_cnt = 200.0f;
+                }
             }
         }
         else
         {
-            vs_shoot_later =0 ;
+            shoot_cmd.v_shoot_stir = 0;
         }
     }
     else if( shoot_cmd.mode == SHOOT_DISABLE)
@@ -290,6 +323,17 @@ void Shoot_Reference(void)
 
         // shoot_cmd.angle_shoot_stir = 0;
         // shoot_stir_motor->receive_data.total_angle = 0;
+    }
+
+    if(vs_shoot_cnt <= 0)
+    {
+        shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
+        vs_shoot_cnt = 0.0f;
+    }
+    else
+    {
+        shoot_angle_limit_flag = 0;
+        vs_shoot_cnt --;
     }
 
     
@@ -312,7 +356,8 @@ void Shoot_Console(void)
 
 void Shoot_Send_Cmd(void)
 {
-    DJI_Motor_Control(shoot_stir_motor);
+//    DJI_Motor_Control(shoot_stir_motor);
+	DJI_Motor_Control(NULL);
 }
 
 static void Shoot_Enable(void)

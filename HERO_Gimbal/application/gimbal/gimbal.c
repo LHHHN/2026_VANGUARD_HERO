@@ -161,10 +161,11 @@ void Gimbal_Reference( )
         gimbal_cmd.pitch_v = 0.0f;
     }
 }
+
 // 计算控制量
 void Gimbal_Console( )
 {
-    pitch_motor ->transmit_data.velocity_des = 1.5f;
+    pitch_motor ->transmit_data.velocity_des = PITCH_VELOCITY_MAX;
     if(gimbal_cmd.pitch_target < PTICH_MIN_ANGLE)
     {
         gimbal_cmd.pitch_target = PTICH_MIN_ANGLE ;

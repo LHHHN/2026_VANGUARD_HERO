@@ -48,6 +48,8 @@ void INS_Task_Init(void)
 
 uint32_t INS_task_diff;
 
+// float INS_time;
+
 static void INS_Task(void *argument)
 {
 	INS_Init( );
@@ -60,7 +62,8 @@ static void INS_Task(void *argument)
 	for (; ;)
 	{
 		ins_dt = DWT_GetDeltaT(&INS_dwt_count);
-
+		
+		// TIME_ELAPSE(INS_time,INS_Calculate(ins_dt););
 		INS_Calculate(ins_dt);
 
 		INS_task_diff = osKernelGetTickCount( ) - time;

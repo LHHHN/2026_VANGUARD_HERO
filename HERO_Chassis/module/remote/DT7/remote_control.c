@@ -104,6 +104,7 @@ static void sbus_to_rc(const uint8_t *sbus_buf)
  */
 static void Remote_Control_Rx_Callback(void)
 {
+	rc_ctrl[0].online = 1;
 	Supervisor_Reload(rc_supervisor_instance);         // 先喂狗
 	sbus_to_rc(rc_usart_instance->recv_buff); // 进行协议解析
 }
@@ -114,6 +115,7 @@ static void Remote_Control_Rx_Callback(void)
  */
 static void RC_Lost_Callback(void *id)
 {
+	rc_ctrl[0].online = 0;
 	memset(rc_ctrl, 0, sizeof(rc_ctrl)); // 清空遥控器数据
 	USART_Service_Init(rc_usart_instance); // 尝试重新启动接收
 }

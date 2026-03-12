@@ -91,6 +91,7 @@ typedef union
 // @todo 当前结构体嵌套过深,需要进行优化
 typedef struct
 {
+	uint8_t online;
 	struct
 	{
 		int16_t rocker_l_; // 左水平

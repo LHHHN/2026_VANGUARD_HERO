@@ -32,12 +32,12 @@
 /*遥控器参数*/
 #define REMOTE_X_SEN 0.005   //660 ~ -660 
 #define REMOTE_Y_SEN 0.005
-#define REMOTE_OMEGA_Z_SEN 0.01f  //6.6
+#define REMOTE_OMEGA_Z_SEN 0.005f  //6.6
 
 //#define REMOTE_YAW_SEN 0.000015f       
 #define REMOTE_PITCH_SEN 0.000002f
 
-#define FOLLOW_OMEGA_Z 2.16f //底盘跟随0点
+#define FOLLOW_OMEGA_Z 3.67f //底盘跟随0点
 
 typedef enum
 {

@@ -157,4 +157,6 @@ void DJI_Motor_Change_Outerloop(DJI_motor_instance_t *motor, closeloop_type_e ou
 
 uint8_t DJI_Motor_Error_Judge(DJI_motor_instance_t *motor);
 
+float DJI_Motor_GetVal(DJI_motor_instance_t *motor,motor_measure_e feedback,DJI_motor_feedback_data_e type);
+
 #endif /* __DJI_MOTOR_H__ */

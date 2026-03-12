@@ -25,12 +25,22 @@ DJI_motor_instance_t *chassis_m3508[4];
 Chassis_CmdTypedef chassis_cmd;
 
 PID_t chassis_3508_speed_pid = {
-    .kp = 40.0f,
-    .ki = 0.3f,
-    .kd = 0.05f,
-    .output_limit = 5000.0f, 
-    .integral_limit = 1000.0f,
+    .kp = 50.0f,
+    .ki = 5.0f,
+    .kd = 0.0f,
+    .kf = 20.0f,
+    .output_limit = 15000.0f, 
+    .integral_limit = 20000.0f,
     .dead_band = 0.0f,
+};
+
+PID_t chassis_hold_pid = {
+    .kp = 10.0f,
+    .ki = 0.0f,
+    .kd = 4.0f,
+    .output_limit = 20.0f, 
+    .integral_limit = 0.0f,
+    .dead_band = 0.005f,
 };
 
 motor_init_config_t chassis_3508_init = {
@@ -203,12 +213,12 @@ motor_init_config_t DM_track_motor_init = {
 
 //底盘跟随pid
 PID_t chasiss_follow_pid = {
-    .kp = 10.0f,
-    .ki = 0.0f,
-    .kd = 2.5f,
+    .kp = 7.5f,
+    .ki = 0.00f,
+    .kd = 2.0f,
     .output_limit = 25.0f, 
-    .integral_limit = 5.0f,
-    .dead_band = 0.1f,
+    .integral_limit = 20.0f,
+    .dead_band = 0.00f,
 };
 
 void Chassis_Init(void)
@@ -235,9 +245,9 @@ void Chassis_Init(void)
     }
 
     //底盘关节角度斜坡函数初始化
-    leg_angle_ramp[0] = ramp_init(&leg_angle_ramp_init);
-    leg_angle_ramp_init.max_value = -0.88f; // 右腿反向
-    leg_angle_ramp[1] = ramp_init(&leg_angle_ramp_init);
+    // leg_angle_ramp[0] = ramp_init(&leg_angle_ramp_init);
+    // leg_angle_ramp_init.max_value = -0.88f; // 右腿反向
+    // leg_angle_ramp[1] = ramp_init(&leg_angle_ramp_init);
 
     //底盘履带电机DM3519初始化
     DM_track_motor[0] = DM_Motor_Init(&DM_track_motor_init) ;
@@ -264,67 +274,108 @@ float leg_cnt = 0.0f; //离地时间计数
 
 void Chassis_Set_Mode(void)
 {
-    //遥控器控制
-    if( rc_data -> rc . switch_left == 1 && rc_data -> rc . switch_right == 1)
-    // if( uart2_rx_message.switch_left == 1 && uart2_rx_message.switch_right == 1)
-	{
-        chassis_cmd.mode = CHASSIS_DISABLE;
-	}
-    else if( (rc_data -> rc . switch_left == 3 && rc_data -> rc . switch_right == 2) || 
-             (rc_data -> rc . switch_left == 3 && rc_data -> rc . switch_right == 3))
-	// else if( uart2_rx_message.switch_left == 1 &&  uart2_rx_message.switch_right == 3)
-	{
-        chassis_cmd.mode = CHASSIS_STOP_C;
-	}
-    else if( rc_data -> rc . switch_left == 2 && rc_data -> rc . switch_right == 3)
-    // else if( uart2_rx_message.switch_left == 1 &&  uart2_rx_message.switch_right == 2)
-	{
-        chassis_cmd.mode = CHASSIS_UPSTEP;//上台阶
-	}
-    else if( rc_data -> rc . switch_left == 2 && rc_data -> rc . switch_right == 2)
-    // else if( uart2_rx_message.switch_left == 3 &&  uart2_rx_message.switch_right == 1)
-	{
-        chassis_cmd.mode = CHASSIS_SPIN;
-	}
-    else if( rc_data -> rc . switch_left == 3 && rc_data -> rc . switch_right == 1)
-    // else if( uart2_rx_message.switch_left == 3 &&  uart2_rx_message.switch_right == 2)
-	{
-        chassis_cmd.mode = CHASSIS_FOLLOW;
-	}
-    else if(rc_data -> rc . switch_left == 2 && rc_data -> rc . switch_right == 1)
-    {
-        chassis_cmd.mode = CHASSIS_ONLY ;
-    }
-    else 
+    if(rc_data -> online == 0)
     {
         chassis_cmd.mode = CHASSIS_DISABLE;
     }
+    else
+    {
+        //遥控器控制
+        if( rc_data -> rc . switch_left == 1 )
+        {
+            switch (rc_data -> rc . switch_right)
+            {
+            case 1:
+                /* code */
+                chassis_cmd.mode = CHASSIS_DISABLE;
+                break;
+            case 3:
+                /* code */
+                chassis_cmd.mode = CHASSIS_DISABLE;
+                break;
+            case 2:
+                /* code */
+                chassis_cmd.mode = CHASSIS_DISABLE;
+                break;
+            default:
+                chassis_cmd.mode = CHASSIS_DISABLE;
+                break;
+            }
+        }
+        else if( rc_data -> rc . switch_left == 3 )
+        {
+            switch (rc_data -> rc . switch_right)
+            {
+            case 1:
+                /* code */
+                chassis_cmd.mode = CHASSIS_FOLLOW;
+                break;
+            case 3:
+                /* code */
+                chassis_cmd.mode = CHASSIS_STOP_C;
+                break;
+            case 2:
+                /* code */
+                chassis_cmd.mode = CHASSIS_STOP_C;
+                break;
+            default:
+                chassis_cmd.mode = CHASSIS_DISABLE;
+                break;
+            }
+        }
+        else if( rc_data -> rc . switch_left == 2 )
+        {
+            switch (rc_data -> rc . switch_right)
+            {
+            case 1:
+                /* code */
+                chassis_cmd.mode = CHASSIS_ONLY;
+                break;
+            case 3:
+                /* code */
+                chassis_cmd.mode = CHASSIS_UPSTEP;
+                break;
+            case 2:
+                /* code */
+                chassis_cmd.mode = CHASSIS_SPIN;
+                break;
+            default:
+                chassis_cmd.mode = CHASSIS_DISABLE;
+                break;
+            }
+        }
+        else
+        {
+            chassis_cmd.mode = CHASSIS_DISABLE;
+        }
 
-    // //离地检查
-    // if(DM_arthrosis_motor[0]->receive_data.torque < -3.5f &&
-    //    DM_arthrosis_motor[1]->receive_data.torque >  3.5f)
-    // {
-    //     // if(DM_arthrosis_motor[0]->receive_data.position < 0.1f &&
-    //     //     DM_arthrosis_motor[1]->receive_data.position > -0.1f)
-    //     // {
-    //         chassis_cmd.leg_state = LEG_LIFTOFF;
-    //     // }
+    }
 
-    // }
-    // else if(chassis_cmd.leg_state == LEG_LIFTOFF)
-    // {
-    //     if(DM_arthrosis_motor[0]->receive_data.torque > 6.0f &&
-    //         DM_arthrosis_motor[1]->receive_data.torque <  -6.0f)
-    //         {
-    //             leg_cnt ++;
-    //             if(leg_cnt >= 200)
-    //             {
-    //                 leg_cnt = 0;
-    //                 chassis_cmd.leg_state = LEG_NORMAL;
-    //             }
-    //             chassis_cmd.leg_state = LEG_NORMAL;
-    //         }
-    // }
+    //离地检查
+    if(DM_arthrosis_motor[0]->receive_data.torque < -3.0f &&
+       DM_arthrosis_motor[1]->receive_data.torque >  3.0f)
+    {
+        // if(DM_arthrosis_motor[0]->receive_data.position < 0.1f &&
+        //     DM_arthrosis_motor[1]->receive_data.position > -0.1f)
+        // {
+            chassis_cmd.leg_state = LEG_LIFTOFF;
+        // }
+
+    }
+    else if(chassis_cmd.leg_state == LEG_LIFTOFF)
+    {
+        if(DM_arthrosis_motor[0]->receive_data.torque > 6.0f &&
+            DM_arthrosis_motor[1]->receive_data.torque <  -6.0f)
+            {
+                leg_cnt ++;
+                if(leg_cnt >= 200)
+                {
+                    leg_cnt = 0;
+                    chassis_cmd.leg_state = LEG_NORMAL;
+                }
+                chassis_cmd.leg_state = LEG_NORMAL;
+            }
+    }
 }
 
 float leg_angle_test_L ;
@@ -341,6 +392,22 @@ float leg_torque_test_L;
 float leg_torque_test_R;
 float leg_angle_tar;
 float leg_output_limit_test;
+
+float wheel_speed_kp_test;
+float wheel_speed_ki_test;
+float wheel_speed_kd_test;
+float wheel_speed_kf_test;
+float wheel_speed_outputlimit_test;
+
+float wheel_speed_tar0;
+float wheel_speed_tar1;
+float wheel_speed_tar2;
+float wheel_speed_tar3;
+float wheel_speed_fb0;
+float wheel_speed_fb1;
+float wheel_speed_fb2;
+float wheel_speed_fb3;
+
 
 void Chassis_Observer( )
 {
@@ -362,44 +429,65 @@ void Chassis_Observer( )
     //     DM_arthrosis_motor[i]->motor_controller.speed_PID->kd = leg_speed_kd;
     //     DM_arthrosis_motor[i]->motor_controller.speed_PID->output_limit = leg_output_limit_test ;
     // }
+
+//    for(int i = 0; i < 4; i++)
+//    {
+//        chassis_m3508[i]->motor_controller.speed_PID->kp = wheel_speed_kp_test;
+//        chassis_m3508[i]->motor_controller.speed_PID->ki = wheel_speed_ki_test;
+//        chassis_m3508[i]->motor_controller.speed_PID->kd = wheel_speed_kd_test;
+//        chassis_m3508[i]->motor_controller.speed_PID->kf = wheel_speed_kf_test;
+//        chassis_m3508[i]->motor_controller.speed_PID->output_limit = wheel_speed_outputlimit_test ;
+//    }
+
+//    wheel_speed_tar0 = chassis_cmd.wheel_target[0];
+//    wheel_speed_tar1 = chassis_cmd.wheel_target[1];
+//    wheel_speed_tar2 = chassis_cmd.wheel_target[2];
+//    wheel_speed_tar3 = chassis_cmd.wheel_target[3];
+//    wheel_speed_fb0 = DJI_Motor_GetVal(chassis_m3508[0], MOTOR_SPEED, RAD);
+//    wheel_speed_fb1 = DJI_Motor_GetVal(chassis_m3508[1], MOTOR_SPEED, RAD);
+//    wheel_speed_fb2 = DJI_Motor_GetVal(chassis_m3508[2], MOTOR_SPEED, RAD);
+//    wheel_speed_fb3 = DJI_Motor_GetVal(chassis_m3508[3], MOTOR_SPEED, RAD);
 }
+
+
 
 //更新目标值
 void Chassis_Reference(void)
 {
+    static float chassis_yaw_target = 0.0f;
+    static uint8_t chassis_hold_flag = 0;
+
+
     if(chassis_cmd.mode != CHASSIS_DISABLE)
     {
         Chassis_Enable();
-        
-    }
-    else
-    {
-        Chassis_Disable();
-    }
-
-    if(chassis_cmd.mode == CHASSIS_UPSTEP)
-    {
         Leg_Start();
     }
     else
     {
         Leg_Stop();
+        Chassis_Disable();
     }
+
+    // if(chassis_cmd.mode == CHASSIS_UPSTEP)
+    // {
+    //     Leg_Start();
+    // }
+    // else
+    // {
+    //     Leg_Stop();
+    // }
     
     chassis_cmd. vx = (float) rc_data -> rc . rocker_l1 * REMOTE_X_SEN ;
-	chassis_cmd. vy = (float) rc_data -> rc . rocker_l_ * REMOTE_Y_SEN ;
+	chassis_cmd. vy = (float) rc_data -> rc . rocker_l_ * REMOTE_Y_SEN * 0.5f;
+
     // chassis_cmd. vx = (float) uart2_rx_message.rocker_l1 * REMOTE_X_SEN ;
     // chassis_cmd. vy = (float) uart2_rx_message.rocker_l_ * REMOTE_Y_SEN ;
     chassis_cmd.v_track = 0.0f;
-    // chassis_cmd.leg_angle = 0.0f ;
-    if(chassis_cmd.leg_state == LEG_NORMAL)
-    {
-        chassis_cmd.leg_angle = 0.0f ;
-    }
 
     if(chassis_cmd.mode == CHASSIS_SPIN)
     {
-        chassis_cmd.omega_z = 8.0f;
+        chassis_cmd.omega_z = 5.0f;
     }
     else if(chassis_cmd. mode == CHASSIS_FOLLOW)
     {  
@@ -410,7 +498,9 @@ void Chassis_Reference(void)
     else if(chassis_cmd.mode == CHASSIS_UPSTEP)
     {
         chassis_cmd.omega_z = 0.0f;
-        chassis_cmd.omega_follow = PID_Position(&chasiss_follow_pid, gimbal_MF9025_motor->receive_data.RAD_single_round, FOLLOW_OMEGA_Z);
+        // chassis_cmd.omega_follow = PID_Position(&chasiss_follow_pid, gimbal_MF9025_motor->receive_data.RAD_single_round, FOLLOW_OMEGA_Z);
+        chassis_cmd. omega_z = rc_data->rc . rocker_r_ * REMOTE_OMEGA_Z_SEN ;
+        chassis_cmd.omega_follow = 0.0f;
         if(rc_data->rc . rocker_r1 >= 0 && chassis_cmd.leg_state == LEG_NORMAL)
         {
             chassis_cmd.leg_angle = rc_data->rc . rocker_r1 * 0.0013 ; //660换算成弧度0-0.88rad
@@ -419,7 +509,7 @@ void Chassis_Reference(void)
         // {    
         //     chassis_cmd.leg_angle = uart2_rx_message.rocker_r1 * 0.001394f ;
         // }
-        chassis_cmd.v_track = 15.0f ;
+        chassis_cmd.v_track = 10.0f ;
     }
     else if(chassis_cmd.mode == CHASSIS_STOP_C)
     {
@@ -431,12 +521,42 @@ void Chassis_Reference(void)
     }
     else if(chassis_cmd.mode == CHASSIS_ONLY)
     {
+        // if(user_abs(rc_data->rc . rocker_r_) >= 5)
+        // {
+        //     if(chassis_hold_flag == 1)
+        //     {
+        //         chassis_yaw_target = INS.Yaw;
+        //         chassis_hold_flag = 0;
+        //     }
+        //     chassis_yaw_target -= rc_data->rc . rocker_r_ * 0.000025f;
+        // }
+        // else
+        // {
+        //      if(chassis_hold_flag == 0)
+        //     {
+        //         // chassis_yaw_target = INS.Yaw;
+        //         chassis_hold_flag = 1;
+        //     }
+        // }
+
+        // while(chassis_yaw_target - INS.Yaw> PI)
+        //     chassis_yaw_target -= 2 * PI ;
+        // while(chassis_yaw_target - INS.Yaw < -PI)
+        //     chassis_yaw_target += 2 * PI ;
+
+        // chassis_cmd.omega_z = -PID_Position(&chassis_hold_pid, INS.Yaw, chassis_yaw_target);
+       
         chassis_cmd. omega_z = rc_data->rc . rocker_r_ * REMOTE_OMEGA_Z_SEN ;
+        chassis_cmd.omega_follow = 0.0f;
     }
 
-    if(chassis_cmd.leg_state == LEG_LIFTOFF)
+    if(chassis_cmd.leg_state == LEG_NORMAL)
     {
         chassis_cmd.leg_angle = 0.0f ;
+    }
+    else if(chassis_cmd.leg_state == LEG_LIFTOFF)
+    {
+        chassis_cmd.leg_angle = 0.35f ;
     }
 }
 
@@ -465,10 +585,16 @@ void Chassis_Console(void)
     // chassis_cmd.wheel_target[1] = ((  chassis_cmd.vx + omega_z * OMNI_WIDTH /2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
     // chassis_cmd.wheel_target[2] = ((  chassis_cmd.vx + chassis_cmd.vy - omega_z * (MECANUM_WIDTH + LENGTH) / 2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
     // chassis_cmd.wheel_target[3] = ((- chassis_cmd.vx + chassis_cmd.vy - omega_z * (MECANUM_WIDTH + LENGTH) / 2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
-    chassis_cmd.wheel_target[0] = ((- chassis_cmd.vx + omega_z * OMNI_WIDTH /2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
-    chassis_cmd.wheel_target[1] = ((  chassis_cmd.vx + omega_z * OMNI_WIDTH /2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
-    chassis_cmd.wheel_target[2] = ((  chassis_cmd.vx + chassis_cmd.vy + omega_z * (MECANUM_WIDTH + LENGTH) / 2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
-    chassis_cmd.wheel_target[3] = ((- chassis_cmd.vx + chassis_cmd.vy + omega_z * (MECANUM_WIDTH + LENGTH) / 2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
+
+    // chassis_cmd.wheel_target[0] = ((- chassis_cmd.vx + omega_z * OMNI_WIDTH /2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
+    // chassis_cmd.wheel_target[1] = ((  chassis_cmd.vx + omega_z * OMNI_WIDTH /2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
+    // chassis_cmd.wheel_target[2] = ((  chassis_cmd.vx + chassis_cmd.vy + omega_z * (MECANUM_WIDTH + LENGTH) / 2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
+    // chassis_cmd.wheel_target[3] = ((- chassis_cmd.vx + chassis_cmd.vy + omega_z * (MECANUM_WIDTH + LENGTH) / 2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
+
+    chassis_cmd.wheel_target[0] = ((- chassis_cmd.vx + omega_z * OMNI_WIDTH /2)/ WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+    chassis_cmd.wheel_target[1] = ((  chassis_cmd.vx + omega_z * OMNI_WIDTH /2)/ WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+    chassis_cmd.wheel_target[2] = ((  chassis_cmd.vx + chassis_cmd.vy + omega_z * (MECANUM_WIDTH + LENGTH) / 2)/ WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+    chassis_cmd.wheel_target[3] = ((- chassis_cmd.vx + chassis_cmd.vy + omega_z * (MECANUM_WIDTH + LENGTH) / 2)/ WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
 
 }
 
@@ -486,7 +612,6 @@ void Chassis_Send_Cmd()
     for(int i = 0; i < 4; i++)
     {
         DJI_Motor_Set_Ref(chassis_m3508[i], chassis_cmd.wheel_target[i]);
-        DJI_Motor_Control(chassis_m3508[i]);
     }
 
     // leg0_pos = DM_arthrosis_motor[0]->receive_data.position;
@@ -496,12 +621,13 @@ void Chassis_Send_Cmd()
     // DM_arthrosis_motor[0]->motor_controller.angle_PID->kd = legkd ;
     // DM_arthrosis_motor[0]->motor_controller.angle_PID->output_limit = legoutputlimit ;
     // DM_arthrosis_motor[0]->motor_controller.angle_PID->integral_limit = legioutlimit ;
-    leg_angle_ramp[0]->real_value = DM_arthrosis_motor[1]->receive_data.position ; //斜坡函数当前值更新
+
+    // leg_angle_ramp[0]->real_value = DM_arthrosis_motor[1]->receive_data.position ; //斜坡函数当前值更新
     // DM_Motor_SetTar(DM_arthrosis_motor[0], ramp_calc(leg_angle_ramp[0],chassis_cmd.leg_angle));
     DM_Motor_SetTar(DM_arthrosis_motor[0], chassis_cmd.leg_angle);
     DM_Motor_Control(DM_arthrosis_motor[0]);
 
-    leg_angle_ramp[1]->real_value = DM_arthrosis_motor[1]->receive_data.position ; //斜坡函数当前值更新
+    // leg_angle_ramp[1]->real_value = DM_arthrosis_motor[1]->receive_data.position ; //斜坡函数当前值更新
     // DM_Motor_SetTar(DM_arthrosis_motor[1], -ramp_calc(leg_angle_ramp[1],chassis_cmd.leg_angle));
     DM_Motor_SetTar(DM_arthrosis_motor[1], -chassis_cmd.leg_angle);
     DM_Motor_Control(DM_arthrosis_motor[1]);
@@ -522,11 +648,14 @@ static void Chassis_Enable(void)
     }
     for(int i = 0; i <2; i++)
     {
-        DM_Motor_Enable(DM_arthrosis_motor[i]);
-    }
-    for(int i = 0; i <2; i++)
-    {
-        DM_Motor_Enable(DM_track_motor[i]);
+        if(DM_track_motor[i]->receive_data.state == 0)
+        {
+            DM_Motor_Enable(DM_track_motor[i]);
+        }
+        if(DM_arthrosis_motor[i]->receive_data.state == 0)
+        {
+            DM_Motor_Enable(DM_arthrosis_motor[i]);
+        }
     }
 }
 
@@ -562,7 +691,9 @@ static void Chassis_Disable(void)
     }
     for(int i = 0; i <2; i++)
     {
-        DM_Motor_Disable(DM_track_motor[i]);
-        DM_Motor_Disable(DM_track_motor[i]);
+        if(DM_track_motor[i]->receive_data.state == 1)
+        {
+            DM_Motor_Disable(DM_track_motor[i]);
+        }
     }
 }

@@ -59,10 +59,10 @@ float ramp_calc(ramp_function_source_t *ramp, float input)
 	ramp->target = input;
 	if (ramp->ramp_state == SLOPE_FIRST_REAL)
 	{
-		if ((ramp->target >= ramp->real_value && ramp->real_value >= ramp->plan_value) || (ramp->target <= ramp->real_value && ramp->real_value <= ramp->plan_value))
-		{
-			ramp->out = ramp->real_value;
-		}
+		// if ((ramp->target >= ramp->real_value && ramp->real_value >= ramp->plan_value) || (ramp->target <= ramp->real_value && ramp->real_value <= ramp->plan_value))
+		// {
+		// 	ramp->out = ramp->real_value;
+		// }
 		if (ramp->plan_value > 0.0f)
 		{
 			//正值加速
