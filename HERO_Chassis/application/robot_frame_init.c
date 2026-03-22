@@ -84,8 +84,8 @@ static void Frame_Device_Init(void)
 #elif(REMOTE_TYPE == WFLY_SBUS)
 	rc_data = WFLY_SBUS_Register();	
 #endif
-	
-	referee_data = Referee_Init(&huart7);
+
+	// referee_data = Referee_Init(&huart7);
 	
 	// VOFA_Register( );
 

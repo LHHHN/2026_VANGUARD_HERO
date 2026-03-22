@@ -160,8 +160,8 @@ ramp_init_config_t leg_angle_ramp_init = {
     .frame_period = 0.001f,        // 1ms控制周期
     .max_value = 0.88f,           // 最大输出
     .min_value = 0.0f,          // 最小输出
-    .increase_value = 0.003f,        // 加速度
-    .decrease_value = 0.0015f,        // 减速度
+    .increase_value = 0.1f,        // 加速度
+    .decrease_value = 0.0005f,        // 减速度
     .ramp_state = SLOPE_FIRST_REAL // 工作模式
 };
 
@@ -242,11 +242,12 @@ void Chassis_Init(void)
         DM_arthrosis_motor[i]->dm_mode = MIT_MODE;
         DM_arthrosis_motor[i]->contorl_mode_state = SINGLE_TORQUE ;
         DM_Motor_Enable(DM_arthrosis_motor[i]);
+
+        leg_angle_ramp[i] = ramp_init(&leg_angle_ramp_init);
     }
 
     //底盘关节角度斜坡函数初始化
     // leg_angle_ramp[0] = ramp_init(&leg_angle_ramp_init);
-    // leg_angle_ramp_init.max_value = -0.88f; // 右腿反向
     // leg_angle_ramp[1] = ramp_init(&leg_angle_ramp_init);
 
     //底盘履带电机DM3519初始化
@@ -348,7 +349,17 @@ void Chassis_Set_Mode(void)
         {
             chassis_cmd.mode = CHASSIS_DISABLE;
         }
+    }
 
+    if(chassis_cmd.mode == CHASSIS_UPSTEP)
+    {
+        leg_angle_ramp[0]->decrease_value = 1 ;
+        leg_angle_ramp[1]->decrease_value = 1 ;
+    }
+    else
+    {
+        leg_angle_ramp[0]->decrease_value = 0.0005 ;
+        leg_angle_ramp[1]->decrease_value = 0.0005 ;
     }
 
     //离地检查
@@ -364,16 +375,23 @@ void Chassis_Set_Mode(void)
     }
     else if(chassis_cmd.leg_state == LEG_LIFTOFF)
     {
-        if(DM_arthrosis_motor[0]->receive_data.torque > 6.0f &&
-            DM_arthrosis_motor[1]->receive_data.torque <  -6.0f)
+        if(DM_arthrosis_motor[0]->receive_data.torque > 10.0f &&
+            DM_arthrosis_motor[1]->receive_data.torque <  -10.0f)
             {
-                leg_cnt ++;
-                if(leg_cnt >= 200)
+                if(leg_cnt > 20)
+                {
+                    leg_cnt = 20 ;
+                }
+                else
+                {
+                    leg_cnt ++;
+                }
+                
+                if(leg_cnt >= 20)
                 {
                     leg_cnt = 0;
                     chassis_cmd.leg_state = LEG_NORMAL;
                 }
-                chassis_cmd.leg_state = LEG_NORMAL;
             }
     }
 }
@@ -550,13 +568,13 @@ void Chassis_Reference(void)
         chassis_cmd.omega_follow = 0.0f;
     }
 
-    if(chassis_cmd.leg_state == LEG_NORMAL)
+    if(chassis_cmd.leg_state == LEG_NORMAL && chassis_cmd.mode != CHASSIS_UPSTEP)
     {
         chassis_cmd.leg_angle = 0.0f ;
     }
     else if(chassis_cmd.leg_state == LEG_LIFTOFF)
     {
-        chassis_cmd.leg_angle = 0.35f ;
+        chassis_cmd.leg_angle = 0.45f ;
     }
 }
 
@@ -601,7 +619,8 @@ void Chassis_Console(void)
 // float leg_tar = 0.0f; //调试用
 
 // float leg0_pos;
-float leg0_torque;
+float leg_angle_ramp_L;
+float leg_angle_ramp_R;
 // float legkp;
 // float legki;
 // float legkd;
@@ -622,21 +641,23 @@ void Chassis_Send_Cmd()
     // DM_arthrosis_motor[0]->motor_controller.angle_PID->output_limit = legoutputlimit ;
     // DM_arthrosis_motor[0]->motor_controller.angle_PID->integral_limit = legioutlimit ;
 
-    // leg_angle_ramp[0]->real_value = DM_arthrosis_motor[1]->receive_data.position ; //斜坡函数当前值更新
-    // DM_Motor_SetTar(DM_arthrosis_motor[0], ramp_calc(leg_angle_ramp[0],chassis_cmd.leg_angle));
-    DM_Motor_SetTar(DM_arthrosis_motor[0], chassis_cmd.leg_angle);
-    DM_Motor_Control(DM_arthrosis_motor[0]);
+    leg_angle_ramp[0]->real_value = DM_arthrosis_motor[0]->receive_data.position ; //斜坡函数当前值更新
+    DM_Motor_SetTar(DM_arthrosis_motor[0], ramp_calc(leg_angle_ramp[0],chassis_cmd.leg_angle));
+    leg_angle_ramp_L = ramp_calc(leg_angle_ramp[0],chassis_cmd.leg_angle);
+    // DM_Motor_SetTar(DM_arthrosis_motor[0], chassis_cmd.leg_angle);
+    // DM_Motor_Control(DM_arthrosis_motor[0]);
 
-    // leg_angle_ramp[1]->real_value = DM_arthrosis_motor[1]->receive_data.position ; //斜坡函数当前值更新
-    // DM_Motor_SetTar(DM_arthrosis_motor[1], -ramp_calc(leg_angle_ramp[1],chassis_cmd.leg_angle));
-    DM_Motor_SetTar(DM_arthrosis_motor[1], -chassis_cmd.leg_angle);
-    DM_Motor_Control(DM_arthrosis_motor[1]);
+    leg_angle_ramp[1]->real_value = DM_arthrosis_motor[1]->receive_data.position ; //斜坡函数当前值更新
+    DM_Motor_SetTar(DM_arthrosis_motor[1], ramp_calc(leg_angle_ramp[1],-chassis_cmd.leg_angle));
+    leg_angle_ramp_R = ramp_calc(leg_angle_ramp[1],-chassis_cmd.leg_angle);
+    // DM_Motor_SetTar(DM_arthrosis_motor[1], -chassis_cmd.leg_angle);
+    // DM_Motor_Control(DM_arthrosis_motor[1]);
 
     DM_Motor_SetTar(DM_track_motor[0], -chassis_cmd.v_track);
-    DM_Motor_Control(DM_track_motor[0]);
+    // DM_Motor_Control(DM_track_motor[0]);
     DM_Motor_SetTar(DM_track_motor[1], chassis_cmd.v_track);
-    DM_Motor_Control(DM_track_motor[1]);
-    
+    // DM_Motor_Control(DM_track_motor[1]);
+    DM_Motor_Control(NULL);
 		
 }
 

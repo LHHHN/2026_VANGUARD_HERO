@@ -51,8 +51,8 @@ typedef enum
 
 // typedef enum
 // {
-//     LEG_STRETCH = 1, //伸展
-//     LEG_SHRINK = 0, //收缩
+//     LEG_DISABLE = 0, //收缩
+//     LEG_ENABLE = 1, //伸展
 // }leg_mode_e;
 
 typedef enum
@@ -75,6 +75,7 @@ typedef struct
     float wheel_target[4]; //四轮目标速度(rad/s)
 
     chassis_mode_e mode;
+
     // leg_mode_e leg_mode;
     leg_state_e leg_state;
 

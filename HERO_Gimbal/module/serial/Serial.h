@@ -144,7 +144,7 @@ typedef struct
   /*TJ*/
   uint8_t head[2]; // = {'S', 'P'};
   uint8_t mode; // 0: 空闲, 1: 自瞄, 2: 小符, 3: 大符
-  // uint8_t shoot_sign; // 0-不射击 1-射击
+  uint8_t shoot_sign; // 0-不射击 1-射击
   float q[4];   // wxyz顺序
   float yaw;
   float yaw_vel;
@@ -170,6 +170,9 @@ typedef struct
   float pitch;
   float pitch_vel;
   float pitch_acc;
+
+  float yaw_diff ;
+  float pitch_diff ;
   uint16_t crc16;
 } __attribute__((packed)) vs_receive_packet_t;
 

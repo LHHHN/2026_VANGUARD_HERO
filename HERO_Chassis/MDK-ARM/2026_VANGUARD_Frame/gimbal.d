@@ -52,4 +52,5 @@
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
   ..\module\rs485\rs485.h ..\application\INS\INS.h \
+  ..\algorithm\filter\kalman_one_filter.h \
   ..\algorithm\filter\kalman\kalman_filter.h ..\bsp\DWT\bsp_dwt.h

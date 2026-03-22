@@ -20,6 +20,8 @@
 #include "shoot_task.h"
 #include "shoot.h"
 
+#include "bsp_dwt.h"
+
 #include "message_center.h"
 
 #define SHOOT_TASK_PERIOD 1 // ms
@@ -60,7 +62,7 @@ void Shoot_Task_Init(void)
 	const osThreadAttr_t attr = {
 		.name = "Shoot_Task",
 		.stack_size = 128 * 8,
-		.priority = (osPriority_t) osPriorityRealtime3,
+		.priority = (osPriority_t) osPriorityRealtime4,
 	};
 	shoot_task_handel = osThreadNew(Shoot_Task, NULL, &attr);
 
@@ -69,6 +71,8 @@ void Shoot_Task_Init(void)
 }
 
 uint32_t shoot_task_diff;
+
+float shoot_time ;
 
 static void Shoot_Task(void *argument)
 {
@@ -80,6 +84,16 @@ static void Shoot_Task(void *argument)
 
 	for (; ;)
 	{
+
+		// TIME_ELAPSE(shoot_time,Shoot_Observer( );
+		// Shoot_Handle_Exception( );
+		// Shoot_Set_Mode( );
+		// Shoot_Reference( );
+		// Shoot_Console( );
+		// taskENTER_CRITICAL();
+		// Shoot_Send_Cmd( );
+		// taskEXIT_CRITICAL(););
+
 		// 更新状态量
 		Shoot_Observer( );
 		// 处理异常

@@ -30,9 +30,11 @@ typedef struct
 	float kp;
 	float ki;
 	float kd;
+	float kf;
 
 	float output_limit;
 	float integral_limit;     // 积分限幅
+	float fout_limit;      // 前馈限幅
 	float dead_band;
 
 	//-----------------------------------
@@ -53,6 +55,7 @@ typedef struct
 	float i_term;
 	float i_out;
 	float d_out;
+	float f_out;
 
 	float output;
 	float last_output;
@@ -90,6 +93,8 @@ typedef struct
  * @param config PID初始化配置
  */
 PID_t *PID_Init(PID_t *config);
+
+void PID_Clear(PID_t *pid);
 
 /**
  * @brief 计算PID输出

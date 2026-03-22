@@ -50,4 +50,4 @@
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
   ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
-  ..\module\message_center\message_center.h
+  ..\bsp\DWT\bsp_dwt.h ..\module\message_center\message_center.h

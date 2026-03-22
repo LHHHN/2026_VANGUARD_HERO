@@ -72,7 +72,7 @@ void Gimbal_Task_Init(void)
 
 uint32_t gimbal_task_diff;
 
-// float gimbal_time;
+float gimbal_time;
 // float gimbal_frq;
 
 static void Gimbal_Task(void *argument)
@@ -90,15 +90,17 @@ static void Gimbal_Task(void *argument)
 		// Gimbal_Set_Mode( );
 		// Gimbal_Reference( );
 		// Gimbal_Console( );
+		// taskENTER_CRITICAL();
 		// Gimbal_Send_Cmd( );
+		// taskEXIT_CRITICAL();
 		// )
 		// ;
 		// gimbal_frq = 1.0f / gimbal_time;
-
+		
 		// 更新状态量
-		Gimbal_Handle_Exception( );
-		// 处理异常
 		Gimbal_Observer( );
+		// 处理异常
+		Gimbal_Handle_Exception( );
 		// 设置云台模式
 		Gimbal_Set_Mode( );
 		// 更新目标量

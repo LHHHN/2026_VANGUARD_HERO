@@ -24,7 +24,7 @@
 
 #include "message_center.h"
 
-#define INS_TASK_PERIOD 1 // ms
+#define INS_TASK_PERIOD 2 // ms
 
 osThreadId_t INS_task_handel;
 
@@ -38,7 +38,7 @@ void INS_Task_Init(void)
 	const osThreadAttr_t attr = {
 		.name = "INS_Task",
 		.stack_size = 128 * 8,
-		.priority = (osPriority_t) osPriorityRealtime4,
+		.priority = (osPriority_t) osPriorityRealtime3,
 	};
 	INS_task_handel = osThreadNew(INS_Task, NULL, &attr);
 
@@ -48,7 +48,7 @@ void INS_Task_Init(void)
 
 uint32_t INS_task_diff;
 
-// float INS_time;
+float INS_time;
 
 static void INS_Task(void *argument)
 {

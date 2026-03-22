@@ -82,6 +82,7 @@ static void Gimbal_Task(void *argument)
 	Gimbal_Publish( );
 
 	HAL_UART_Receive_IT(&huart2, &uart2_current_byte, 1);
+	
 	uint32_t time = osKernelGetTickCount( );
 
 	osDelay(2);

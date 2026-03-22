@@ -39,7 +39,7 @@ PID_t shoot_stir_speed_pid = {
     .kd = 0.1f,
     .kf = 0.1f,
     .output_limit = 15000.0f, 
-    .integral_limit = 10000.0f,
+    .integral_limit = 12000.0f,
     .dead_band = 0.0f,
 };
 
@@ -142,14 +142,9 @@ void Shoot_Set_Mode(void)
 float speed_kp_test = 0.45f;
 float speed_ki_test = 0.02f;
 float speed_kd_test = 0.05;
-float speed_kf_test = 0.2f;
+float speed_kf_test = 0.25f;
 float speed_output_limit_test = 20000.0f;
 float speed_integral_limit_test = 15000.0f;
-
-float angle_kp_test = 14.0f;
-float angle_ki_test = 0.0f;
-float angle_kd_test = 0.1f;
-float angle_output_limit_test = 1000.0f;
 
 float shoot_stir_speed_test;
 float shoot_stir_angle_test;
@@ -171,12 +166,12 @@ void Shoot_Reference(void)
 {
     static uint8_t shoot_angle_limit_flag = 0;
 
-    // shoot_stir_motor->motor_controller.speed_PID->kp = speed_kp_test;
-    // shoot_stir_motor->motor_controller.speed_PID->ki = speed_ki_test;
-    // shoot_stir_motor->motor_controller.speed_PID->kd = speed_kd_test;
-    // shoot_stir_motor->motor_controller.speed_PID->kf = speed_kf_test;
-    // shoot_stir_motor->motor_controller.speed_PID->output_limit = speed_output_limit_test ;
-    // shoot_stir_motor->motor_controller.speed_PID->integral_limit = speed_integral_limit_test;
+    shoot_stir_motor->motor_controller.speed_PID->kp = speed_kp_test;
+    shoot_stir_motor->motor_controller.speed_PID->ki = speed_ki_test;
+    shoot_stir_motor->motor_controller.speed_PID->kd = speed_kd_test;
+    shoot_stir_motor->motor_controller.speed_PID->kf = speed_kf_test;
+    shoot_stir_motor->motor_controller.speed_PID->output_limit = speed_output_limit_test ;
+    shoot_stir_motor->motor_controller.speed_PID->integral_limit = speed_integral_limit_test;
 
     // shoot_stir_motor->motor_controller.angle_PID->kp = angle_kp_test;
     // shoot_stir_motor->motor_controller.angle_PID->ki = angle_ki_test;
@@ -260,7 +255,7 @@ void Shoot_Reference(void)
             shoot_cmd.v_shoot_stir = 0 ;
         }
 
-        if(((shoot_angle_now - shoot_angle_last) < -70.0f * 19.8f))
+        if(((shoot_angle_now - shoot_angle_last) < -63.0f * 19.8f))
         {
             shoot_cmd.v_shoot_stir = 0;
         }
@@ -297,16 +292,16 @@ void Shoot_Reference(void)
                 shoot_cmd.v_shoot_stir = 0 ;
                 if(vs_shoot_cnt == 0.0f)
                 {
-                        vs_shoot_cnt = 200.0f;
+                    vs_shoot_cnt = 1000.0f;
                 }
             }
 
-            if(((shoot_angle_now - shoot_angle_last) < -70.0f * 19.8f))
+            if(((shoot_angle_now - shoot_angle_last) < -63.0f * 19.8f))
             {
                 shoot_cmd.v_shoot_stir = 0;
                 if(vs_shoot_cnt == 0.0f)
                 {
-                        vs_shoot_cnt = 200.0f;
+                    vs_shoot_cnt = 1000.0f;
                 }
             }
         }

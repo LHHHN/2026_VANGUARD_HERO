@@ -20,6 +20,8 @@
 #include "procotol_task.h"
 #include "procotol.h"
 
+#include "bsp_dwt.h"
+
 #include "message_center.h"
 
 #define PROCOTOL_TASK_PERIOD 1 // ms
@@ -46,12 +48,18 @@ void Procotol_Task_Init(void)
 
 uint32_t procotol_task_diff;
 
+float procotol_time ;
+
 static void Procotol_Task(void *argument)
 {
     uint32_t time = osKernelGetTickCount( );
 
     for (; ;)
     {
+        // TIME_ELAPSE(procotol_time, VOFA_Display_IMU( );
+		// 		RC_Transfer_Control( );
+		// 		)
+		// 		;
         VOFA_Display_IMU( );
         RC_Transfer_Control( );
 

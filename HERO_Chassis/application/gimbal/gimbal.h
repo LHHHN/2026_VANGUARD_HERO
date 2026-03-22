@@ -19,7 +19,7 @@
 #define REMOTE_YAW_SEN 0.000005f
 
 #define GIMBAL_FEEDBACK_TYPE IMU_FEEDBACK
-//#define GIMBAL_FEEDBACK_TYPE MOTOR_FEEDBACK
+//#define GIMBAL_FEEDBACK_TYPE MOTOR_FEEDBACK_P
 
 typedef struct
 {
@@ -46,6 +46,7 @@ typedef struct
 
 extern float fusion_v_data[2];
 extern float target_yaw;
+extern float target_yaw_pro;
 
 void Gimbal_Init(void);
 

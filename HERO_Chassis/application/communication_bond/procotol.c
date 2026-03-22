@@ -23,6 +23,7 @@
 #include "gimbal.h"
 #include "shoot.h"
 #include "rs485.h"
+#include "user_lib.h"
 
 extern bmi088_data_t imu_data;
 // extern wfly_t *rc_data;
@@ -30,6 +31,9 @@ extern RC_ctrl_t *rc_data;
 extern INS_behaviour_t INS;
 extern float test_data_acc[3];
 extern float test_data_gyro[3];
+
+extern ramp_function_source_t *gimbal_angle_ramp;
+
 
 void VOFA_Display_IMU(void)
 {
@@ -59,12 +63,11 @@ void VOFA_Display_IMU(void)
 
 void RC_Transfer_Control(void)
 {
-	uart2_tx_message.angle_tar = target_yaw;
+	uart2_tx_message.angle_tar = target_yaw_pro;
 	uart2_tx_message.rocker_r_ = rc_data->rc.rocker_r_;
     uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
 	uart2_tx_message.rc_switch = 0x01 << (rc_data->rc.switch_right - 1) | 0x08 << (rc_data->rc.switch_left - 1) ;
 
 	//板间485通信
 	uart2_online_check();
-
 }

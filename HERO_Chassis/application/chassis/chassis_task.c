@@ -77,7 +77,7 @@ void Chassis_Task_Init(void)
 
 uint32_t chassis_task_diff;
 
-// float chassis_time;
+float chassis_time;
 // float chassis_frq;
 
 static void Chassis_Task(void *argument)
@@ -113,7 +113,9 @@ static void Chassis_Task(void *argument)
 		// Chassis_Set_Mode( );
 		// Chassis_Reference( );
 		// Chassis_Console( );
+		// taskENTER_CRITICAL();
 		// Chassis_Send_Cmd( );
+		// taskEXIT_CRITICAL();
 		// )
 		// ;
 		// chassis_frq = 1.0f / chassis_time;

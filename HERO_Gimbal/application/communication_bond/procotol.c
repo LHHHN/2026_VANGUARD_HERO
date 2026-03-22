@@ -67,12 +67,29 @@ void VOFA_Display_IMU(void)
 
 void VS_Receive_Control(void)
 {
+	static uint8_t bullet_count_cnt = 0;
+	// if(shoot_cmd.fire_launched == 1)
+	// {
+	// 	vs_aim_packet_to_nuc.bullet_count = 1;
+	// 	bullet_count_cnt = 50;
+	// }
+	// else
+	// {
+	// 	if(bullet_count_cnt > 0)
+	// 	{
+	// 		bullet_count_cnt--;
+	// 	}
+	// 	else
+	// 	{
+	// 		vs_aim_packet_to_nuc.bullet_count = 0;
+	// 	}
+	// }
 	VPC_UpdatePackets();
 	VS_Pack_And_Send_Data_ROS2(&vs_aim_packet_to_nuc); // 视觉数据包发送
 }
 
-float vs_yaw_tar;
-float vs_pitch_tar;
+//float vs_yaw_tar;
+//float vs_pitch_tar;
 void RC_Receive_Control(void)
 {
 	YAW_tar = uart2_rx_message.angle_tar;
@@ -84,8 +101,8 @@ void RC_Receive_Control(void)
 	uart2_tx_message.vs_mode = vs_aim_packet_from_nuc.mode;
 	uart2_tx_message.shoot_launched = shoot_cmd.fire_launched;
 
-	vs_yaw_tar = vs_aim_packet_from_nuc.yaw;
-	vs_pitch_tar = vs_aim_packet_from_nuc.pitch;
+//	vs_yaw_tar = vs_aim_packet_from_nuc.yaw;
+//	vs_pitch_tar = vs_aim_packet_from_nuc.pitch;
 
 	//板间485通信
 	uart2_online_check();
