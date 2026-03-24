@@ -221,6 +221,7 @@ void Gimbal_Init(void)
 
 extern RC_ctrl_t *rc_data;
 
+#include "omni_mecanum_chassis.h"
 void Gimbal_Set_Mode()
 {
     // if( rc_data -> rc . switch_left == 3 || (rc_data -> rc . switch_left == 2 && rc_data -> rc . switch_right == 2 ))
@@ -254,6 +255,7 @@ void Gimbal_Set_Mode()
     else
     {
         //遥控器控制
+        gimbal_cmd.key_state.key_EN_state = 0;
         if( rc_data -> rc . switch_left == 1 )
         {
             switch (rc_data -> rc . switch_right)
@@ -306,11 +308,12 @@ void Gimbal_Set_Mode()
                 break;
             case 3:
                 /* code */
-                gimbal_cmd.mode = GIMBAL_ZERO;
+                gimbal_cmd.mode = GIMBAL_ENABLE;
                 break;
             case 2:
                 /* code */
-                gimbal_cmd.mode = GIMBAL_ENABLE;
+                // gimbal_cmd.mode = GIMBAL_ENABLE;
+                gimbal_cmd.key_state.key_EN_state = 1;
                 break;
             default:
                 gimbal_cmd.mode = GIMBAL_DISABLE;
@@ -321,6 +324,43 @@ void Gimbal_Set_Mode()
         {
             gimbal_cmd.mode = GIMBAL_DISABLE;
         }
+    }
+
+    if (gimbal_cmd.key_state.key_EN_state == 1)
+    {
+        if (chassis_cmd.mode == CHASSIS_DISABLE)
+        {
+            gimbal_cmd.mode = GIMBAL_DISABLE;
+            gimbal_cmd.key_state.gimbal_EN_state = 0;
+        }
+        else if(chassis_cmd.mode != CHASSIS_DISABLE)
+        {
+            gimbal_cmd.mode = GIMBAL_ENABLE;
+            gimbal_cmd.key_state.gimbal_EN_state = 1;
+        }
+
+        if(gimbal_cmd.key_state.gimbal_EN_state == 1)
+        {
+            /* 蹬腿云台跟随键鼠 */
+            if (rc_data->mouse.press_r == 1)
+            {
+                gimbal_cmd.mode = GIMBAL_AUTO_AIMING;
+            }
+            else if(rc_data->mouse.press_r == 0 && gimbal_cmd.mode == GIMBAL_AUTO_AIMING)
+            {
+                gimbal_cmd.mode = GIMBAL_ENABLE;
+            }
+            
+            if(rc_data->key->q == 1)
+            {
+                gimbal_cmd.mode = GIMBAL_ZERO;
+            }
+            else if(rc_data->key->q ==1 && gimbal_cmd.mode == GIMBAL_ZERO)
+            {
+                gimbal_cmd.mode = GIMBAL_ENABLE;
+            }
+        }
+        
     }
 
     if( gimbal_cmd.mode == GIMBAL_ENABLE && gimbal_MF9025_motor->motor_state_flag != MOTOR_ENABLE)
