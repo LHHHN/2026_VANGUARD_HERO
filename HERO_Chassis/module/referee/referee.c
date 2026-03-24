@@ -17,6 +17,8 @@
 #include "ui_interface.h"
 #include "defense_center.h"
 
+#if USE_RAW == 1
+
 uint8_t referee_rx_len;    //裁判系统串口idle中断接收数据长度
 uint8_t referee_pic_rx_len;
 uint8_t referee_rx_buf[REFEREE_RXBUFF_SIZE];           //dma接收区
@@ -372,4 +374,4 @@ Referee_PicInfoTypedef *RefereePic_Init(UART_HandleTypeDef *refereepic_usart_han
 	return (&referee_picinfo);
 }
 
-
+#endif

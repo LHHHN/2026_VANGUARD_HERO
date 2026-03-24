@@ -29,6 +29,8 @@
 #include "INS.h"
 #include "procotol.h"
 
+#include "referee_task.h"
+
 #include "bmi088.h"
 #include "ws2812.h"
 #include "buzzer.h"
@@ -56,7 +58,7 @@ RC_ctrl_t *rc_data;
 
 #endif
 
-Referee_InfoTypedef *referee_data;
+// Referee_InfoTypedef *referee_data;
 
 static void Frame_MCU_Init(void)
 {
@@ -85,7 +87,8 @@ static void Frame_Device_Init(void)
 	rc_data = WFLY_SBUS_Register();	
 #endif
 
-	// referee_data = Referee_Init(&huart7);
+	referee_outer_info = UI_Task_Init(&huart1, &referee_outer_interactive);
+	// referee_data = Referee_Init(&huart1);
 	
 	// VOFA_Register( );
 

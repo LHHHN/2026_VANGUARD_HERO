@@ -33,7 +33,7 @@
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
   ..\Core\Inc\usart.h ..\Core\Inc\dma.h ..\module\referee\referee.h \
-  ..\bsp\USART\bsp_usart.h ..\module\remote\DT7\remote_control.h \
+  ..\module\remote\DT7\remote_control.h ..\bsp\USART\bsp_usart.h \
   ..\algorithm\basic_function\CRC.h ..\module\ShooterUI\ui_interface.h \
   ..\module\ShooterUI\ui_types.h \
   ..\module\defense_center\defense_center.h

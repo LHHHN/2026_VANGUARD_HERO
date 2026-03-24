@@ -32,10 +32,15 @@
 #include "ws2812.h"
 #include "wfly_control.h"
 
+#include "referee_task.h"
+
+#include "bsp_usart.h"
+
 /******************************这里是塞💩的地方，请随便塞💩*****************************/
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -56,10 +61,27 @@
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
+uint32_t defaultTaskBuffer[ 128 ];
+osStaticThreadDef_t defaultTaskControlBlock;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .cb_mem = &defaultTaskControlBlock,
+  .cb_size = sizeof(defaultTaskControlBlock),
+  .stack_mem = &defaultTaskBuffer[0],
+  .stack_size = sizeof(defaultTaskBuffer),
   .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for UI_Task */
+osThreadId_t UI_TaskHandle;
+uint32_t UI_TaskBuffer[ 512 ];
+osStaticThreadDef_t UI_TaskControlBlock;
+const osThreadAttr_t UI_Task_attributes = {
+  .name = "UI_Task",
+  .cb_mem = &UI_TaskControlBlock,
+  .cb_size = sizeof(UI_TaskControlBlock),
+  .stack_mem = &UI_TaskBuffer[0],
+  .stack_size = sizeof(UI_TaskBuffer),
+  .priority = (osPriority_t) osPriorityLow,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -68,6 +90,7 @@ const osThreadAttr_t defaultTask_attributes = {
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
+void Start_UI_Task(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -100,6 +123,9 @@ void MX_FREERTOS_Init(void) {
   /* Create the thread(s) */
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* creation of UI_Task */
+  UI_TaskHandle = osThreadNew(Start_UI_Task, NULL, &UI_Task_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -174,6 +200,30 @@ void StartDefaultTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
+}
+
+/* USER CODE BEGIN Header_Start_UI_Task */
+/**
+* @brief Function implementing the UI_Task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Start_UI_Task */
+void Start_UI_Task(void *argument)
+{
+  /* USER CODE BEGIN Start_UI_Task */
+	uint8_t first_flag = 0;
+  /* Infinite loop */
+  for(;;)
+  {
+		if(first_flag == 0)
+    {
+      User_UI_Init();
+      first_flag = 1;
+    }
+		UI_Task();
+  }
+  /* USER CODE END Start_UI_Task */
 }
 
 /* Private application code --------------------------------------------------*/

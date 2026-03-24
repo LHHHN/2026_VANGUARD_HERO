@@ -4,6 +4,8 @@
 
 #include "ui_Infantry_group2_0.h"
 
+#if USE_RAW == 1
+
 #define FRAME_ID 1
 #define GROUP_ID 1
 #define START_ID 0
@@ -95,3 +97,5 @@ void _ui_remove_Infantry_group2_0() {
     CAT(ui_proc_, CAT(FRAME_OBJ_NUM, _frame))(&ui_Infantry_group2_0);
     SEND_MESSAGE((uint8_t *) &ui_Infantry_group2_0, sizeof(ui_Infantry_group2_0));
 }
+
+#endif

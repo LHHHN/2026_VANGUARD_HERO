@@ -4,6 +4,11 @@
 
 #ifndef SERIAL_TEST_UI_TYPES_H
 #define SERIAL_TEST_UI_TYPES_H
+
+#define USE_RAW 2
+
+#if USE_RAW == 1
+
 #include "main.h"
 
 #if defined(__CC_ARM) || defined(__GNUC__)
@@ -117,5 +122,7 @@ typedef struct {
     uint8_t password_6; 
     uint16_t crc16;
 } MESSAGE_PACKED radar_cmd_t;
+
+#endif
 
 #endif //SERIAL_TEST_UI_TYPES_H

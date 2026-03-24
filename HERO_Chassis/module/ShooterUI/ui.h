@@ -6,6 +6,8 @@ extern "C" {
 
 #include "ui_interface.h"
 
+#if USE_RAW == 1
+
 #include "ui_Infantry_group1_0.h"
 #include "ui_Infantry_group1_1.h"
 #include "ui_Infantry_group1_2.h"
@@ -65,6 +67,8 @@ void update_shooter_ui(float gimbal_delta, uint8_t cap_level, uint8_t auto_statu
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
 
 #endif //UI_H

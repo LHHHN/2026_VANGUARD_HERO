@@ -2,6 +2,9 @@
 // 为了使消息能够发送给裁判系统，必须要自定义ui_interface.c中的ui_self_id变量（该变量也可以使用其他代码从裁判系统读取后由程序修改）
 // 由于裁判系统接收限制，可能需要使用队列或延时来控制发送频率，此时需要自己建立一个新的发送函数在ui_interface.h中替换掉SEND_MESSAGE的宏定义HAL_UART_Transmit_DMA
 #include "ui.h"
+
+#if USE_RAW == 1
+
 #include "math.h"
 #include "main.h"
 #include "gimbal.h"
@@ -192,3 +195,5 @@ void UI_Task(void *argument)//此处根据自己代码的结构体自行更改id
 #endif
 	}
 }
+
+#endif

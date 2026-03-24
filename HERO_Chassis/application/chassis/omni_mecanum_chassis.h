@@ -30,8 +30,8 @@
 #define WHEEL_RADIUS 0.077f	//驱动轮半径（diameter）
 
 /*遥控器参数*/
-#define REMOTE_X_SEN 0.005   //660 ~ -660 
-#define REMOTE_Y_SEN 0.005
+#define REMOTE_X_SEN 0.001   //660 ~ -660 
+#define REMOTE_Y_SEN 0.0005
 #define REMOTE_OMEGA_Z_SEN 0.005f  //6.6
 
 //#define REMOTE_YAW_SEN 0.000015f       
@@ -46,14 +46,16 @@ typedef enum
     CHASSIS_UPSTEP    = 2, //底盘上台阶
     CHASSIS_FOLLOW  = 3,//底盘跟随
     CHASSIS_SPIN = 4, //底盘小陀螺
-    CHASSIS_ONLY = 5,
 }chassis_mode_e;
 
-// typedef enum
-// {
-//     LEG_DISABLE = 0, //收缩
-//     LEG_ENABLE = 1, //伸展
-// }leg_mode_e;
+typedef struct
+{
+    uint8_t key_state ;
+    uint8_t chassis_EN_state ;
+    uint8_t spin_state ;
+    uint8_t track_state ;
+    uint8_t leg_state ;
+}chassis_key_state_e;
 
 typedef enum
 {
@@ -75,6 +77,7 @@ typedef struct
     float wheel_target[4]; //四轮目标速度(rad/s)
 
     chassis_mode_e mode;
+    chassis_key_state_e key_mode;
 
     // leg_mode_e leg_mode;
     leg_state_e leg_state;

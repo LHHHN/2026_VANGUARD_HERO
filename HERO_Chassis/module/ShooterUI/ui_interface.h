@@ -8,6 +8,8 @@
 #include "usart.h"
 #include "bsp_usart.h"
 
+#if USE_RAW == 1
+
 extern USART_instance_t *referee_usart_instance;
 extern int ui_self_id;
 extern uint8_t seq;
@@ -24,5 +26,7 @@ void ui_proc_7_frame(ui_7_frame_t *msg);
 void ui_proc_string_frame(ui_string_frame_t *msg);
 void autonomous_sentinel_decision(sentry_cmd_t *msg);
 void autonomous_radar_decision(radar_cmd_t *msg);
+
+#endif
 
 #endif //SERIAL_TEST_UI_INTERFACE_H

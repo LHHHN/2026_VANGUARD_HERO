@@ -114,6 +114,9 @@
 "2026_vanguard_frame\bmi088middleware.o"
 "2026_vanguard_frame\balance_chassis.o"
 "2026_vanguard_frame\omni_mecanum_chassis.o"
+"2026_vanguard_frame\referee_task.o"
+"2026_vanguard_frame\referee_ui.o"
+"2026_vanguard_frame\rm_referee.o"
 --library_type=microlib --strict --scatter "2026_VANGUARD_Frame.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --symbols
 --list ".\2026_VANGUARD_Frame.map" -o 2026_VANGUARD_Frame\2026_VANGUARD_Frame.axf

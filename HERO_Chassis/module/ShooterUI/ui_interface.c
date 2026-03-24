@@ -5,6 +5,8 @@
 #include "cmsis_os2.h"
 #include "referee.h"
 
+#if USE_RAW == 1
+
 uint8_t seq = 0;
 int ui_self_id = 3;//此处依据机器人id自行更改
 //为了使消息能够发送给裁判系统，必须要自定义ui_self_id变量（该变量也可以使用其他代码从裁判系统读取后由程序修改）
@@ -178,4 +180,4 @@ void Auto_radarcmd_set(){
     SEND_MESSAGE((uint8_t *) &radar_decision, sizeof(radar_decision));
 }
 
-
+#endif

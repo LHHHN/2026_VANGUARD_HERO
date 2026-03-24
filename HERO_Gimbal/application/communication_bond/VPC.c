@@ -49,14 +49,14 @@ void VPC_UpdatePackets(void)
   vs_aim_packet_to_nuc.head[0] = 'S';
   vs_aim_packet_to_nuc.head[1] = 'P';
   vs_aim_packet_to_nuc.mode = 1;
-  if(shoot_cmd.fire_launched == 1)
-  {
-    vs_aim_packet_to_nuc.shoot_sign = 1; // 0-不射击 1-射击
-  }
-  else
-  {
-    vs_aim_packet_to_nuc.shoot_sign = 0; // 0-不射击 1-射击
-  }
+  // if(shoot_cmd.fire_launched == 1)
+  // {
+  //   vs_aim_packet_to_nuc.shoot_sign = 1; // 0-不射击 1-射击
+  // }
+  // else
+  // {
+  //   vs_aim_packet_to_nuc.shoot_sign = 0; // 0-不射击 1-射击
+  // }
   vs_aim_packet_to_nuc.q[0] = INS.q[0];
   vs_aim_packet_to_nuc.q[1] = INS.q[1];
   vs_aim_packet_to_nuc.q[2] = INS.q[2];

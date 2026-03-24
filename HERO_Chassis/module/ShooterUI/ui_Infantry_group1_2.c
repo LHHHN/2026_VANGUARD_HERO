@@ -5,6 +5,8 @@
 #include "ui_Infantry_group1_2.h"
 #include "string.h"
 
+#if USE_RAW == 1
+
 #define FRAME_ID 1
 #define GROUP_ID 0
 #define START_ID 2
@@ -45,3 +47,5 @@ void _ui_remove_Infantry_group1_2() {
     ui_proc_string_frame(&ui_Infantry_group1_2);
     SEND_MESSAGE((uint8_t *) &ui_Infantry_group1_2, sizeof(ui_Infantry_group1_2));
 }
+
+#endif

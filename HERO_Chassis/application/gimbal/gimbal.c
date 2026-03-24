@@ -249,7 +249,7 @@ void Gimbal_Set_Mode()
 
     if(rc_data -> online == 0)
     {
-        chassis_cmd.mode = GIMBAL_DISABLE;
+        gimbal_cmd.mode = GIMBAL_DISABLE;
     }
     else
     {
@@ -260,18 +260,18 @@ void Gimbal_Set_Mode()
             {
             case 1:
                 /* code */
-                chassis_cmd.mode = GIMBAL_DISABLE;
+                gimbal_cmd.mode = GIMBAL_DISABLE;
                 break;
             case 3:
                 /* code */
-                chassis_cmd.mode = GIMBAL_AUTO_AIMING;
+                gimbal_cmd.mode = GIMBAL_AUTO_AIMING;
                 break;
             case 2:
                 /* code */
-                chassis_cmd.mode = GIMBAL_AUTO_AIMING;
+                gimbal_cmd.mode = GIMBAL_AUTO_AIMING;
                 break;
             default:
-                chassis_cmd.mode = GIMBAL_DISABLE;
+                gimbal_cmd.mode = GIMBAL_DISABLE;
                 break;
             }
         }
@@ -281,18 +281,18 @@ void Gimbal_Set_Mode()
             {
             case 1:
                 /* code */
-                chassis_cmd.mode = GIMBAL_ENABLE;
+                gimbal_cmd.mode = GIMBAL_ENABLE;
                 break;
             case 3:
                 /* code */
-                chassis_cmd.mode = GIMBAL_ENABLE;
+                gimbal_cmd.mode = GIMBAL_ENABLE;
                 break;
             case 2:
                 /* code */
-                chassis_cmd.mode = GIMBAL_ENABLE;
+                gimbal_cmd.mode = GIMBAL_ENABLE;
                 break;
             default:
-                chassis_cmd.mode = GIMBAL_DISABLE;
+                gimbal_cmd.mode = GIMBAL_DISABLE;
                 break;
             }
         }
@@ -302,24 +302,24 @@ void Gimbal_Set_Mode()
             {
             case 1:
                 /* code */
-                chassis_cmd.mode = GIMBAL_ZERO;
+                gimbal_cmd.mode = GIMBAL_ZERO;
                 break;
             case 3:
                 /* code */
-                chassis_cmd.mode = GIMBAL_ZERO;
+                gimbal_cmd.mode = GIMBAL_ZERO;
                 break;
             case 2:
                 /* code */
-                chassis_cmd.mode = GIMBAL_ENABLE;
+                gimbal_cmd.mode = GIMBAL_ENABLE;
                 break;
             default:
-                chassis_cmd.mode = GIMBAL_DISABLE;
+                gimbal_cmd.mode = GIMBAL_DISABLE;
                 break;
             }
         }
         else
         {
-            chassis_cmd.mode = GIMBAL_DISABLE;
+            gimbal_cmd.mode = GIMBAL_DISABLE;
         }
     }
 

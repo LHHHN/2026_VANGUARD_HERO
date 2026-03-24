@@ -259,6 +259,11 @@ void Chassis_Init(void)
     DM_track_motor[1]->dm_mode = SPEED_MODE;
     DM_Motor_Enable(DM_track_motor[0]);
     DM_Motor_Enable(DM_track_motor[1]);
+
+    chassis_cmd.key_mode.key_state = 0 ;
+    chassis_cmd.key_mode.chassis_EN_state = 0 ;
+    chassis_cmd.key_mode.spin_state = 0 ;
+    chassis_cmd.key_mode.track_state = 0 ;
 }
 
 extern INS_behaviour_t INS;
@@ -281,6 +286,7 @@ void Chassis_Set_Mode(void)
     }
     else
     {
+        chassis_cmd.key_mode.key_state = 0 ;
         //遥控器控制
         if( rc_data -> rc . switch_left == 1 )
         {
@@ -292,11 +298,11 @@ void Chassis_Set_Mode(void)
                 break;
             case 3:
                 /* code */
-                chassis_cmd.mode = CHASSIS_DISABLE;
+                chassis_cmd.mode = CHASSIS_STOP_C;
                 break;
             case 2:
                 /* code */
-                chassis_cmd.mode = CHASSIS_DISABLE;
+                chassis_cmd.mode = CHASSIS_STOP_C;
                 break;
             default:
                 chassis_cmd.mode = CHASSIS_DISABLE;
@@ -330,15 +336,16 @@ void Chassis_Set_Mode(void)
             {
             case 1:
                 /* code */
-                chassis_cmd.mode = CHASSIS_ONLY;
+                chassis_cmd.mode = CHASSIS_UPSTEP;
                 break;
             case 3:
                 /* code */
-                chassis_cmd.mode = CHASSIS_UPSTEP;
+                chassis_cmd.mode = CHASSIS_SPIN;
                 break;
             case 2:
                 /* code */
-                chassis_cmd.mode = CHASSIS_SPIN;
+                chassis_cmd.mode = CHASSIS_DISABLE;
+                chassis_cmd.key_mode.key_state = 1 ;
                 break;
             default:
                 chassis_cmd.mode = CHASSIS_DISABLE;
@@ -348,6 +355,56 @@ void Chassis_Set_Mode(void)
         else
         {
             chassis_cmd.mode = CHASSIS_DISABLE;
+        }
+    }
+
+    if(chassis_cmd.key_mode.key_state == 1)
+    {
+        if(rc_data->key->c == 1)
+        {
+            // 太猥琐了，这个底盘开关一定是一个开关，不能一直按着
+            // 太猥琐了，一定要可以一边小陀螺一边蹬腿
+            // 太猥琐了，一定要可以急停颗秒
+            if(chassis_cmd.key_mode.chassis_EN_state == 0)
+            {
+                chassis_cmd.mode = CHASSIS_FOLLOW;
+                chassis_cmd.key_mode.chassis_EN_state = 1 ;
+            }
+            else
+            {
+                chassis_cmd.mode = CHASSIS_DISABLE ;
+                chassis_cmd.key_mode.chassis_EN_state = 0 ;
+            }
+        }
+
+        if(rc_data->key->b && chassis_cmd.key_mode.chassis_EN_state == 1)
+        {
+            if(chassis_cmd.key_mode.spin_state == 0)
+            {
+                chassis_cmd.mode = CHASSIS_FOLLOW;
+                chassis_cmd.key_mode.spin_state = 1 ;
+            }
+            else
+            {
+                chassis_cmd.mode = CHASSIS_DISABLE ;
+                chassis_cmd.key_mode.spin_state = 0 ;
+            }
+
+        }
+
+        if(rc_data->key->shift && chassis_cmd.key_mode.chassis_EN_state == 1)
+        {
+            if(chassis_cmd.key_mode.spin_state == 0)
+            {
+                chassis_cmd.mode = CHASSIS_SPIN;
+                chassis_cmd.key_mode.spin_state = 1 ;
+            }
+            else
+            {
+                chassis_cmd.mode = CHASSIS_DISABLE ;
+                chassis_cmd.key_mode.spin_state = 0 ;
+            }
+
         }
     }
 
@@ -496,37 +553,32 @@ void Chassis_Reference(void)
     //     Leg_Stop();
     // }
     
-    chassis_cmd. vx = (float) rc_data -> rc . rocker_l1 * REMOTE_X_SEN ;
-	chassis_cmd. vy = (float) rc_data -> rc . rocker_l_ * REMOTE_Y_SEN * 0.5f;
-
-    // chassis_cmd. vx = (float) uart2_rx_message.rocker_l1 * REMOTE_X_SEN ;
-    // chassis_cmd. vy = (float) uart2_rx_message.rocker_l_ * REMOTE_Y_SEN ;
-    chassis_cmd.v_track = 0.0f;
 
     if(chassis_cmd.mode == CHASSIS_SPIN)
     {
         chassis_cmd.omega_z = 5.0f;
+        chassis_cmd. vx = (float) rc_data -> rc . rocker_l1 * REMOTE_X_SEN ;
+        chassis_cmd. vy = (float) rc_data -> rc . rocker_l_ * REMOTE_Y_SEN ;
+        chassis_cmd.v_track = 0.0f;
     }
     else if(chassis_cmd. mode == CHASSIS_FOLLOW)
     {  
+        chassis_cmd. vx = (float) rc_data -> rc . rocker_l1 * REMOTE_X_SEN ;
+        chassis_cmd. vy = (float) rc_data -> rc . rocker_l_ * REMOTE_Y_SEN ;
+        chassis_cmd.v_track = 0.0f;
         chassis_cmd.omega_follow = PID_Position(&chasiss_follow_pid, gimbal_MF9025_motor->receive_data.RAD_single_round, FOLLOW_OMEGA_Z);
-        // chassis_cmd. omega_z = rc_data->rc . rocker_r_ * REMOTE_OMEGA_Z_SEN ;
-        // chassis_cmd. omega_z = uart2_rx_message.rocker_r_ * REMOTE_OMEGA_Z_SEN ;
     }
     else if(chassis_cmd.mode == CHASSIS_UPSTEP)
     {
         chassis_cmd.omega_z = 0.0f;
-        // chassis_cmd.omega_follow = PID_Position(&chasiss_follow_pid, gimbal_MF9025_motor->receive_data.RAD_single_round, FOLLOW_OMEGA_Z);
+        chassis_cmd. vx = (float) rc_data -> rc . rocker_l1 * REMOTE_X_SEN ;
+        chassis_cmd. vy = (float) rc_data -> rc . rocker_l_ * REMOTE_Y_SEN ;
         chassis_cmd. omega_z = rc_data->rc . rocker_r_ * REMOTE_OMEGA_Z_SEN ;
         chassis_cmd.omega_follow = 0.0f;
         if(rc_data->rc . rocker_r1 >= 0 && chassis_cmd.leg_state == LEG_NORMAL)
         {
             chassis_cmd.leg_angle = rc_data->rc . rocker_r1 * 0.0013 ; //660换算成弧度0-0.88rad
         }
-        // if(uart2_rx_message.rocker_r1 > 0 && chassis_cmd.leg_state == LEG_NORMAL)
-        // {    
-        //     chassis_cmd.leg_angle = uart2_rx_message.rocker_r1 * 0.001394f ;
-        // }
         chassis_cmd.v_track = 10.0f ;
     }
     else if(chassis_cmd.mode == CHASSIS_STOP_C)
@@ -536,36 +588,6 @@ void Chassis_Reference(void)
         chassis_cmd.vx = 0.0f;
         chassis_cmd.vy = 0.0f;
         chassis_cmd.leg_angle = 0.0f ; 
-    }
-    else if(chassis_cmd.mode == CHASSIS_ONLY)
-    {
-        // if(user_abs(rc_data->rc . rocker_r_) >= 5)
-        // {
-        //     if(chassis_hold_flag == 1)
-        //     {
-        //         chassis_yaw_target = INS.Yaw;
-        //         chassis_hold_flag = 0;
-        //     }
-        //     chassis_yaw_target -= rc_data->rc . rocker_r_ * 0.000025f;
-        // }
-        // else
-        // {
-        //      if(chassis_hold_flag == 0)
-        //     {
-        //         // chassis_yaw_target = INS.Yaw;
-        //         chassis_hold_flag = 1;
-        //     }
-        // }
-
-        // while(chassis_yaw_target - INS.Yaw> PI)
-        //     chassis_yaw_target -= 2 * PI ;
-        // while(chassis_yaw_target - INS.Yaw < -PI)
-        //     chassis_yaw_target += 2 * PI ;
-
-        // chassis_cmd.omega_z = -PID_Position(&chassis_hold_pid, INS.Yaw, chassis_yaw_target);
-       
-        chassis_cmd. omega_z = rc_data->rc . rocker_r_ * REMOTE_OMEGA_Z_SEN ;
-        chassis_cmd.omega_follow = 0.0f;
     }
 
     if(chassis_cmd.leg_state == LEG_NORMAL && chassis_cmd.mode != CHASSIS_UPSTEP)

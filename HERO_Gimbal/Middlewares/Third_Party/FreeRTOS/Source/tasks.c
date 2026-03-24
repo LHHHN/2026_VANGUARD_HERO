@@ -2315,7 +2315,7 @@ TickType_t xTicks;
 	return xTicks;
 }
 /*-----------------------------------------------------------*/
-
+  
 TickType_t xTaskGetTickCountFromISR( void )
 {
 TickType_t xReturn;
