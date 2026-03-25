@@ -153,6 +153,8 @@ PID_t gimbal_follow_pid = {
     .dead_band = 0.0f,
 };
 
+
+
 static void Gimbal_Enable(void);
 static void Gimbal_Disable(void);
 static void Gimbal_Stop(void);
@@ -198,13 +200,24 @@ float target_yaw = 0.0f;
 // 	memcpy(EstimateKF->H_data, vaEstimateKF_H, sizeof(vaEstimateKF_H));
 // }
 
-
 kalman_one_filter_t mess_kf; //yaw的卡尔曼滤波
 
 void Messkf_Init(void)
 {
 	Kalman_One_Init(&mess_kf, 0.01f, 1.3f);
 }
+
+//yaw斜坡函数
+ramp_function_source_t *yaw_speed_ramp; 
+
+ramp_init_config_t yaw_speed_ramp_init = {
+    .frame_period = 0.001f,        // 1ms控制周期
+    .max_value = 0.0f,            // 最大输出
+    .min_value = 0.0f,             // 最小输出
+    .increase_value = 0.0005f,        // 加速度
+    .decrease_value = 0.0005f,     // 减速度
+    .ramp_state = SLOPE_FIRST_REAL // 工作模式
+};
 
 void Gimbal_Init(void)
 {
@@ -217,6 +230,7 @@ void Gimbal_Init(void)
     LK_Motor_GetData(gimbal_MF9025_motor);
 
     Messkf_Init();
+    yaw_speed_ramp = ramp_init(&yaw_speed_ramp_init);
 }
 
 extern RC_ctrl_t *rc_data;
@@ -355,7 +369,7 @@ void Gimbal_Set_Mode()
             {
                 gimbal_cmd.mode = GIMBAL_ZERO;
             }
-            else if(rc_data->key->q ==1 && gimbal_cmd.mode == GIMBAL_ZERO)
+            else if(rc_data->key->q ==0 && gimbal_cmd.mode == GIMBAL_ZERO)
             {
                 gimbal_cmd.mode = GIMBAL_ENABLE;
             }
@@ -515,12 +529,22 @@ void Gimbal_Reference( )
 }
 
 float target_yaw_pro;
+float target_yaw_promax ;
 void Gimbal_Console( )
 {
 
     if(gimbal_cmd.mode == GIMBAL_ENABLE)
     {
-        gimbal_cmd.v_yaw = -(float) rc_data -> rc . rocker_r_ * REMOTE_YAW_SEN;
+        if(gimbal_cmd.key_state.key_EN_state == 0)
+        {
+            gimbal_cmd.v_yaw = -(float) rc_data -> rc . rocker_r_ * REMOTE_YAW_SEN;
+        }
+        else if(gimbal_cmd.key_state.key_EN_state == 1)
+        {
+            gimbal_cmd.v_yaw = ramp_calc(yaw_speed_ramp , -(float)rc_data->mouse.x * KEY_YAW_SEN);
+            yaw_speed_ramp->real_value = gimbal_cmd.v_yaw ;
+        }
+        
         // gimbal_cmd.v_yaw = -(float) uart2_rx_message.rocker_r_ * REMOTE_YAW_SEN;
         target_yaw += gimbal_cmd.v_yaw ;
     }
@@ -528,8 +552,16 @@ void Gimbal_Console( )
     {
         if(uart2_rx_message.vs_mode == 0)
         {
-            gimbal_cmd.v_yaw = -(float) rc_data -> rc . rocker_r_ * REMOTE_YAW_SEN;
-            // gimbal_cmd.v_yaw = -(float) uart2_rx_message.rocker_r_ * REMOTE_YAW_SEN;
+            // gimbal_cmd.v_yaw = -(float) rc_data -> rc . rocker_r_ * REMOTE_YAW_SEN;
+            if(gimbal_cmd.key_state.key_EN_state == 0)
+            {
+                gimbal_cmd.v_yaw = -(float) rc_data -> rc . rocker_r_ * REMOTE_YAW_SEN;
+            }
+            else if(gimbal_cmd.key_state.key_EN_state == 1)
+            {
+                gimbal_cmd.v_yaw = ramp_calc(yaw_speed_ramp , -(float)rc_data->mouse.x * KEY_YAW_SEN);
+                yaw_speed_ramp->real_value = gimbal_cmd.v_yaw ;
+            }
             target_yaw += gimbal_cmd.v_yaw ;
         }
         else if(uart2_rx_message.vs_mode == 1 || uart2_rx_message.vs_mode == 2)
@@ -569,13 +601,12 @@ void Gimbal_Console( )
         target_yaw = INS.Yaw ;
     }
 
-    target_yaw_pro = Kalman_One_Filter(&mess_kf , target_yaw) ;
-
     // while(target_yaw - uart2_rx_message.angle_yaw> PI)
     //     target_yaw -= 2 * PI ;
     // while(target_yaw - uart2_rx_message.angle_yaw < -PI)
     //     target_yaw += 2 * PI ;
 
+    target_yaw_pro = Kalman_One_Filter(&mess_kf , target_yaw) ;
     while(target_yaw_pro - uart2_rx_message.angle_yaw > PI)
         target_yaw_pro -= 2 * PI ;
     while(target_yaw_pro - uart2_rx_message.angle_yaw < -PI)

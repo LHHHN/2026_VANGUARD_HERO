@@ -115,19 +115,135 @@ extern RC_ctrl_t *rc_data;
 
 void Shoot_Set_Mode(void)
 {
-    if( rc_data -> rc . switch_left == 3 && (rc_data -> rc . switch_right == 3 || rc_data -> rc . switch_right == 2))
-    // if( uart2_rx_message.switch_left == 2 &&  uart2_rx_message.switch_right == 3)
-    {
-        shoot_cmd.mode = SHOOT_ENABLE;
-    }
-    else if( rc_data -> rc . switch_left == 1 && (rc_data -> rc . switch_right == 3 || rc_data -> rc . switch_right == 2))
-    {
-        shoot_cmd.mode = SHOOT_AUTO_AIMING;
-    }
-    else 
+
+static uint8_t last_key_cnt[16] = {0};
+static uint8_t key_mode_last = 0;
+
+#define KEY_CLICK(k) (rc_data->key_count[KEY_PRESS][(k)] != last_key_cnt[(k)])
+#define KEY_ACK(k) (last_key_cnt[(k)] = rc_data->key_count[KEY_PRESS][(k)])
+
+    if(rc_data -> online == 0)
     {
         shoot_cmd.mode = SHOOT_DISABLE;
     }
+    else
+    {
+        //遥控器控制
+        shoot_cmd.key_state.key_EN_state = 0;
+        if( rc_data -> rc . switch_left == 1 )
+        {
+            switch (rc_data -> rc . switch_right)
+            {
+            case 1:
+                /* code */
+                shoot_cmd.mode = SHOOT_DISABLE;
+                break;
+            case 3:
+                /* code */
+                shoot_cmd.mode = SHOOT_AUTO_AIMING;
+                break;
+            case 2:
+                /* code */
+                shoot_cmd.mode = SHOOT_AUTO_AIMING;
+                break;
+            default:
+                shoot_cmd.mode = SHOOT_DISABLE;
+                break;
+            }
+        }
+        else if( rc_data -> rc . switch_left == 3 )
+        {
+            switch (rc_data -> rc . switch_right)
+            {
+            case 1:
+                /* code */
+                shoot_cmd.mode = SHOOT_DISABLE;
+                break;
+            case 3:
+                /* code */
+                shoot_cmd.mode = SHOOT_ENABLE;
+                break;
+            case 2:
+                /* code */
+                shoot_cmd.mode = SHOOT_ENABLE;
+                break;
+            default:
+                shoot_cmd.mode = SHOOT_DISABLE;
+                break;
+            }
+        }
+        else if( rc_data -> rc . switch_left == 2 )
+        {
+            switch (rc_data -> rc . switch_right)
+            {
+            case 1:
+                /* code */
+                shoot_cmd.mode = SHOOT_DISABLE;
+                break;
+            case 3:
+                /* code */
+                shoot_cmd.mode = SHOOT_DISABLE;
+                break;
+            case 2:
+                /* code */
+                // gimbal_cmd.mode = SHOOT_DISABLE;
+                shoot_cmd.key_state.key_EN_state = 1;
+                break;
+            default:
+                shoot_cmd.mode = SHOOT_DISABLE;
+                break;
+            }
+        }
+        else
+        {
+            shoot_cmd.mode = SHOOT_DISABLE;
+        }
+    }
+
+    if (shoot_cmd.key_state.key_EN_state == 1 && key_mode_last == 0)
+    {
+        for (uint8_t i = 0; i < 16; i++)
+        {
+            last_key_cnt[i] = rc_data->key_count[KEY_PRESS][i];
+        }
+    }
+    key_mode_last = shoot_cmd.key_state.key_EN_state;
+
+    if (shoot_cmd.key_state.key_EN_state == 1)
+    {
+        if (KEY_CLICK(Key_F))
+        {
+            if (shoot_cmd.mode == SHOOT_DISABLE)
+            {
+                shoot_cmd.mode = SHOOT_ENABLE;
+                shoot_cmd.key_state.shoot_EN_state = 1;
+            }
+            else
+            {
+                shoot_cmd.mode = SHOOT_DISABLE;
+                shoot_cmd.key_state.shoot_EN_state = 0;
+            }
+            KEY_ACK(Key_F);
+        }
+
+        if(shoot_cmd.key_state.shoot_EN_state == 1)
+        {
+            //自瞄
+            if (rc_data->mouse.press_r == 1)
+            {
+                shoot_cmd.mode = SHOOT_AUTO_AIMING;
+            }
+            else if(rc_data->mouse.press_r == 0 && shoot_cmd.mode == SHOOT_AUTO_AIMING)
+            {
+                shoot_cmd.mode = SHOOT_ENABLE;
+            }
+        }
+    }
+    
+
+
+#undef KEY_CLICK
+#undef KEY_ACK
 
     if( shoot_cmd.mode == SHOOT_ENABLE || shoot_cmd.mode == SHOOT_AUTO_AIMING)
     {
@@ -137,6 +253,7 @@ void Shoot_Set_Mode(void)
     {
         Shoot_Disable();
     }
+
 }
 
 float speed_kp_test = 0.45f;
@@ -205,49 +322,82 @@ void Shoot_Reference(void)
     
     if(shoot_cmd.mode == SHOOT_ENABLE)
     {
-        if(uart2_rx_message.shoot_launched == 0)
+        //遥控器值
+        if(shoot_cmd.key_state.key_EN_state == 0)
         {
-            shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
-            if( rc_data -> rc .dial == 660) 
-            // if( uart2_rx_message.dial == 660)
-            {
-                if(shoot_cmd.fire_single == 1)
-                {
-                    if(shoot_angle_limit_flag == 0)
-                    {
-                        shoot_angle_last = shoot_stir_motor->receive_data.total_angle;
-                        shoot_angle_limit_flag = 1;
-                    }
-                    shoot_cmd.v_shoot_stir = shoot_stir_tar ;
-
-                    // shoot_cmd.angle_shoot_stir -= SHOOT_SINGLE_ANGLE_DEF * 19.8f;
-                }
-                shoot_cmd.fire_single = 0;
-            }
-            else if( rc_data -> rc .dial == 0)
-            // else if( uart2_rx_message.dial == 0)
+            if(uart2_rx_message.shoot_launched == 0)
             {
                 shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
-                if(shoot_angle_limit_flag == 1)
+                if( rc_data -> rc .dial == 660) 
+                // if( uart2_rx_message.dial == 660)
                 {
-                    shoot_angle_limit_flag = 0;
+                    if(shoot_cmd.fire_single == 1)
+                    {
+                        if(shoot_angle_limit_flag == 0)
+                        {
+                            shoot_angle_last = shoot_stir_motor->receive_data.total_angle;
+                            shoot_angle_limit_flag = 1;
+                        }
+                        shoot_cmd.v_shoot_stir = shoot_stir_tar ;
+
+                        // shoot_cmd.angle_shoot_stir -= SHOOT_SINGLE_ANGLE_DEF * 19.8f;
+                    }
+                    shoot_cmd.fire_single = 0;
                 }
-                shoot_cmd.fire_single = 1;
+                else if( rc_data -> rc .dial == 0)
+                // else if( uart2_rx_message.dial == 0)
+                {
+                    shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
+                    if(shoot_angle_limit_flag == 1)
+                    {
+                        shoot_angle_limit_flag = 0;
+                    }
+                    shoot_cmd.fire_single = 1;
 
-                shoot_cmd.v_shoot_stir = 0;
+                    shoot_cmd.v_shoot_stir = 0;
 
-                // shoot_cmd.angle_shoot_stir = shoot_stir_motor->receive_data.total_angle; 
+                    // shoot_cmd.angle_shoot_stir = shoot_stir_motor->receive_data.total_angle; 
+                }
             }
-
         }
-        
-        // if(shoot_cmd.fire_arrive_current == 1 && shoot_cmd.fire_arrive_last == 0)
-        // {
-        //     shoot_cmd.v_shoot_stir = 0 ;
+        //键鼠值
+        else if(shoot_cmd.key_state.key_EN_state == 1)
+        {
+            if(uart2_rx_message.shoot_launched == 0)
+            {
+                shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
+                if( rc_data->mouse.press_l == 1)  //鼠标按下
+                // if( uart2_rx_message.dial == 660)
+                {
+                    if(shoot_cmd.fire_single == 1)
+                    {
+                        if(shoot_angle_limit_flag == 0)
+                        {
+                            shoot_angle_last = shoot_stir_motor->receive_data.total_angle;
+                            shoot_angle_limit_flag = 1;
+                        }
+                        shoot_cmd.v_shoot_stir = shoot_stir_tar ;
 
-        //     // shoot_cmd.angle_shoot_stir = 0 ;
-        //     // shoot_stir_motor->receive_data.total_angle = 0; 
-        // }
+                        // shoot_cmd.angle_shoot_stir -= SHOOT_SINGLE_ANGLE_DEF * 19.8f;
+                    }
+                    shoot_cmd.fire_single = 0;
+                }
+                else if( rc_data->mouse.press_l == 0) //鼠标松开
+                // else if( uart2_rx_message.dial == 0)
+                {
+                    shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
+                    if(shoot_angle_limit_flag == 1)
+                    {
+                        shoot_angle_limit_flag = 0;
+                    }
+                    shoot_cmd.fire_single = 1;
+
+                    shoot_cmd.v_shoot_stir = 0;
+
+                    // shoot_cmd.angle_shoot_stir = shoot_stir_motor->receive_data.total_angle; 
+                }
+            }
+        }
 
         if(uart2_rx_message.shoot_launched == 1)
         {
@@ -263,61 +413,110 @@ void Shoot_Reference(void)
     }
     else if( shoot_cmd.mode == SHOOT_AUTO_AIMING)
     {
-        if(uart2_rx_message.vs_mode == 2 && rc_data->rc.dial == 660)
-        {				
-            if(vs_shoot_cnt <= 0)
-            {
-								shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
-                vs_shoot_cnt = 0.0f;
+        //遥控器
+        if(shoot_cmd.key_state.key_EN_state == 0)
+        {
+            if(uart2_rx_message.vs_mode == 2 && rc_data->rc.dial == 660)
+            {				
+                if(vs_shoot_cnt <= 0)
+                {
+                    shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
+                    vs_shoot_cnt = 0.0f;
+                }
+                else
+                {
+                    shoot_angle_limit_flag = 0;
+                    vs_shoot_cnt --;
+                }
+                if(uart2_rx_message.shoot_launched == 0 && vs_shoot_cnt == 0.0f)
+                {
+                    if(shoot_angle_limit_flag == 0)
+                    {
+                        shoot_angle_last = shoot_stir_motor->receive_data.total_angle;
+                        shoot_angle_limit_flag = 1;
+                    }
+                                    
+                    shoot_cmd.v_shoot_stir = shoot_stir_tar ;
+                }
+                
+                if(uart2_rx_message.shoot_launched == 1)
+                {
+                    shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
+                    shoot_cmd.v_shoot_stir = 0 ;
+                    if(vs_shoot_cnt == 0.0f)
+                    {
+                        vs_shoot_cnt = 1000.0f;
+                    }
+                }
+
+                if(((shoot_angle_now - shoot_angle_last) < -63.0f * 19.8f))
+                {
+                    shoot_cmd.v_shoot_stir = 0;
+                    if(vs_shoot_cnt == 0.0f)
+                    {
+                        vs_shoot_cnt = 1000.0f;
+                    }
+                }
             }
             else
             {
-                shoot_angle_limit_flag = 0;
-                vs_shoot_cnt --;
+                shoot_cmd.v_shoot_stir = 0;
             }
-            if(uart2_rx_message.shoot_launched == 0 && vs_shoot_cnt == 0.0f)
-            {
-                if(shoot_angle_limit_flag == 0)
+        }
+        else if(shoot_cmd.key_state.key_EN_state == 1)//键鼠
+        {
+            if(uart2_rx_message.vs_mode == 2 && rc_data->mouse.press_l == 1)
+            {				
+                if(vs_shoot_cnt <= 0)
                 {
-                    shoot_angle_last = shoot_stir_motor->receive_data.total_angle;
-                    shoot_angle_limit_flag = 1;
+                    shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
+                    vs_shoot_cnt = 0.0f;
                 }
-								
-                shoot_cmd.v_shoot_stir = shoot_stir_tar ;
-            }
-            
-            if(uart2_rx_message.shoot_launched == 1)
-            {
-                shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
-                shoot_cmd.v_shoot_stir = 0 ;
-                if(vs_shoot_cnt == 0.0f)
+                else
                 {
-                    vs_shoot_cnt = 1000.0f;
+                    shoot_angle_limit_flag = 0;
+                    vs_shoot_cnt --;
                 }
-            }
+                if(uart2_rx_message.shoot_launched == 0 && vs_shoot_cnt == 0.0f)
+                {
+                    if(shoot_angle_limit_flag == 0)
+                    {
+                        shoot_angle_last = shoot_stir_motor->receive_data.total_angle;
+                        shoot_angle_limit_flag = 1;
+                    }
+                                    
+                    shoot_cmd.v_shoot_stir = shoot_stir_tar ;
+                }
+                
+                if(uart2_rx_message.shoot_launched == 1)
+                {
+                    shoot_angle_now = shoot_stir_motor->receive_data.total_angle;
+                    shoot_cmd.v_shoot_stir = 0 ;
+                    if(vs_shoot_cnt == 0.0f)
+                    {
+                        vs_shoot_cnt = 1000.0f;
+                    }
+                }
 
-            if(((shoot_angle_now - shoot_angle_last) < -63.0f * 19.8f))
+                if(((shoot_angle_now - shoot_angle_last) < -63.0f * 19.8f))
+                {
+                    shoot_cmd.v_shoot_stir = 0;
+                    if(vs_shoot_cnt == 0.0f)
+                    {
+                        vs_shoot_cnt = 1000.0f;
+                    }
+                }
+            }
+            else
             {
                 shoot_cmd.v_shoot_stir = 0;
-                if(vs_shoot_cnt == 0.0f)
-                {
-                    vs_shoot_cnt = 1000.0f;
-                }
             }
         }
-        else
-        {
-            shoot_cmd.v_shoot_stir = 0;
-        }
+        
     }
     else if( shoot_cmd.mode == SHOOT_DISABLE)
     {
         shoot_cmd.v_shoot_stir = 0;
-
-        // shoot_cmd.angle_shoot_stir = shoot_stir_motor->receive_data.total_angle;
-
-        // shoot_cmd.angle_shoot_stir = 0;
-        // shoot_stir_motor->receive_data.total_angle = 0;
     }
 
     if(vs_shoot_cnt <= 0)
@@ -331,7 +530,6 @@ void Shoot_Reference(void)
         vs_shoot_cnt --;
     }
 
-    
     shoot_stir_current_test = shoot_stir_motor->receive_data.real_current;
 
     shoot_stir_speed_test = shoot_stir_motor->receive_data.speed_aps;

@@ -27,17 +27,11 @@ Project File Date:  03/24/2026
 <h2>Output:</h2>
 *** Using Compiler 'V6.24', folder: 'D:\keil5_543\ARM\ARMCLANG\Bin'
 Build target '2026_VANGUARD_Frame'
-../application/gimbal/gimbal.c(105): warning: taking address of packed member 'angle_yaw' of class or structure 'Rx_packed_t' may result in an unaligned pointer value [-Waddress-of-packed-member]
-  105 |         .other_angle_feedback_ptr = &(uart2_rx_message.angle_yaw),
-      |                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~
-../application/gimbal/gimbal.c(106): warning: taking address of packed member 'speed_yaw' of class or structure 'Rx_packed_t' may result in an unaligned pointer value [-Waddress-of-packed-member]
-  106 |         .other_speed_feedback_ptr = &(uart2_rx_message.speed_yaw),
-      |                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~
-2 warnings generated.
-compiling gimbal.c...
+compiling shoot.c...
+compiling main.c...
 linking...
-Program Size: Code=151706 RO-data=3398 RW-data=3000 ZI-data=61440  
-"2026_VANGUARD_Frame\2026_VANGUARD_Frame.axf" - 0 Error(s), 2 Warning(s).
+Program Size: Code=153562 RO-data=3398 RW-data=3044 ZI-data=61476  
+"2026_VANGUARD_Frame\2026_VANGUARD_Frame.axf" - 0 Error(s), 0 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -61,7 +55,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE@6.1.1
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:04
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>

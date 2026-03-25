@@ -30,10 +30,19 @@ typedef enum
 	SHOOT_AUTO_AIMING = 2,
 }shoot_mode_e;
 
+typedef struct 
+{
+	uint8_t key_EN_state;
+    uint8_t shoot_EN_state;
+	/* data */
+}shoot_key_state_e;
+
 typedef struct
 {
 	/* data */
+	shoot_key_state_e key_state ;
 	shoot_mode_e mode;
+	
 	uint8_t fire_single;
 	uint8_t fire_arrive_current;
 	uint8_t fire_arrive_last;

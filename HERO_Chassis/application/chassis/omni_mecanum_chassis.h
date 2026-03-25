@@ -29,14 +29,16 @@
 #define OMNI_WIDTH 0.435f     // 全向轮轮距（track） 即左右驱动轮中心距离
 #define WHEEL_RADIUS 0.077f   // 驱动轮半径（diameter）
 
+#define SPIN_SET 3.0f 
+
 /*遥控器参数*/
 #define REMOTE_X_SEN 0.001 // 660 ~ -660
 #define REMOTE_Y_SEN 0.0005
-#define REMOTE_OMEGA_Z_SEN 0.005f // 6.6
+#define REMOTE_OMEGA_Z_SEN 0.00001f // 6.6
 
 /*键鼠参数*/
-#define KEY_X_SEN 6.6
-#define KEY_Y_SEN 3.3
+#define KEY_X_SEN 1.5
+#define KEY_Y_SEN 1
 #define KEY_OMEGA_Z_SEN 0.005f // 6.6
 
 // #define REMOTE_YAW_SEN 0.000015f

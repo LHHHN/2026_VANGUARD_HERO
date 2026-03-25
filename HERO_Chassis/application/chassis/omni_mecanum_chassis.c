@@ -85,6 +85,19 @@ motor_init_config_t chassis_3508_init = {
     },
 };
 
+// 底盘轮毂电机斜坡函数
+ramp_function_source_t *vx_speed_ramp; 
+ramp_function_source_t *vy_speed_ramp; 
+
+ramp_init_config_t wheel_speed_ramp_init = {
+    .frame_period = 0.001f,        // 1ms控制周期
+    .max_value = 0.0f,            // 最大输出
+    .min_value = 0.0f,             // 最小输出
+    .increase_value = 0.00001f,        // 加速度
+    .decrease_value = 0.00001f,     // 减速度
+    .ramp_state = SLOPE_FIRST_REAL // 工作模式
+};
+
 // 底盘关节电机DM4340初始化参数
 
 DM_motor_instance_t *DM_arthrosis_motor[2]; // 0为左腿id=2 方向+ ，1为右腿id=3 方向-
@@ -127,21 +140,21 @@ motor_init_config_t DM_arthrosis_motor_init = {
         .pid_ref = 0.0f,
     },
     .controller_setting_init_config = {// .close_loop_type = TORQUE_LOOP,
-                                       .outer_loop_type = ANGLE_LOOP,
-                                       .close_loop_type = SPEED_LOOP | ANGLE_LOOP,
-                                       // .close_loop_type = ANGLE_LOOP,
+        .outer_loop_type = ANGLE_LOOP,
+        .close_loop_type = SPEED_LOOP | ANGLE_LOOP,
+        // .close_loop_type = ANGLE_LOOP,
 
-                                       .motor_reverse_flag = MOTOR_DIRECTION_NORMAL,
-                                       .feedback_reverse_flag = FEEDBACK_DIRECTION_NORMAL,
+        .motor_reverse_flag = MOTOR_DIRECTION_NORMAL,
+        .feedback_reverse_flag = FEEDBACK_DIRECTION_NORMAL,
 
-                                       .angle_feedback_source = MOTOR_FEED,
-                                       .speed_feedback_source = MOTOR_FEED,
+        .angle_feedback_source = MOTOR_FEED,
+        .speed_feedback_source = MOTOR_FEED,
 
-                                       .feedforward_flag = FEEDFORWARD_NONE,
-                                       // .control_button = TORQUE_DIRECT_CONTROL,
-                                       .control_button = POLYCYCLIC_LOOP_CONTROL},
+        .feedforward_flag = FEEDFORWARD_NONE,
+        // .control_button = TORQUE_DIRECT_CONTROL,
+        .control_button = POLYCYCLIC_LOOP_CONTROL},
 
-    .motor_type = DM4340,
+        .motor_type = DM4340,
 
     .can_init_config = {
         .can_handle = &hfdcan2,
@@ -214,7 +227,7 @@ PID_t chasiss_follow_pid = {
     .kp = 7.5f,
     .ki = 0.00f,
     .kd = 2.0f,
-    .output_limit = 25.0f,
+    .output_limit = 10.0f,
     .integral_limit = 20.0f,
     .dead_band = 0.00f,
 };
@@ -229,6 +242,9 @@ void Chassis_Init(void)
         chassis_m3508[i] = DJI_Motor_Init(&chassis_3508_init);
         chassis_m3508[i]->motor_feedback = RAD;
     }
+
+    vx_speed_ramp = ramp_init(&wheel_speed_ramp_init);
+    vy_speed_ramp = ramp_init(&wheel_speed_ramp_init);
 
     // 底盘关节电机DM4340初始化
     for (int i = 0; i < 2; i++)
@@ -272,13 +288,15 @@ static void Leg_Start(void);
 static void Leg_Stop(void);
 static void Chassis_Disable(void);
 
-uint8_t last_key_cnt[16] = {0};
-uint8_t key_mode_last = 0;
+
 
 float leg_cnt = 0.0f; // 离地时间计数
 
 void Chassis_Set_Mode(void)
 {
+static uint8_t last_key_cnt[16] = {0};
+static uint8_t key_mode_last = 0;
+
 #define KEY_CLICK(k) (rc_data->key_count[KEY_PRESS][(k)] != last_key_cnt[(k)])
 #define KEY_ACK(k) (last_key_cnt[(k)] = rc_data->key_count[KEY_PRESS][(k)])
 
@@ -585,7 +603,7 @@ void Chassis_Reference(void)
 
     if (chassis_cmd.mode == CHASSIS_SPIN)
     {
-        chassis_cmd.omega_z = 5.0f;
+        chassis_cmd.omega_z = SPIN_SET ;
         // chassis_cmd.vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
         // chassis_cmd.vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
         if (chassis_cmd.key_state.key_EN_state == 0)
@@ -596,7 +614,7 @@ void Chassis_Reference(void)
         else if (chassis_cmd.key_state.key_EN_state == 1)
         {
             chassis_cmd.vx = (float)(rc_data->key->w - rc_data->key->s) * KEY_X_SEN;
-            chassis_cmd.vy = (float)(rc_data->key->d - rc_data->key->a) * KEY_Y_SEN;
+            chassis_cmd.vy = (float)(rc_data->key->a - rc_data->key->d) * KEY_Y_SEN;
         }
         chassis_cmd.v_track = 0.0f;
     }
@@ -610,7 +628,7 @@ void Chassis_Reference(void)
         else if (chassis_cmd.key_state.key_EN_state == 1)
         {
             chassis_cmd.vx = (float)(rc_data->key->w - rc_data->key->s) * KEY_X_SEN;
-            chassis_cmd.vy = (float)(rc_data->key->d - rc_data->key->a) * KEY_Y_SEN;
+            chassis_cmd.vy = (float)(rc_data->key->a - rc_data->key->d) * KEY_Y_SEN;
         }
         chassis_cmd.omega_z = 0.0f;
         chassis_cmd.v_track = 0.0f;
@@ -631,8 +649,8 @@ void Chassis_Reference(void)
         else if (chassis_cmd.key_state.key_EN_state == 1)
         {
             chassis_cmd.vx = (float)(rc_data->key->w - rc_data->key->s) * KEY_X_SEN;
-            chassis_cmd.vy = (float)(rc_data->key->d - rc_data->key->a) * KEY_Y_SEN;
-            chassis_cmd.omega_z = rc_data->mouse.x * REMOTE_OMEGA_Z_SEN;
+            chassis_cmd.vy = (float)(rc_data->key->a - rc_data->key->d) * KEY_Y_SEN;
+            chassis_cmd.omega_z = rc_data->mouse.x * KEY_OMEGA_Z_SEN;
         }
         chassis_cmd.omega_follow = 0.0f;
         if (rc_data->rc.rocker_r1 >= 0 && chassis_cmd.leg_state == LEG_NORMAL)
@@ -650,6 +668,14 @@ void Chassis_Reference(void)
         chassis_cmd.leg_angle = 0.0f;
     }
 
+    if (chassis_cmd.key_state.key_EN_state == 1)
+    {
+        chassis_cmd.vx = ramp_calc(vx_speed_ramp,(float)(rc_data->key->w - rc_data->key->s) * KEY_X_SEN);
+        chassis_cmd.vy = ramp_calc(vy_speed_ramp,(float)(rc_data->key->a - rc_data->key->d) * KEY_Y_SEN);
+        vx_speed_ramp->real_value = (float)(rc_data->key->w - rc_data->key->s) * KEY_X_SEN ;
+        vy_speed_ramp->real_value = (float)(rc_data->key->a - rc_data->key->d) * KEY_Y_SEN ;
+    }
+
     if (chassis_cmd.leg_state == LEG_NORMAL && chassis_cmd.mode != CHASSIS_UPSTEP)
     {
         chassis_cmd.leg_angle = 0.0f;
@@ -658,6 +684,8 @@ void Chassis_Reference(void)
     {
         chassis_cmd.leg_angle = 0.45f;
     }
+
+
 }
 
 /*
@@ -710,6 +738,8 @@ void Chassis_Send_Cmd()
 {
     for (int i = 0; i < 4; i++)
     {
+        // wheel_speed_ramp[i]->real_value = DJI_Motor_GetVal(chassis_m3508[i], MOTOR_SPEED, RAD);
+        // DJI_Motor_Set_Ref(chassis_m3508[i], ramp_calc(wheel_speed_ramp[i] , chassis_cmd.wheel_target[i]));
         DJI_Motor_Set_Ref(chassis_m3508[i], chassis_cmd.wheel_target[i]);
     }
 
