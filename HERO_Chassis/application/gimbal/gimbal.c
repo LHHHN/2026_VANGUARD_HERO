@@ -391,12 +391,12 @@ void Gimbal_Set_Mode()
         // target_yaw = gimbal_MF9025_motor->receive_data.RAD_single_round;
         Gimbal_Enable();
     }
-    else if( gimbal_cmd.mode == GIMBAL_STOP && gimbal_MF9025_motor->motor_state_flag != MOTOR_ENABLE)
-    // else if( gimbal_cmd.mode == GIMBAL_STOP )
-    {
-        // target_yaw = gimbal_MF9025_motor->receive_data.RAD_single_round;
-        Gimbal_Stop();
-    }
+//    else if( gimbal_cmd.mode == GIMBAL_STOP && gimbal_MF9025_motor->motor_state_flag != MOTOR_ENABLE)
+//    // else if( gimbal_cmd.mode == GIMBAL_STOP )
+//    {
+//        // target_yaw = gimbal_MF9025_motor->receive_data.RAD_single_round;
+//        Gimbal_Stop();
+//    }
     else if ( gimbal_cmd.mode == GIMBAL_DISABLE && gimbal_MF9025_motor->motor_state_flag != MOTOR_DISABLE)
     // else if ( gimbal_cmd.mode == GIMBAL_DISABLE )
     {
@@ -585,11 +585,11 @@ void Gimbal_Console( )
         }
         
     }
-    else if(gimbal_cmd.mode == GIMBAL_STOP)
-    {
-        gimbal_cmd.v_yaw = 0.0f;
-        target_yaw =  target_yaw;
-    }
+//    else if(gimbal_cmd.mode == GIMBAL_STOP)
+//    {
+//        gimbal_cmd.v_yaw = 0.0f;
+//        target_yaw =  target_yaw;
+//    }
     else if(gimbal_cmd.mode == GIMBAL_ZERO)
     {        
         gimbal_cmd.v_yaw = PID_Position(&gimbal_follow_pid, gimbal_MF9025_motor->receive_data.RAD_single_round, 3.67f);

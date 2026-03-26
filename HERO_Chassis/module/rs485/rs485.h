@@ -12,10 +12,20 @@ typedef struct
 
     // float chassis_omega_speed;
 
-    int16_t rocker_r_; // 右水平
-    int16_t rocker_r1; // 右竖直
-    uint8_t rc_switch;  // 两侧拨杆
-    float angle_tar; 
+    // int16_t rocker_r_; // 右水平
+    // int16_t rocker_r1; // 右竖直
+    // uint8_t rc_switch;  // 两侧拨杆
+    // float angle_tar; 
+
+    int16_t rocker_r1; // pitch 遥控器输入
+    int16_t mouse_y;   // pitch 键鼠输入
+
+    uint8_t rc_switch;   // 两侧拨杆
+    uint8_t control_src; // 0: remote, 1: keymouse
+    uint8_t gimbal_mode; // 云台模式
+    uint8_t shoot_mode;  // 发射模式
+
+    float angle_tar; // yaw 目标角
 
     uint8_t frame_tailer;
     uint8_t check_sum;
@@ -31,14 +41,6 @@ typedef struct
     // float target_x_speed;
     // float target_y_speed;
     // float target_omega_speed;
-
-    // int16_t rocker_l_; // 左水平
-    // int16_t rocker_l1; // 左竖直
-    // int16_t rocker_r_; // 右水平
-    // int16_t rocker_r1; // 右竖直
-    // int16_t dial;      // 侧边拨轮
-    // uint8_t switch_left;  // 左侧开关
-    // uint8_t switch_right; // 右侧开关
 
     float speed_yaw;
     float angle_yaw;

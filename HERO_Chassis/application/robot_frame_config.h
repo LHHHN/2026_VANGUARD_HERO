@@ -24,6 +24,10 @@
 #define WFLY_SBUS 1
 #define DT7      2
 
+// 控制输入源类型
+#define CONTROL_SRC_REMOTE   0
+#define CONTROL_SRC_KEYMOUSE 1
+
 // 可用底盘硬件类型
 #define CHASSIS_NONE            0  // 无底盘
 #define CHASSIS_MECANUM_WHEEL   1  // 麦克纳姆轮底盘

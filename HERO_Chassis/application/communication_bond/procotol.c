@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "robot_frame_config.h"
 #include "procotol.h"
 #include "INS.h"
 
@@ -32,8 +33,28 @@ extern INS_behaviour_t INS;
 extern float test_data_acc[3];
 extern float test_data_gyro[3];
 
+extern gimbal_cmd_t gimbal_cmd;
+extern shoot_cmd_t shoot_cmd;
+
 extern ramp_function_source_t *gimbal_angle_ramp;
 
+static uint8_t Get_Control_Source(void)
+{
+	if (rc_data->rc.switch_left == 2 && rc_data->rc.switch_right == 2)
+	{
+		return CONTROL_SRC_KEYMOUSE;
+	}
+	return CONTROL_SRC_REMOTE;
+}
+
+static uint8_t Get_Fire_Command(uint8_t control_src)
+{
+	if (control_src == CONTROL_SRC_KEYMOUSE)
+	{
+		return rc_data->mouse.press_l ? 1U : 0U;
+	}
+	return (rc_data->rc.dial == 660) ? 1U : 0U;
+}
 
 void VOFA_Display_IMU(void)
 {
@@ -63,10 +84,19 @@ void VOFA_Display_IMU(void)
 
 void RC_Transfer_Control(void)
 {
-	uart2_tx_message.angle_tar = target_yaw_pro;
-	uart2_tx_message.rocker_r_ = rc_data->rc.rocker_r_;
-    uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
-	uart2_tx_message.rc_switch = 0x01 << (rc_data->rc.switch_right - 1) | 0x08 << (rc_data->rc.switch_left - 1) ;
+	// uart2_tx_message.angle_tar = target_yaw_pro;
+	// uart2_tx_message.rocker_r_ = rc_data->rc.rocker_r_;
+    // uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
+	// uart2_tx_message.rc_switch = 0x01 << (rc_data->rc.switch_right - 1) | 0x08 << (rc_data->rc.switch_left - 1) ;
+
+	uint8_t control_src = Get_Control_Source();
+
+	uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
+	uart2_tx_message.mouse_y = rc_data->mouse.y;
+	uart2_tx_message.rc_switch = 0x01 << (rc_data->rc.switch_right - 1) | 0x08 << (rc_data->rc.switch_left - 1);
+	uart2_tx_message.control_src = control_src;
+	uart2_tx_message.gimbal_mode = (uint8_t)gimbal_cmd.mode;
+	uart2_tx_message.shoot_mode = (uint8_t)shoot_cmd.mode;
 
 	//板间485通信
 	uart2_online_check();

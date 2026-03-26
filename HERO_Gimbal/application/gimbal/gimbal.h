@@ -1,5 +1,5 @@
 /**
-* @file gimbal.h
+ * @file gimbal.h
  * @author guatai (2508588132@qq.com)
  * @brief
  * @version 0.1
@@ -17,22 +17,23 @@
 #include "DM_motor.h"
 
 #define REMOTE_PITCH_SEN 0.000005f
-#define PITCH_VELOCITY_MAX 2.0f
+#define KEY_PITCH_SEN 0.000008f
+#define PITCH_VELOCITY_MAX 2.0F
 #define PTICH_MAX_ANGLE 0.750f // 云台俯仰最大角度，单位：弧度
-#define PTICH_MIN_ANGLE -0.35f  // 云台俯仰最小角度，单位：弧度
+#define PTICH_MIN_ANGLE -0.35f // 云台俯仰最小角度，单位：弧度
 
 typedef struct
 {
 	/* data */
-}__attribute__((packed)) gimbal_behaviour_t;
+} __attribute__((packed)) gimbal_behaviour_t;
 
 typedef enum
 {
-	GIMBAL_DISABLE = 0,
-	GIMBAL_STOP = 1,
-	GIMBAL_ENABLE = 2,
-	GIMBAL_AUTO_AIMING = 3,
-}gimbal_mode_e;
+	GIMBAL_DISABLE = 0,		/* 失能不管模式 */
+	GIMBAL_ENABLE = 1,		/* 使能转动模式 */
+	GIMBAL_AUTO_AIMING = 2, /* 自瞄模式 */
+	GIMBAL_ZERO = 3,		/* 回中模式 */
+} gimbal_mode_e;
 
 typedef struct
 {
@@ -40,10 +41,9 @@ typedef struct
 	gimbal_mode_e mode;
 	float pitch_diff;
 	float pitch_v;
-	float pitch_target;          //PITCH目标
-}__attribute__((packed)) gimbal_cmd_t;
+	float pitch_target; // PITCH目标
+} __attribute__((packed)) gimbal_cmd_t;
 
 void Gimbal_Init(void);
-
 
 #endif /* __GIMBAL_H__ */

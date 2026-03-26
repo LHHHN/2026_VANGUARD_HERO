@@ -3,6 +3,8 @@
 #include "dma.h"
 #include "usart.h"
 #include "gpio.h"
+#include "gimbal.h"
+#include "shoot.h"
 #include <string.h>
 
 #define FRAME_HEADER 0xA5 // 帧头
@@ -126,10 +128,15 @@ void uart2_online_check(void)
         uart2_transmit_control();
         if (uwTick - last_uart2_uwTick > 50)
         {
-            // uart2_rx_message.chassis_omega_speed = 0;
-            uart2_rx_message.rocker_r_ = 0;
+            // uart2_rx_message.rocker_r_ = 0;
             uart2_rx_message.rocker_r1 = 0;
+            uart2_rx_message.mouse_y = 0;
             uart2_rx_message.rc_switch = 0x09; // 0b00001001
+            uart2_rx_message.control_src = CONTROL_SRC_REMOTE;
+            uart2_rx_message.gimbal_mode = GIMBAL_DISABLE;
+            uart2_rx_message.shoot_mode = SHOOT_DISABLE;
+            // uart2_rx_message.fire_cmd = 0;
+            uart2_rx_message.angle_tar = 0.0f;
         }
     }
 }

@@ -34,7 +34,7 @@
 /*遥控器参数*/
 #define REMOTE_X_SEN 0.001 // 660 ~ -660
 #define REMOTE_Y_SEN 0.0005
-#define REMOTE_OMEGA_Z_SEN 0.00001f // 6.6
+#define REMOTE_OMEGA_Z_SEN 0.001f // 6.6
 
 /*键鼠参数*/
 #define KEY_X_SEN 1.5
@@ -49,7 +49,7 @@
 typedef enum
 {
     CHASSIS_DISABLE = 0, // 底盘失能
-    CHASSIS_STOP_C = 1,  // 底盘不动
+    CHASSIS_STOP = 1,  // 底盘不动
     CHASSIS_UPSTEP = 2,  // 底盘上台阶
     CHASSIS_FOLLOW = 3,  // 底盘跟随
     CHASSIS_SPIN = 4,    // 底盘小陀螺

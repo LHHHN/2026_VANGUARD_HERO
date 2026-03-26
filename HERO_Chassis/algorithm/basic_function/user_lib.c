@@ -161,6 +161,13 @@ float ramp_calc(ramp_function_source_t *ramp, float input)
 	return ramp->out;
 }
 
+void ramp_clear(ramp_function_source_t *ramp)
+{
+	ramp->real_value = 0.0f;
+    ramp->plan_value = 0.0f;
+    ramp->target     = 0.0f;
+}
+
 void *zmalloc(size_t size)
 {
 	void *ptr = malloc(size);
@@ -279,6 +286,56 @@ float loop_float_constrain(float Input, float minValue, float maxValue)
 		}
 	}
 	return Input;
+}
+
+float trans_zeropoint(float input, float middle_zero_point, float measure_min_value, float measure_max_value, float target_min_value, float target_max_value)
+{
+	float k_input = 0.0f;
+	float measure_temp = 0.0f;
+	float target_temp = 0.0f;
+
+	input = input - (middle_zero_point - (measure_max_value - measure_min_value) / 2.0f);
+
+	input = loop_float_constrain(input, measure_min_value, measure_max_value);
+
+	measure_temp = measure_max_value - measure_min_value;
+	if(measure_temp != 0.0f)
+	{
+		k_input = input / measure_temp;
+	}
+	if(k_input < 0.0f )
+	{
+		k_input = 0.0f;
+	}
+	target_temp = k_input * (target_max_value - target_min_value);
+
+	k_input = target_min_value + target_temp;
+
+	return k_input;
+}
+
+float trans_thresholds(float input, float measure_min_value, float measure_max_value, float target_min_value, float target_max_value)
+{
+	float k_input = 0.0f;
+	float measure_temp = 0.0f;
+	float target_temp = 0.0f;
+
+	input = input - measure_min_value;
+
+	measure_temp = measure_max_value - measure_min_value;
+	if(measure_temp != 0.0f)
+	{
+		k_input = input / measure_temp;
+	}
+	if(k_input < 0.0f )
+	{
+		k_input = 0.0f;
+	}
+	target_temp = k_input * (target_max_value - target_min_value);
+
+	k_input = target_min_value + target_temp;
+
+	return k_input;
 }
 
 // 弧度格式化为-PI~PI

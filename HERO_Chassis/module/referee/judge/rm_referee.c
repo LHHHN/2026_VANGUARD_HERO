@@ -166,6 +166,6 @@ referee_info_t *Referee_Register(UART_HandleTypeDef *referee_usart_handle)
 void Referee_Send(uint8_t *send, uint16_t tx_len)
 {
 	USART_Send(referee_usart_instance, send, tx_len, USART_TRANSFER_DMA);
-	osDelay(50);
+	osDelay(40);
 }
 #endif

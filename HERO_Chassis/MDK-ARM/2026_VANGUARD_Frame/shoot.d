@@ -39,4 +39,8 @@
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
   ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
   ..\module\remote\DT7\remote_control.h ..\bsp\USART\bsp_usart.h \
-  ..\Core\Inc\usart.h ..\module\rs485\rs485.h
+  ..\Core\Inc\usart.h ..\module\rs485\rs485.h \
+  ..\application\chassis\omni_mecanum_chassis.h \
+  ..\application\robot_frame_config.h \
+  ..\module\motor\DM_motor\dm_motor.h ..\algorithm\controller\VMC\vmc.h \
+  ..\algorithm\filter\normal\normal_filter.h ..\application\INS\INS.h

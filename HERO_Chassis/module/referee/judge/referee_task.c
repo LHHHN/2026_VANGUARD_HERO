@@ -12,6 +12,16 @@
 #include "rm_referee.h"
 #include "referee_UI.h"
 
+#include "omni_mecanum_chassis.h"
+#include "chassis.h"
+#include "gimbal.h"
+#include "shoot.h"
+#include "rs485.h"
+
+#include "remote_control.h"
+
+extern RC_ctrl_t *rc_data;
+
 #if REFEREE_RAW
 #else
 referee_info_t *referee_outer_info;
@@ -67,11 +77,12 @@ void UI_Task(void)
 }
 
 static String_Data_t UI_sign_logo[2];
-static Graph_Data_t UI_shoot_line[10]; // 射击准线
+static Graph_Data_t UI_shoot_line[7]; // 射击准线
 static Graph_Data_t UI_energy_line[2];
 static Graph_Data_t UI_measure_digital[2];
 static String_Data_t UI_state_sta_string[7];  // 机器人状态,静态只需画一次
 static Graph_Data_t UI_state_dyn_graph[7];  // 机器人状态,动态先add才能change
+static Graph_Data_t UI_robot_state[7];  // 机器人状态,动态先add才能change
 static uint32_t shoot_line_location[5] = {
     540 ,
     960 ,
@@ -210,6 +221,36 @@ static void UI_Measure_Judge_Data(void)
  UI_Graph_Refresh(&referee_recv_info->referee_id,
 		   1,
 		   UI_measure_digital[0]);
+}
+
+static void UI_Robot_State(void)
+{
+ UI_Arc_Draw(&UI_robot_state[0],
+		"se0",
+		UI_Graph_ADD,
+		9,
+		UI_Color_Yellow,
+		330,
+		10,
+		10,
+		960,
+		540,
+		300,
+		300);
+ UI_Rectangle_Draw(&UI_robot_state[1],
+		"se1",
+		UI_Graph_ADD,
+		9,
+		UI_Color_Pink,
+		5,
+		570,
+		380,
+		1130,
+		580);	
+ UI_Graph_Refresh(&referee_recv_info->referee_id,
+		     2,
+		     UI_robot_state[0],
+			 UI_robot_state[1]);	
 }
 
 static void UI_State_Mode_Data(void)
@@ -413,6 +454,8 @@ void User_UI_Init()
 
 	UI_Measure_Judge_Data();
 
+	UI_Robot_State();
+
   }
 }
 
@@ -431,57 +474,65 @@ static void RobotModeTest(Referee_Interactive_info_t *_Interactive_data) // 测�
   {
     case 0:
     {
-    //   _Interactive_data->chassis_mode = CHASSIS_STOP;
-    //   _Interactive_data->gimbal_mode = GIMBAL_STOP;
-    //   _Interactive_data->shoot_mode = SHOOTER_STOP;
-    //   _Interactive_data->friction_mode = FRICTION_ON;
-    //   _Interactive_data->ammo_mode = AMMO_OPEN;
+    //   _Interactive_data->chassis_mode = CHASSIS_DISABLE;
+    //   _Interactive_data->gimbal_mode = GIMBAL_DISABLE;
+    //   _Interactive_data->shoot_mode = SHOOT_DISABLE;
+    //   _Interactive_data->friction_mode = 0;
+    //   _Interactive_data->ammo_mode = 0;
       _Interactive_data->Chassis_Power_Limit += 1.5;
+	  _Interactive_data->Super_Power += 1.5;
       if (_Interactive_data->Chassis_Power_Limit >= 70)
       {
+	_Interactive_data->Super_Power = 0;	
 	_Interactive_data->Chassis_Power_Limit = 0;
       }
       break;
     }
     case 1:
     {
-    //   _Interactive_data->chassis_mode = CHASSIS_NORMAL;
-    //   _Interactive_data->gimbal_mode = GIMBAL_NORMAL;
-    //   _Interactive_data->shoot_mode = SHOOTER_AUTO;
-    //   _Interactive_data->friction_mode = FRICTION_OFF;
-    //   _Interactive_data->ammo_mode = AMMO_CLOSE;
+    //   _Interactive_data->chassis_mode = CHASSIS_FOLLOW;
+    //   _Interactive_data->gimbal_mode = GIMBAL_ENABLE;
+    //   _Interactive_data->shoot_mode = SHOOT_ENABLE;
+    //   _Interactive_data->friction_mode = 1;
+    //   _Interactive_data->ammo_mode = 0;
       _Interactive_data->Chassis_Power_Limit -= 0.1;
+	  _Interactive_data->Super_Power -= 0.1;
       if (_Interactive_data->Chassis_Power_Limit <= 0)
       {
 	_Interactive_data->Chassis_Power_Limit = 25;
+	_Interactive_data->Super_Power = 25 ;
       }
       break;
     }
     case 2:
     {
     //   _Interactive_data->chassis_mode = CHASSIS_SPIN;
-    //   _Interactive_data->gimbal_mode = GIMBAL_MAINTAIN;
-    //   _Interactive_data->shoot_mode = SHOOTER_SINGLE;
-    //   _Interactive_data->friction_mode = FRICTION_ON;
-    //   _Interactive_data->ammo_mode = AMMO_OPEN;
+    //   _Interactive_data->gimbal_mode = GIMBAL_AUTO_AIMING;
+    //   _Interactive_data->shoot_mode = SHOOT_AUTO_AIMING;
+    //   _Interactive_data->friction_mode = 0;
+    //   _Interactive_data->ammo_mode = 1;
       _Interactive_data->Chassis_Power_Limit += 1.5;
+	  _Interactive_data->Super_Power += 1.5;
       if (_Interactive_data->Chassis_Power_Limit >= 70)
       {
+	_Interactive_data->Super_Power = 0;		
 	_Interactive_data->Chassis_Power_Limit = 0;
       }
       break;
     }
     case 3:
     {
-    //   _Interactive_data->chassis_mode = CHASSIS_FOLLOW;
-    //   _Interactive_data->gimbal_mode = GIMBAL_AUTO;
-    //   _Interactive_data->shoot_mode = SHOOTER_AUTO;
-    //   _Interactive_data->friction_mode = FRICTION_OFF;
-    //   _Interactive_data->ammo_mode = AMMO_CLOSE;
+    //   _Interactive_data->chassis_mode = CHASSIS_UPSTEP;
+    //   _Interactive_data->gimbal_mode = GIMBAL_DISABLE;
+    //   _Interactive_data->shoot_mode = SHOOT_DISABLE;
+    //   _Interactive_data->friction_mode = 1;
+    //   _Interactive_data->ammo_mode = 1;
       _Interactive_data->Chassis_Power_Limit -= 0.1;
+	  _Interactive_data->Super_Power -= 0.1;
       if (_Interactive_data->Chassis_Power_Limit <= 0)
       {
 	_Interactive_data->Chassis_Power_Limit = 25;
+	_Interactive_data->Super_Power = 25 ;
       }
       break;
     }
@@ -503,14 +554,37 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
   refresh_flag = 0;
   refresh_cnt++;
 
-  _Interactive_data->Chassis_Power_Limit = 0.0f;//referee_outer_info->RobotPerformance.chassis_power_limit;
+//   _Interactive_data->Chassis_Power_Limit = referee_outer_info->RobotPerformance.chassis_power_limit;
+  if(rc_data->online == 0)
+  {
+	_Interactive_data->control_mode = 2 ;//control_cmd.control;
+  }
+  else
+  {
+	_Interactive_data->control_mode = chassis_cmd.key_state.key_EN_state ;//control_cmd.control;
+  }
+  if(user_abs(shoot_stir_motor->receive_data.real_current) > 15000)
+  {
+	_Interactive_data->ammo_mode = 2;//gimbal_message_chat.ammo;
+  }
+  else if(user_abs(shoot_stir_motor->receive_data.real_current) > 500)
+  {
+	_Interactive_data->ammo_mode = 1;//gimbal_message_chat.ammo;
+  }
+  else
+  {
+	_Interactive_data->ammo_mode = 0;//gimbal_message_chat.ammo;
+  }
 
-  _Interactive_data->control_mode = 0;//control_cmd.control;
-  _Interactive_data->ammo_mode = 0;//gimbal_message_chat.ammo;
-  _Interactive_data->friction_mode = 0;//gimbal_message_chat.friction_state;
-  _Interactive_data->chassis_mode = 0;//chassis_cmd.chassis;
-  _Interactive_data->gimbal_mode = 0;//gimbal_cmd.gimbal;
-  _Interactive_data->shoot_mode = 0;//shoot_cmd.shooter;
+  _Interactive_data->friction_mode = uart2_rx_message.shoot_launched;//gimbal_message_chat.friction_state;
+  _Interactive_data->chassis_mode = chassis_cmd.mode;//chassis_cmd.chassis;
+  _Interactive_data->gimbal_mode = gimbal_cmd.mode;//gimbal_cmd.gimbal;
+  _Interactive_data->shoot_mode = shoot_cmd.mode;//shoot_cmd.shooter;
+
+  RobotModeTest(Interactive_data); // 测试用函数，实现模式自动变化,用于检查该任务和裁判系统是否连接正常
+
+  uint16_t zero_UI_point = 0;
+  zero_UI_point = trans_zeropoint(gimbal_MF9025_motor->receive_data.RAD_single_round, FOLLOW_OMEGA_Z, 0, 2*PI, 0, 360);
 
   UIChangeCheck(_Interactive_data);
 
@@ -518,18 +592,53 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
   {
     switch (_Interactive_data->control_mode)
     {
-      case 0://CONTROL_NONE:
-
-	break;
-      case 1://CONTROL_REMOTE:
-
+		case 0://CONTROL_REMOTE:
+			UI_Arc_Draw(&UI_state_dyn_graph[0],
+			"sr0",
+			UI_Graph_Change,
+			8,
+			UI_Color_Yellow,
+			0,
+			360,
+			5,
+			275,
+			790,
+			10,
+			10);
 	// 此处注意字数对齐问题，字数相同才能覆盖掉
 	break;
-      case 2://CONTROL_PC:
-
+		case 1://CONTROL_PC:
+			UI_Arc_Draw(&UI_state_dyn_graph[0],
+				"sr0",
+				UI_Graph_Change,
+				8,
+				UI_Color_Green,
+				0,
+				360,
+				5,
+				275,
+				790,
+				10,
+				10);
+	break;
+		case 2://CONTROL_NONE:
+			UI_Arc_Draw(&UI_state_dyn_graph[0],
+			"sr0",
+			UI_Graph_Change,
+			8,
+			UI_Color_Purplish_red,
+			0,
+			360,
+			5,
+			275,
+			790,
+			10,
+			10);
 	break;
     }
-    // UI_Char_Refresh(&referee_recv_info->referee_id, UI_state_dyn_graph[6]);
+    UI_Graph_Refresh(&referee_recv_info->referee_id,
+		 1,
+		 UI_state_dyn_graph[0]);
 
     _Interactive_data->Referee_Interactive_Flag.control_flag = 0;
   }
@@ -539,20 +648,53 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
   {
     switch (_Interactive_data->chassis_mode)
     {
-      case 0://CHASSIS_STOP:
-
+      case CHASSIS_DISABLE:
+		UI_Arc_Draw(&UI_state_dyn_graph[1],
+		"sr1",
+		UI_Graph_Change,
+		8,
+		UI_Color_Purplish_red,
+		0,
+		360,
+		5,
+		275,
+		740,
+		10,
+		10);
 	break;
-      case 1://CHASSIS_NORMAL:
+      case CHASSIS_FOLLOW:
+	   UI_Arc_Draw(&UI_state_dyn_graph[1],
+		"sr1",
+		UI_Graph_Change,
+		8,
+		UI_Color_Green,
+		0,
+		360,
+		5,
+		275,
+		740,
+		10,
+		10);
 	// 此处注意字数对齐问题，字数相同才能覆盖掉
 	break;
-      case 2://CHASSIS_FOLLOW:
-
-	break;
-      case 3://CHASSIS_SPIN:
-
+      default:
+	  	UI_Arc_Draw(&UI_state_dyn_graph[1],
+		"sr1",
+		UI_Graph_Change,
+		8,
+		UI_Color_Orange,
+		0,
+		360,
+		5,
+		275,
+		740,
+		10,
+		10);
 	break;
     }
-    // UI_Char_Refresh(&referee_recv_info->referee_id, UI_state_dyn_graph[0]);
+    UI_Graph_Refresh(&referee_recv_info->referee_id,
+		 1,
+		 UI_state_dyn_graph[1]);
 
     _Interactive_data->Referee_Interactive_Flag.chassis_flag = 0;
   }
@@ -561,28 +703,58 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
   {
     switch (_Interactive_data->gimbal_mode)
     {
-      case 0://GIMBAL_STOP:
+      case GIMBAL_DISABLE:
       {
+		UI_Arc_Draw(&UI_state_dyn_graph[2],
+		"sr2",
+		UI_Graph_Change,
+		8,
+		UI_Color_Purplish_red,
+		0,
+		360,
+		5,
+		275,
+		690,
+		10,
+		10);
 	break;
       }
-      case 1://GIMBAL_NORMAL:
+      case GIMBAL_ENABLE://GIMBAL_NORMAL:
       {
+		UI_Arc_Draw(&UI_state_dyn_graph[2],
+		"sr2",
+		UI_Graph_Change,
+		8,
+		UI_Color_Green,
+		0,
+		360,
+		5,
+		275,
+		690,
+		10,
+		10);
 	break;
       }
-      case 2://GIMBAL_AUTO:
+      default://GIMBAL_AUTO:
       {
+		UI_Arc_Draw(&UI_state_dyn_graph[2],
+		"sr2",
+		UI_Graph_Change,
+		8,
+		UI_Color_Orange,
+		0,
+		360,
+		5,
+		275,
+		690,
+		10,
+		10);
 	break;
-      }
-      case 3://GIMBAL_MAINTAIN:
-      {
-	break;
-      }
-      case 4://GIMBAL_ZERO:
-      {
-	break;
-      }
+	  }
     }
-    // UI_Char_Refresh(&referee_recv_info->referee_id, UI_state_dyn_graph[1]);
+    UI_Graph_Refresh(&referee_recv_info->referee_id,
+		 1,
+		 UI_state_dyn_graph[2]);
     _Interactive_data->Referee_Interactive_Flag.gimbal_flag = 0;
   }
   // shoot
@@ -590,14 +762,52 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
   {
     switch (_Interactive_data->shoot_mode)
     {
-      case 0://SHOOTER_STOP:
+      case SHOOT_DISABLE:
+	   UI_Arc_Draw(&UI_state_dyn_graph[3],
+		"sr3",
+		UI_Graph_Change,
+		8,
+		UI_Color_Purplish_red,
+		0,
+		360,
+		5,
+		275,
+		640,
+		10,
+		10);
 	break;
-      case 1://SHOOTER_SINGLE:
+      case SHOOT_ENABLE:
+	   UI_Arc_Draw(&UI_state_dyn_graph[3],
+		"sr3",
+		UI_Graph_Change,
+		8,
+		UI_Color_Green,
+		0,
+		360,
+		5,
+		275,
+		640,
+		10,
+		10);
 	break;
-      case 2://SHOOTER_AUTO:
+      default:
+		UI_Arc_Draw(&UI_state_dyn_graph[3],
+		"sr3",
+		UI_Graph_Change,
+		8,
+		UI_Color_Orange,
+		0,
+		360,
+		5,
+		275,
+		640,
+		10,
+		10);
 	break;
     }
-    // UI_Char_Refresh(&referee_recv_info->referee_id, UI_state_dyn_graph[2]);
+    UI_Graph_Refresh(&referee_recv_info->referee_id,
+		 1,
+		 UI_state_dyn_graph[3]);
     _Interactive_data->Referee_Interactive_Flag.shoot_flag = 0;
   }
   // friction
@@ -605,12 +815,38 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
   {
     switch (_Interactive_data->friction_mode)
     {
-      case 0://FRICTION_OFF:
+      case 0:
+	   UI_Arc_Draw(&UI_state_dyn_graph[4],
+		"sr4",
+		UI_Graph_Change,
+		8,
+		UI_Color_Purplish_red,
+		0,
+		360,
+		5,
+		275,
+		590,
+		10,
+		10);
 	break;
-      case 1://FRICTION_ON:
+      case 1:
+	   UI_Arc_Draw(&UI_state_dyn_graph[4],
+		"sr4",
+		UI_Graph_Change,
+		8,
+		UI_Color_Green,
+		0,
+		360,
+		5,
+		275,
+		590,
+		10,
+		10);
 	break;
     }
-    // UI_Char_Refresh(&referee_recv_info->referee_id, UI_state_dyn_graph[3]);
+    UI_Graph_Refresh(&referee_recv_info->referee_id,
+		 1,
+		 UI_state_dyn_graph[4]);
     _Interactive_data->Referee_Interactive_Flag.friction_flag = 0;
   }
   // ammo
@@ -618,12 +854,52 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
   {
     switch (_Interactive_data->ammo_mode)
     {
-      case 0://AMMO_CLOSE:
+      case 0:
+	   UI_Arc_Draw(&UI_state_dyn_graph[5],
+		"sr5",
+		UI_Graph_Change,
+		8,
+		UI_Color_Purplish_red,
+		0,
+		360,
+		5,
+		275,
+		540,
+		10,
+		10);	
 	break;
-      case 1://AMMO_OPEN:
+      case 1:
+	   UI_Arc_Draw(&UI_state_dyn_graph[5],
+		"sr5",
+		UI_Graph_Change,
+		8,
+		UI_Color_Green,
+		0,
+		360,
+		5,
+		275,
+		540,
+		10,
+		10);	
 	break;
+      case 2:
+	   UI_Arc_Draw(&UI_state_dyn_graph[5],
+		"sr5",
+		UI_Graph_Change,
+		8,
+		UI_Color_Orange,
+		0,
+		360,
+		5,
+		275,
+		540,
+		10,
+		10);	
+	break;		
     }
-    // UI_Char_Refresh(&referee_recv_info->referee_id, UI_state_dyn_graph[4]);
+    UI_Graph_Refresh(&referee_recv_info->referee_id,
+		 1,
+		 UI_state_dyn_graph[5]);
     _Interactive_data->Referee_Interactive_Flag.ammo_flag = 0;
   }
 
@@ -647,12 +923,31 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
   {
     if (error_flag == 1)
     {
+		;
     }
+ uint16_t left_step,right_step;
+ left_step = int16_constrain((zero_UI_point - 15),0,360);
+ right_step = int16_constrain((zero_UI_point + 15),0,360);
+ UI_Arc_Draw(&UI_robot_state[0],
+		"se0",
+		UI_Graph_Change,
+		9,
+		UI_Color_Yellow,
+		left_step,
+		right_step,
+		10,
+		960,
+		540,
+		300,
+		300);
+ UI_Graph_Refresh(&referee_recv_info->referee_id,
+		     1,
+		     UI_robot_state[0]);	
   }
 
   if ((refresh_cnt & 4) == 0)
   {
-    if (1)//gimbal_message_chat.fire_advice == 1)
+    if (1)
     {;
     }
     else
@@ -672,7 +967,7 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
 		3,
 		1600,
 		760,
-		referee_outer_info->ShootData.bullet_speed * 1000);
+		_Interactive_data->Chassis_Power_Limit * 1000);
   UI_Graph_Refresh(&referee_recv_info->referee_id,
 		   1,
 		   UI_measure_digital[0]);
@@ -680,7 +975,54 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
 
   if ((refresh_cnt % 6) == 0)
   {
-
+	if(_Interactive_data->Super_Power > 50)
+	{
+		UI_Arc_Draw(&UI_energy_line[0],
+		"sb0",
+		UI_Graph_Change,
+		9,
+		UI_Color_Purplish_red,
+		220,
+		320 - _Interactive_data->Super_Power,
+		15,
+		1000,
+		540,
+		425,
+		425);
+	}
+	else if(_Interactive_data->Super_Power > 25)
+	{
+		UI_Arc_Draw(&UI_energy_line[0],
+		"sb0",
+		UI_Graph_Change,
+		9,
+		UI_Color_Orange,
+		220,
+		320 - _Interactive_data->Super_Power,
+		15,
+		1000,
+		540,
+		425,
+		425);
+	}
+	else
+	{
+			UI_Arc_Draw(&UI_energy_line[0],
+			"sb0",
+			UI_Graph_Change,
+			9,
+			UI_Color_Green,
+			220,
+			320 - _Interactive_data->Super_Power,
+			15,
+			1000,
+			540,
+			425,
+			425);
+	}
+	UI_Graph_Refresh(&referee_recv_info->referee_id,
+		     1,
+		     UI_energy_line[0]);
   }
 
   error_last_code = error_code;
@@ -734,13 +1076,13 @@ static void UIChangeCheck(Referee_Interactive_info_t *_Interactive_data)
     _Interactive_data->Referee_Interactive_Flag.Power_flag = 1;
     _Interactive_data->Chassis_last_Power_Limit = _Interactive_data->Chassis_Power_Limit;
   }
-//  if (_Interactive_data->Super_Power != _Interactive_data->Super_last_Power)
-//  {
-//    if (user_abs(_Interactive_data->Super_Power - _Interactive_data->Super_last_Power) < 1)
-//    {
-//      _Interactive_data->Referee_Interactive_Flag.Super_flag = 1;
-//    }
-//    _Interactive_data->Super_last_Power = _Interactive_data->Super_Power;
-//  }
+ if (_Interactive_data->Super_Power != _Interactive_data->Super_last_Power)
+ {
+   if (user_abs(_Interactive_data->Super_Power - _Interactive_data->Super_last_Power) < 1)
+   {
+     _Interactive_data->Referee_Interactive_Flag.Super_flag = 1;
+   }
+   _Interactive_data->Super_last_Power = _Interactive_data->Super_Power;
+ }
 }
 #endif

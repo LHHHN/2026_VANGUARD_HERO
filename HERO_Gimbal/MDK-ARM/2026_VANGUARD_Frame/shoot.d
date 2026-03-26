@@ -43,4 +43,5 @@
   ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
   ..\module\motor\DM_motor\dm_motor.h \
   ..\module\remote\DT7\remote_control.h ..\bsp\USART\bsp_usart.h \
-  ..\Core\Inc\usart.h ..\module\rs485\rs485.h
+  ..\Core\Inc\usart.h ..\module\rs485\rs485.h \
+  ..\application\robot_frame_config.h

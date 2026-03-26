@@ -51,4 +51,14 @@
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
   ..\module\defense_center\defense_center.h ..\bsp\USART\bsp_usart.h \
-  ..\Core\Inc\usart.h ..\module\referee\judge\referee_UI.h
+  ..\Core\Inc\usart.h ..\module\referee\judge\referee_UI.h \
+  ..\application\chassis\omni_mecanum_chassis.h \
+  ..\application\robot_frame_config.h \
+  ..\module\motor\DM_motor\dm_motor.h ..\module\motor\drv_motor.h \
+  ..\algorithm\controller\PID\pid.h ..\bsp\CAN\bsp_can.h \
+  ..\Core\Inc\fdcan.h ..\module\motor\DJI_motor\dji_motor.h \
+  ..\algorithm\controller\VMC\vmc.h \
+  ..\algorithm\filter\normal\normal_filter.h ..\application\INS\INS.h \
+  ..\module\rs485\rs485.h ..\application\chassis\chassis.h \
+  ..\application\gimbal\gimbal.h ..\module\motor\LK_motor\LK_motor.h \
+  ..\application\shoot\shoot.h ..\module\remote\DT7\remote_control.h

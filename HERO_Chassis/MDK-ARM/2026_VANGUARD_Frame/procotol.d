@@ -1,5 +1,6 @@
 2026_vanguard_frame/procotol.o: \
   ..\application\communication_bond\procotol.c \
+  ..\application\robot_frame_config.h \
   ..\application\communication_bond\procotol.h ..\application\INS\INS.h \
   ..\module\vofa\vofa.h ..\bsp\USART\bsp_usart.h ..\Core\Inc\main.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
@@ -44,7 +45,6 @@
   ..\module\remote\WFLY\wfly_control.h \
   ..\module\remote\DT7\remote_control.h \
   ..\application\chassis\omni_mecanum_chassis.h \
-  ..\application\robot_frame_config.h \
   ..\module\motor\DM_motor\dm_motor.h ..\module\motor\drv_motor.h \
   ..\bsp\CAN\bsp_can.h ..\Core\Inc\fdcan.h \
   ..\module\defense_center\defense_center.h \

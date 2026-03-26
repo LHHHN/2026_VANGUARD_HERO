@@ -31,9 +31,8 @@ typedef enum
 {
 	GIMBAL_DISABLE = 0,
 	GIMBAL_ENABLE  = 1,
-	GIMBAL_STOP	= 2,
-	GIMBAL_AUTO_AIMING = 3,
-	GIMBAL_ZERO = 4,
+	GIMBAL_AUTO_AIMING = 2,
+	GIMBAL_ZERO = 3,
 }gimbal_mode_e;
 
 typedef struct 
@@ -57,6 +56,10 @@ typedef struct
 extern float fusion_v_data[2];
 extern float target_yaw;
 extern float target_yaw_pro;
+
+extern LK_motor_instance_t *gimbal_MF9025_motor;
+
+extern gimbal_cmd_t gimbal_cmd;
 
 void Gimbal_Init(void);
 

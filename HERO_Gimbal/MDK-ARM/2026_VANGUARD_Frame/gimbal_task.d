@@ -54,4 +54,5 @@
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_pcd_ex.h \
   ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
   ..\module\message_center\message_center.h ..\bsp\DWT\bsp_dwt.h \
-  ..\bsp\USART\bsp_usart.h ..\Core\Inc\usart.h ..\module\rs485\rs485.h
+  ..\bsp\USART\bsp_usart.h ..\Core\Inc\usart.h ..\module\rs485\rs485.h \
+  ..\application\robot_frame_config.h

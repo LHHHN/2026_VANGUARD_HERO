@@ -159,6 +159,8 @@ ramp_function_source_t *ramp_init(ramp_init_config_t *config);
 //斜波函数计算
 float ramp_calc(ramp_function_source_t *ramp_source_type, float input);
 
+void ramp_clear(ramp_function_source_t *ramp);
+
 //绝对限制
 float abs_limit(float num, float Limit);
 
@@ -191,6 +193,10 @@ void Cross3d(float *v1, float *v2, float *res);
 float Dot3d(float *v1, float *v2);
 
 float AverageFilter(float new_data, float *buf, uint8_t len);
+
+float trans_thresholds(float input, float measure_min_value, float measure_max_value, float target_min_value, float target_max_value);
+
+float trans_zeropoint(float input, float middle_zero_point, float measure_min_value, float measure_max_value, float target_min_value, float target_max_value);
 
 //弧度格式化为-PI~PI
 #define rad_format(Ang) loop_float_constrain((Ang), -PI, PI)

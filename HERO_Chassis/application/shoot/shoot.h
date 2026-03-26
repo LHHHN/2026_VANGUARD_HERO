@@ -42,7 +42,7 @@ typedef struct
 	/* data */
 	shoot_key_state_e key_state ;
 	shoot_mode_e mode;
-	
+
 	uint8_t fire_single;
 	uint8_t fire_arrive_current;
 	uint8_t fire_arrive_last;
@@ -53,6 +53,9 @@ typedef struct
 	float angle_shoot_stir;
 
 }__attribute__((packed)) shoot_cmd_t;
+
+extern DJI_motor_instance_t *shoot_stir_motor;
+extern shoot_cmd_t shoot_cmd;
 
 void Shoot_Init(void);
 	

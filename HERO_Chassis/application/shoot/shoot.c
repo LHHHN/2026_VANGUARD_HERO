@@ -113,6 +113,8 @@ void Shoot_Init(void)
 
 extern RC_ctrl_t *rc_data;
 
+#include "omni_mecanum_chassis.h"
+
 void Shoot_Set_Mode(void)
 {
 
@@ -211,34 +213,43 @@ static uint8_t key_mode_last = 0;
 
     if (shoot_cmd.key_state.key_EN_state == 1)
     {
-        if (KEY_CLICK(Key_F))
+        if(chassis_cmd.key_state.chassis_EN_state == 1)
         {
-            if (shoot_cmd.mode == SHOOT_DISABLE)
+            if (KEY_CLICK(Key_F))
             {
-                shoot_cmd.mode = SHOOT_ENABLE;
-                shoot_cmd.key_state.shoot_EN_state = 1;
+                if (shoot_cmd.mode == SHOOT_DISABLE)
+                {
+                    shoot_cmd.mode = SHOOT_ENABLE;
+                    shoot_cmd.key_state.shoot_EN_state = 1;
+                }
+                else
+                {
+                    shoot_cmd.mode = SHOOT_DISABLE;
+                    shoot_cmd.key_state.shoot_EN_state = 0;
+                }
+                KEY_ACK(Key_F);
             }
-            else
-            {
-                shoot_cmd.mode = SHOOT_DISABLE;
-                shoot_cmd.key_state.shoot_EN_state = 0;
-            }
-            KEY_ACK(Key_F);
-        }
 
-        if(shoot_cmd.key_state.shoot_EN_state == 1)
+            if(shoot_cmd.key_state.shoot_EN_state == 1)
+            {
+                //自瞄
+                if (rc_data->mouse.press_r == 1)
+                {
+                    shoot_cmd.mode = SHOOT_AUTO_AIMING;
+                }
+                else if(rc_data->mouse.press_r == 0 && shoot_cmd.mode == SHOOT_AUTO_AIMING)
+                {
+                    shoot_cmd.mode = SHOOT_ENABLE;
+                }
+            }
+        }
+        else
         {
-            //自瞄
-            if (rc_data->mouse.press_r == 1)
-            {
-                shoot_cmd.mode = SHOOT_AUTO_AIMING;
-            }
-            else if(rc_data->mouse.press_r == 0 && shoot_cmd.mode == SHOOT_AUTO_AIMING)
-            {
-                shoot_cmd.mode = SHOOT_ENABLE;
-            }
+            shoot_cmd.mode = SHOOT_DISABLE;
+            shoot_cmd.key_state.shoot_EN_state = 0;
         }
     }
+    
     
 
 

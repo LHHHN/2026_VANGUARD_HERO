@@ -87,14 +87,24 @@ motor_init_config_t chassis_3508_init = {
 
 // 底盘轮毂电机斜坡函数
 ramp_function_source_t *vx_speed_ramp; 
-ramp_function_source_t *vy_speed_ramp; 
+ramp_function_source_t *vy_speed_ramp;
+ramp_function_source_t *wz_speed_ramp; 
 
 ramp_init_config_t wheel_speed_ramp_init = {
     .frame_period = 0.001f,        // 1ms控制周期
     .max_value = 0.0f,            // 最大输出
     .min_value = 0.0f,             // 最小输出
-    .increase_value = 0.00001f,        // 加速度
-    .decrease_value = 0.00001f,     // 减速度
+    .increase_value = 0.0025f,        // 加速度
+    .decrease_value = 0.0025f,     // 减速度
+    .ramp_state = SLOPE_FIRST_REAL // 工作模式
+};
+
+ramp_init_config_t round_speed_ramp_init = {
+    .frame_period = 0.001f,        // 1ms控制周期
+    .max_value = 0.0f,            // 最大输出
+    .min_value = 0.0f,             // 最小输出
+    .increase_value = 0.05f,        // 加速度
+    .decrease_value = 0.05f,     // 减速度
     .ramp_state = SLOPE_FIRST_REAL // 工作模式
 };
 
@@ -227,7 +237,7 @@ PID_t chasiss_follow_pid = {
     .kp = 7.5f,
     .ki = 0.00f,
     .kd = 2.0f,
-    .output_limit = 10.0f,
+    .output_limit = 3.0f,
     .integral_limit = 20.0f,
     .dead_band = 0.00f,
 };
@@ -245,6 +255,7 @@ void Chassis_Init(void)
 
     vx_speed_ramp = ramp_init(&wheel_speed_ramp_init);
     vy_speed_ramp = ramp_init(&wheel_speed_ramp_init);
+    wz_speed_ramp = ramp_init(&round_speed_ramp_init);
 
     // 底盘关节电机DM4340初始化
     for (int i = 0; i < 2; i++)
@@ -318,11 +329,11 @@ static uint8_t key_mode_last = 0;
                 break;
             case 3:
                 /* code */
-                chassis_cmd.mode = CHASSIS_STOP_C;
+                chassis_cmd.mode = CHASSIS_STOP;
                 break;
             case 2:
                 /* code */
-                chassis_cmd.mode = CHASSIS_STOP_C;
+                chassis_cmd.mode = CHASSIS_STOP;
                 break;
             default:
                 chassis_cmd.mode = CHASSIS_DISABLE;
@@ -339,11 +350,11 @@ static uint8_t key_mode_last = 0;
                 break;
             case 3:
                 /* code */
-                chassis_cmd.mode = CHASSIS_STOP_C;
+                chassis_cmd.mode = CHASSIS_STOP;
                 break;
             case 2:
                 /* code */
-                chassis_cmd.mode = CHASSIS_STOP_C;
+                chassis_cmd.mode = CHASSIS_STOP;
                 break;
             default:
                 chassis_cmd.mode = CHASSIS_DISABLE;
@@ -430,32 +441,6 @@ static uint8_t key_mode_last = 0;
                 KEY_ACK(Key_E);
         }
 
-        // /* 小陀螺键鼠设置 */
-        // if (KEY_CLICK(Key_E))
-        // {
-        //     if (chassis_cmd.key_state.chassis_EN_state == 1)
-        //     {
-        //         if (chassis_cmd.mode == CHASSIS_FOLLOW)
-        //         {
-        //             chassis_cmd.mode = CHASSIS_SPIN;
-        //         }
-        //         else if(chassis_cmd.mode == CHASSIS_SPIN)
-        //         {
-        //             chassis_cmd.mode = CHASSIS_FOLLOW;
-        //         }
-        //     }
-        //     KEY_ACK(Key_E);
-        // }
-
-        // /* 蹬腿键鼠 */
-        // if (rc_data->key->q == 1 && chassis_cmd.key_state.chassis_EN_state == 1)
-        // {
-        //     chassis_cmd.mode = CHASSIS_UPSTEP;
-        // }
-        // else if(rc_data->key->q == 0 && chassis_cmd.key_state.chassis_EN_state == 1)
-        // {
-        //     chassis_cmd.mode = CHASSIS_FOLLOW;
-        // }
     }
 
 #undef KEY_CLICK
@@ -604,12 +589,16 @@ void Chassis_Reference(void)
     if (chassis_cmd.mode == CHASSIS_SPIN)
     {
         chassis_cmd.omega_z = SPIN_SET ;
+        chassis_cmd.omega_follow = 0 ;
         // chassis_cmd.vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
         // chassis_cmd.vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
         if (chassis_cmd.key_state.key_EN_state == 0)
         {
             chassis_cmd.vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
             chassis_cmd.vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
+            ramp_clear(vx_speed_ramp);
+            ramp_clear(vy_speed_ramp);
+            ramp_clear(wz_speed_ramp);
         }
         else if (chassis_cmd.key_state.key_EN_state == 1)
         {
@@ -624,6 +613,9 @@ void Chassis_Reference(void)
         {
             chassis_cmd.vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
             chassis_cmd.vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
+            ramp_clear(vx_speed_ramp);
+            ramp_clear(vy_speed_ramp);
+            ramp_clear(wz_speed_ramp);
         }
         else if (chassis_cmd.key_state.key_EN_state == 1)
         {
@@ -645,6 +637,9 @@ void Chassis_Reference(void)
             chassis_cmd.vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
             chassis_cmd.vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
             chassis_cmd.omega_z = rc_data->rc.rocker_r_ * REMOTE_OMEGA_Z_SEN;
+            ramp_clear(vx_speed_ramp);
+            ramp_clear(vy_speed_ramp);
+            ramp_clear(wz_speed_ramp);
         }
         else if (chassis_cmd.key_state.key_EN_state == 1)
         {
@@ -659,7 +654,7 @@ void Chassis_Reference(void)
         }
         chassis_cmd.v_track = 10.0f;
     }
-    else if (chassis_cmd.mode == CHASSIS_STOP_C)
+    else if (chassis_cmd.mode == CHASSIS_STOP)
     {
         chassis_cmd.omega_z = 0.0f;
         chassis_cmd.omega_follow = 0.0f;
@@ -672,8 +667,10 @@ void Chassis_Reference(void)
     {
         chassis_cmd.vx = ramp_calc(vx_speed_ramp,(float)(rc_data->key->w - rc_data->key->s) * KEY_X_SEN);
         chassis_cmd.vy = ramp_calc(vy_speed_ramp,(float)(rc_data->key->a - rc_data->key->d) * KEY_Y_SEN);
-        vx_speed_ramp->real_value = (float)(rc_data->key->w - rc_data->key->s) * KEY_X_SEN ;
-        vy_speed_ramp->real_value = (float)(rc_data->key->a - rc_data->key->d) * KEY_Y_SEN ;
+        chassis_cmd.omega_follow = ramp_calc(wz_speed_ramp,(float)chassis_cmd.omega_follow);
+        vx_speed_ramp->real_value = chassis_cmd.vx ;
+        vy_speed_ramp->real_value = chassis_cmd.vy ;
+        wz_speed_ramp->real_value = chassis_cmd.omega_follow;
     }
 
     if (chassis_cmd.leg_state == LEG_NORMAL && chassis_cmd.mode != CHASSIS_UPSTEP)
@@ -684,7 +681,6 @@ void Chassis_Reference(void)
     {
         chassis_cmd.leg_angle = 0.45f;
     }
-
 
 }
 
