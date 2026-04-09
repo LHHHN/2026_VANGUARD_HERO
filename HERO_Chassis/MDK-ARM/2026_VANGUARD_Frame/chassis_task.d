@@ -52,4 +52,6 @@
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
   ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
   ..\bsp\DWT\bsp_dwt.h ..\bsp\USART\bsp_usart.h ..\Core\Inc\usart.h \
-  ..\module\rs485\rs485.h
+  ..\module\rs485\rs485.h ..\application\gimbal\gimbal.h \
+  ..\module\motor\LK_motor\LK_motor.h ..\application\shoot\shoot.h \
+  ..\module\motor\DJI_motor\dji_motor.h

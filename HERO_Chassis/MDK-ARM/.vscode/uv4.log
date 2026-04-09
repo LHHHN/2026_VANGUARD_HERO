@@ -1,0 +1,7 @@
+*** Using Compiler 'V6.24', folder: 'D:\KEIL\Core\ARM\ARMCLANG\Bin'
+Build target '2026_VANGUARD_Frame'
+compiling omni_mecanum_chassis.c...
+linking...
+Program Size: Code=157722 RO-data=3522 RW-data=3064 ZI-data=61592  
+"2026_VANGUARD_Frame\2026_VANGUARD_Frame.axf" - 0 Error(s), 0 Warning(s).
+Build Time Elapsed:  00:00:02

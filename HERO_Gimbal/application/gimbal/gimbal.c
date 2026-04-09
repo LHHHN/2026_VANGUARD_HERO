@@ -108,8 +108,8 @@ ramp_init_config_t pitch_speed_ramp_init = {
     .frame_period = 0.001f,        // 1ms控制周期
     .max_value = 0.0f,             // 最大输出
     .min_value = 0.0f,             // 最小输出
-    .increase_value = 0.005f,     // 加速度
-    .decrease_value = 0.005f,     // 减速度
+    .increase_value = 0.005f,      // 加速度
+    .decrease_value = 0.005f,      // 减速度
     .ramp_state = SLOPE_FIRST_REAL // 工作模式
 };
 
@@ -262,7 +262,8 @@ static float pitch_target_pro;
 // 计算控制量
 void Gimbal_Console()
 {
-    if (gimbal_cmd.mode == GIMBAL_ENABLE || gimbal_cmd.mode == GIMBAL_ZERO)
+    // if (gimbal_cmd.mode == GIMBAL_ENABLE || gimbal_cmd.mode == GIMBAL_ZERO)
+    if (gimbal_cmd.mode == GIMBAL_ENABLE)
     {
         /* ===改动地方=== */
         if (uart2_rx_message.control_src == CONTROL_SRC_REMOTE)
@@ -311,46 +312,46 @@ void Gimbal_Console()
         /* hyw???为什么这里视觉的pitch整段被注释了🤷‍♂️ */
         if (vs_aim_packet_from_nuc.mode == 1 || vs_aim_packet_from_nuc.mode == 2)
         {
-            // if(pitch_motor->receive_data.position <= PTICH_MIN_ANGLE)
-            // {
-            //     if(vs_aim_packet_from_nuc.pitch > gimbal_cmd.pitch_target)
-            //     {
-            //         gimbal_cmd.pitch_target = - vs_aim_packet_from_nuc.pitch;
-            //     }
-            //     else
-            //     {
-            //         gimbal_cmd.pitch_target = INS.Pitch ;
-            //     }
-            // }
-            // else if(pitch_motor->receive_data.position >= PTICH_MAX_ANGLE)
-            // {
-            //     if(vs_aim_packet_from_nuc.pitch < gimbal_cmd.pitch_target)
-            //     {
-            //         gimbal_cmd.pitch_target = - vs_aim_packet_from_nuc.pitch;
-            //     }
-            //     else
-            //     {
-            //         gimbal_cmd.pitch_target = INS.Pitch ;
-            //     }
-            // }
-            // else
-            // {
-            //     gimbal_cmd.pitch_v = 0.0f;
-            //     gimbal_cmd.pitch_target = - vs_aim_packet_from_nuc.pitch;
-            // }
-
-            /* ===改动地方=== */
-            if (uart2_rx_message.control_src == CONTROL_SRC_REMOTE)
+            if (pitch_motor->receive_data.position <= PTICH_MIN_ANGLE)
             {
-                gimbal_cmd.pitch_v = (float)uart2_rx_message.rocker_r1 * REMOTE_PITCH_SEN;
+                if (vs_aim_packet_from_nuc.pitch > gimbal_cmd.pitch_target)
+                {
+                    gimbal_cmd.pitch_target = -vs_aim_packet_from_nuc.pitch;
+                }
+                else
+                {
+                    gimbal_cmd.pitch_target = INS.Pitch;
+                }
+            }
+            else if (pitch_motor->receive_data.position >= PTICH_MAX_ANGLE)
+            {
+                if (vs_aim_packet_from_nuc.pitch < gimbal_cmd.pitch_target)
+                {
+                    gimbal_cmd.pitch_target = -vs_aim_packet_from_nuc.pitch;
+                }
+                else
+                {
+                    gimbal_cmd.pitch_target = INS.Pitch;
+                }
             }
             else
             {
-                // gimbal_cmd.pitch_v = (float)uart2_rx_message.mouse_y * REMOTE_PITCH_SEN;
-
-                gimbal_cmd.pitch_v = ramp_calc(pitch_speed_ramp, (float)uart2_rx_message.mouse_y * KEY_PITCH_SEN);
-                pitch_speed_ramp->real_value = gimbal_cmd.pitch_v;
+                gimbal_cmd.pitch_v = 0.0f;
+                gimbal_cmd.pitch_target = -vs_aim_packet_from_nuc.pitch;
             }
+
+            /* ===改动地方=== */
+            // if (uart2_rx_message.control_src == CONTROL_SRC_REMOTE)
+            // {
+            //     gimbal_cmd.pitch_v = (float)uart2_rx_message.rocker_r1 * REMOTE_PITCH_SEN;
+            // }
+            // else
+            // {
+            //     // gimbal_cmd.pitch_v = (float)uart2_rx_message.mouse_y * REMOTE_PITCH_SEN;
+
+            //     gimbal_cmd.pitch_v = ramp_calc(pitch_speed_ramp, (float)uart2_rx_message.mouse_y * KEY_PITCH_SEN);
+            //     pitch_speed_ramp->real_value = gimbal_cmd.pitch_v;
+            // }
             /* ===改动地方=== */
 
             if (pitch_motor->receive_data.position <= PTICH_MIN_ANGLE)

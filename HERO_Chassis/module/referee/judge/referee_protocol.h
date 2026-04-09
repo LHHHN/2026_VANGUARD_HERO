@@ -43,8 +43,8 @@ typedef enum
 typedef enum
 {
   LEN_HEADER = 5, // 帧头长
-  LEN_CMDID = 2,	// 命令码长度
-  LEN_TAIL = 2,	// 帧尾CRC16
+  LEN_CMDID = 2,  // 命令码长度
+  LEN_TAIL = 2,   // 帧尾CRC16
 
   LEN_CRC8 = 4, // 帧头CRC8校验长度=帧头+数据长+包序号
 } JudgeFrameLength_e;
@@ -55,10 +55,10 @@ typedef enum
 /* 帧头偏移 */
 typedef enum
 {
-  SOF = 0,		 // 起始位
+  SOF = 0,         // 起始位
   DATA_LENGTH = 1, // 帧内数据长度,根据这个来获取数据长度
-  SEQ = 3,		 // 包序号
-  CRC8 = 4		 // CRC8
+  SEQ = 3,         // 包序号
+  CRC8 = 4         // CRC8
 } FrameHeaderOffset_e;
 
 /* 帧头定义 */
@@ -76,59 +76,59 @@ typedef struct
 /* 命令码ID,用来判断接收的是什么数据 */
 typedef enum
 {
-  ID_game_state = 0x0001,                // 比赛状态数据
-  ID_game_result = 0x0002,               // 比赛结果数据
-  ID_game_robot_HP = 0x0003,             // 机器人血量数据（仅己方）
-  ID_event_data = 0x0101,                // 场地事件数据
+  ID_game_state = 0x0001,    // 比赛状态数据
+  ID_game_result = 0x0002,   // 比赛结果数据
+  ID_game_robot_HP = 0x0003, // 机器人血量数据（仅己方）
+  ID_event_data = 0x0101,    // 场地事件数据
   // ID_supply_projectile_action = 0x0102,  // 场地补给站动作标识数据
   // ID_supply_projectile_booking = 0x0103, // 场地补给站预约子弹数据
-  ID_referee_warning = 0x0104,           // 裁判警告数据
-  ID_dart_info = 0x0105,                 // 飞镖发射相关数据
-  ID_robot_performance = 0x0201,         // 机器人性能体系数据
-  ID_power_heat_data = 0x0202,           // 实时功率热量数据
-  ID_game_robot_pos = 0x0203,            // 机器人位置数据
-  ID_buff_musk = 0x0204,                 // 机器人增益和底盘能量数据
-  ID_robot_hurt = 0x0206,                // 伤害状态数据
-  ID_shoot_data = 0x0207,                // 实时射击数据
-  ID_projectile_allowance = 0x0208,      // 允许发弹量
-  ID_rfid_status = 0x0209,               // RFID状态
-  ID_dart_launch_status = 0x020A,        // 飞镖发射站状态
-  ID_ground_robot_position = 0x020B,     // 地面机器人位置数据
-  ID_radar_mark_data = 0x020C,           // 雷达标记进度
-  ID_sentry_info = 0x020D,               // 哨兵信息
-  ID_radar_info = 0x020E,                // 雷达信息
-  ID_student_interactive = 0x0301,       // 机器人间交互数据
-  ID_custom_controller_robot = 0x0302,   // 自定义控制器与机器人交互
-  ID_map_command = 0x0303,               // 小地图交互数据（选手端下发）
-  ID_custom_client_robot = 0x0310,       // 机器人->自定义客户端
-  ID_robot_custom_client = 0x0311,       // 自定义客户端->机器人
+  ID_referee_warning = 0x0104,         // 裁判警告数据
+  ID_dart_info = 0x0105,               // 飞镖发射相关数据
+  ID_robot_performance = 0x0201,       // 机器人性能体系数据
+  ID_power_heat_data = 0x0202,         // 实时功率热量数据
+  ID_game_robot_pos = 0x0203,          // 机器人位置数据
+  ID_buff_musk = 0x0204,               // 机器人增益和底盘能量数据
+  ID_robot_hurt = 0x0206,              // 伤害状态数据
+  ID_shoot_data = 0x0207,              // 实时射击数据
+  ID_projectile_allowance = 0x0208,    // 允许发弹量
+  ID_rfid_status = 0x0209,             // RFID状态
+  ID_dart_launch_status = 0x020A,      // 飞镖发射站状态
+  ID_ground_robot_position = 0x020B,   // 地面机器人位置数据
+  ID_radar_mark_data = 0x020C,         // 雷达标记进度
+  ID_sentry_info = 0x020D,             // 哨兵信息
+  ID_radar_info = 0x020E,              // 雷达信息
+  ID_student_interactive = 0x0301,     // 机器人间交互数据
+  ID_custom_controller_robot = 0x0302, // 自定义控制器与机器人交互
+  ID_map_command = 0x0303,             // 小地图交互数据（选手端下发）
+  ID_custom_client_robot = 0x0310,     // 机器人->自定义客户端
+  ID_robot_custom_client = 0x0311,     // 自定义客户端->机器人
 } CmdID_e;
 
 /* 命令码数据段长,根据官方协议来定义长度，还有自定义数据长度 */
 typedef enum
 {
-  LEN_game_state = 11,                   // 0x0001
-  LEN_game_result = 1,                   // 0x0002
-  LEN_game_robot_HP = 16,                // 0x0003 己方机器人血量
-  LEN_event_data = 4,                    // 0x0101
+  LEN_game_state = 11,    // 0x0001
+  LEN_game_result = 1,    // 0x0002
+  LEN_game_robot_HP = 16, // 0x0003 己方机器人血量
+  LEN_event_data = 4,     // 0x0101
   // LEN_supply_projectile_action = 4,			 // 0x0102
-  LEN_referee_warning = 3,               // 0x0104
-  LEN_dart_info = 3,                     // 0x0105
+  LEN_referee_warning = 3, // 0x0104
+  LEN_dart_info = 3,       // 0x0105
   // LEN_game_robot_state = 13,					    // 0x0201
-  LEN_robot_performance = 13,             // 0x0201
-  LEN_power_heat_data = 14,              // 0x0202
-  LEN_game_robot_pos = 16,               // 0x0203
-  LEN_buff_musk = 8,                     // 0x0204
+  LEN_robot_performance = 13, // 0x0201
+  LEN_power_heat_data = 14,   // 0x0202
+  LEN_game_robot_pos = 16,    // 0x0203
+  LEN_buff_musk = 8,          // 0x0204
   // LEN_aerial_robot_energy = 2,				    // 0x0205
-  LEN_robot_hurt = 1,                    // 0x0206
-  LEN_shoot_data = 7,                    // 0x0207
-  LEN_projectile_allowance = 6,          // 0x0208
-  LEN_rfid_status = 5,                   // 0x0209 (4+1)
-  LEN_dart_launch_status = 6,            // 0x020A
-  LEN_ground_robot_position = 40,        // 0x020B
-  LEN_radar_mark_data = 2,               // 0x020C
-  LEN_sentry_info = 6,                   // 0x020D (4+2)
-  LEN_radar_info = 1,                    // 0x020E
+  LEN_robot_hurt = 1,                          // 0x0206
+  LEN_shoot_data = 7,                          // 0x0207
+  LEN_projectile_allowance = 6,                // 0x0208
+  LEN_rfid_status = 5,                         // 0x0209 (4+1)
+  LEN_dart_launch_status = 6,                  // 0x020A
+  LEN_ground_robot_position = 40,              // 0x020B
+  LEN_radar_mark_data = 2,                     // 0x020C
+  LEN_sentry_info = 6,                         // 0x020D (4+2)
+  LEN_radar_info = 1,                          // 0x020E
   LEN_receive_data = 6 + Communicate_Data_LEN, // 0x0301
 
 } JudgeDataLength_e;
@@ -139,8 +139,8 @@ typedef enum
 /* ID: 0x0001  Byte:  11    比赛状态数据 */
 typedef struct
 {
-  uint8_t game_type :4;
-  uint8_t game_progress :4;
+  uint8_t game_type : 4;
+  uint8_t game_progress : 4;
   uint16_t stage_remain_time;
   uint64_t SyncTimeStamp;
 } ext_game_state_t;
@@ -154,14 +154,14 @@ typedef struct
 /* ID: 0x0003  Byte:  16    比赛机器人血量数据 */
 typedef struct
 {
-  uint16_t ally_1_robot_HP;   // 英雄
-  uint16_t ally_2_robot_HP;   // 工程
-  uint16_t ally_3_robot_HP;   // 步兵3
-  uint16_t ally_4_robot_HP;   // 步兵4
-  uint16_t reserved;           // 保留
-  uint16_t ally_7_robot_HP;   // 哨兵
-  uint16_t ally_outpost_HP;    // 前哨站
-  uint16_t ally_base_HP;       // 基地
+  uint16_t ally_1_robot_HP; // 英雄
+  uint16_t ally_2_robot_HP; // 工程
+  uint16_t ally_3_robot_HP; // 步兵3
+  uint16_t ally_4_robot_HP; // 步兵4
+  uint16_t reserved;        // 保留
+  uint16_t ally_7_robot_HP; // 哨兵
+  uint16_t ally_outpost_HP; // 前哨站
+  uint16_t ally_base_HP;    // 基地
   // uint16_t red_1_robot_HP;
   // uint16_t red_2_robot_HP;
   // uint16_t red_3_robot_HP;
@@ -198,16 +198,16 @@ typedef struct
 /* ID: 0x0104 裁判警告数据 */
 typedef struct
 {
-  uint8_t level;                     // 判罚等级
-  uint8_t offending_robot_id;        // 违规机器人ID
-  uint8_t offense_count;             // 违规次数
+  uint8_t level;              // 判罚等级
+  uint8_t offending_robot_id; // 违规机器人ID
+  uint8_t offense_count;      // 违规次数
 } ext_referee_warning_t;
 
 /* ID: 0x0105 飞镖发射相关数据 */
 typedef struct
 {
-  uint8_t dart_remaining_time;       // 剩余时间
-  uint16_t dart_info;                // 位域详见协议
+  uint8_t dart_remaining_time; // 剩余时间
+  uint16_t dart_info;          // 位域详见协议
 } ext_dart_info_t;
 
 // /* ID: 0X0201  Byte: 13    机器人状态数据 */
@@ -230,16 +230,16 @@ typedef struct
 {
   uint8_t robot_id;
   uint8_t robot_level;
-	uint16_t current_HP;
-	uint16_t maximum_HP;
-	uint16_t shooter_barrel_cooling_value;//机器人枪口热量每秒冷却值
+  uint16_t current_HP;
+  uint16_t maximum_HP;
+  uint16_t shooter_barrel_cooling_value; // 机器人枪口热量每秒冷却值
 
-	uint16_t shooter_barrel_heat_limit; //枪口热量上限   
-	uint16_t chassis_power_limit;       //底盘功率上限
-	
-	uint8_t power_management_gimbal_output : 1;
-	uint8_t power_management_chassis_output : 1;
-	uint8_t power_management_shooter_output : 1;//可用上
+  uint16_t shooter_barrel_heat_limit; // 枪口热量上限
+  uint16_t chassis_power_limit;       // 底盘功率上限
+
+  uint8_t power_management_gimbal_output : 1;
+  uint8_t power_management_chassis_output : 1;
+  uint8_t power_management_shooter_output : 1; // 可用上
 } ext_robot_performance_t;
 
 /* ID: 0X0202  Byte: 16    实时功率热量数据 */
@@ -272,7 +272,7 @@ typedef struct
   uint8_t defence_buff;
   uint8_t vulnerability_buff;
   uint16_t attack_buff;
-  uint8_t remaining_energy;   // 剩余能量反馈（位域）
+  uint8_t remaining_energy; // 剩余能量反馈（位域）
 } ext_buff_musk_t;
 
 // /* ID: 0x0205  Byte:  2    空中机器人能量状态数据 */
@@ -285,8 +285,8 @@ typedef struct
 /* ID: 0x0206  Byte:  1    伤害状态数据 */
 typedef struct
 {
-  uint8_t armor_id :4;
-  uint8_t HP_deduction_reason :4;
+  uint8_t armor_id : 4;
+  uint8_t HP_deduction_reason : 4;
   // uint8_t hurt_type :4;
 } ext_robot_hurt_t;
 
@@ -312,8 +312,8 @@ typedef struct
 /* ID: 0x0209 RFID状态 */
 typedef struct
 {
-  uint32_t rfid_status;   // 低32位
-  uint8_t rfid_status_2;  // 高8位
+  uint32_t rfid_status;  // 低32位
+  uint8_t rfid_status_2; // 高8位
 } ext_rfid_status_t;
 
 /* ID: 0x020A 飞镖发射站状态 */
@@ -414,8 +414,8 @@ typedef enum
   UI_Operate_LEN_PerDraw = 15,
   UI_Operate_LEN_DrawChar = 15 + 30,
 
-/* 自定义交互数据部分 */
-// Communicate_Data_LEN = 5,
+  /* 自定义交互数据部分 */
+  // Communicate_Data_LEN = 5,
 } Interactive_Data_Length_e;
 
 /****************************自定义交互数据****************************/
@@ -452,18 +452,18 @@ typedef struct
 typedef struct
 {
   uint8_t graphic_name[3];
-  uint32_t operate_tpye :3;
-  uint32_t graphic_tpye :3;
-  uint32_t layer :4;
-  uint32_t color :4;
-  uint32_t start_angle :9;
-  uint32_t end_angle :9;
-  uint32_t width :10;
-  uint32_t start_x :11;
-  uint32_t start_y :11;
-  uint32_t radius :10;
-  uint32_t end_x :11;
-  uint32_t end_y :11;
+  uint32_t operate_tpye : 3;
+  uint32_t graphic_tpye : 3;
+  uint32_t layer : 4;
+  uint32_t color : 4;
+  uint32_t start_angle : 9;
+  uint32_t end_angle : 9;
+  uint32_t width : 10;
+  uint32_t start_x : 11;
+  uint32_t start_y : 11;
+  uint32_t radius : 10;
+  uint32_t end_x : 11;
+  uint32_t end_y : 11;
 } Graph_Data_t;
 
 typedef struct
@@ -491,14 +491,14 @@ typedef enum
 /* 图形配置参数__图形类型 */
 typedef enum
 {
-  UI_Graph_Line = 0,		// 直线
+  UI_Graph_Line = 0,      // 直线
   UI_Graph_Rectangle = 1, // 矩形
-  UI_Graph_Circle = 2,	// 整圆
-  UI_Graph_Ellipse = 3,	// 椭圆
-  UI_Graph_Arc = 4,		// 圆弧
-  UI_Graph_Float = 5,		// 浮点型
-  UI_Graph_Int = 6,		// 整形
-  UI_Graph_Char = 7,		// 字符型
+  UI_Graph_Circle = 2,    // 整圆
+  UI_Graph_Ellipse = 3,   // 椭圆
+  UI_Graph_Arc = 4,       // 圆弧
+  UI_Graph_Float = 5,     // 浮点型
+  UI_Graph_Int = 6,       // 整形
+  UI_Graph_Char = 7,      // 字符型
 } UI_Graph_Type_e;
 
 /* 图形配置参数__图形颜色 */

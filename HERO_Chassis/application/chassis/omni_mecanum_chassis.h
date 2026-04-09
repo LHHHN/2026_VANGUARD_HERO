@@ -26,19 +26,23 @@
 
 #define LENGTH 0.405f         // 轴距（wheelbase） 即前后轮轴间距离
 #define MECANUM_WIDTH 0.4238f // 麦轮轮距（track） 即左右驱动轮中心距离
-#define OMNI_WIDTH 0.435f     // 全向轮轮距（track） 即左右驱动轮中心距离
-#define WHEEL_RADIUS 0.077f   // 驱动轮半径（diameter）
+// #define OMNI_WIDTH 0.435f     // 全向轮轮距（track） 即左右驱动轮中心距离
+#define OMNI_WIDTH 0.4418f  // 全向轮轮距（track） 即左右驱动轮中心距离
+#define WHEEL_RADIUS 0.077f // 驱动轮半径（diameter）
 
-#define SPIN_SET 3.0f 
+#define SPIN_SET 3.0f
+#define SPIN_SET_PRO 5.0f
 
 /*遥控器参数*/
-#define REMOTE_X_SEN 0.001 // 660 ~ -660
-#define REMOTE_Y_SEN 0.0005
+#define REMOTE_X_SEN 0.007 // 660 ~ -660
+#define REMOTE_Y_SEN 0.005
 #define REMOTE_OMEGA_Z_SEN 0.001f // 6.6
 
 /*键鼠参数*/
 #define KEY_X_SEN 1.5
-#define KEY_Y_SEN 1
+#define KEY_Y_SEN 1.3
+#define KEY_X_SEN_PRO 2.25
+#define KEY_Y_SEN_PRO 1.7
 #define KEY_OMEGA_Z_SEN 0.005f // 6.6
 
 // #define REMOTE_YAW_SEN 0.000015f
@@ -49,7 +53,7 @@
 typedef enum
 {
     CHASSIS_DISABLE = 0, // 底盘失能
-    CHASSIS_STOP = 1,  // 底盘不动
+    CHASSIS_STOP = 1,    // 底盘不动
     CHASSIS_UPSTEP = 2,  // 底盘上台阶
     CHASSIS_FOLLOW = 3,  // 底盘跟随
     CHASSIS_SPIN = 4,    // 底盘小陀螺
@@ -71,6 +75,9 @@ typedef struct
 {
     float vx;
     float vy;
+
+    float vx_real;
+    float vy_real;
 
     float omega_z;      // 底盘小陀螺时的角速度(rad/s)
     float omega_follow; // 底盘跟随时的角速度  (rad/s)

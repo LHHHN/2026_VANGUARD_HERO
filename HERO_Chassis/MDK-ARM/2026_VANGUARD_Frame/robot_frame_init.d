@@ -5,6 +5,7 @@
   ..\application\alarm_system\daemon_task.h \
   ..\application\INS\INS_task.h \
   ..\application\communication_bond\procotol_task.h \
+  ..\module\super_cap\power_control_task.h \
   ..\application\chassis\chassis.h ..\application\gimbal\gimbal.h \
   ..\module\motor\LK_motor\LK_motor.h ..\module\motor\drv_motor.h \
   ..\algorithm\controller\PID\pid.h \

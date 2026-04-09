@@ -43,7 +43,8 @@
   ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
   ..\module\remote\DT7\remote_control.h ..\bsp\USART\bsp_usart.h \
   ..\Core\Inc\usart.h ..\module\rs485\rs485.h \
-  ..\application\robot_frame_config.h ..\module\serial\serial.h \
+  ..\application\robot_frame_config.h ..\application\shoot\shoot.h \
+  ..\module\motor\DJI_motor\dji_motor.h ..\module\serial\serial.h \
   ..\application\INS\INS.h ..\algorithm\basic_function\user_lib.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h \
   ..\Core\Inc\FreeRTOSConfig.h \

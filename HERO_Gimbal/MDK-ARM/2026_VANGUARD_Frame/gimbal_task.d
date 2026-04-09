@@ -55,4 +55,5 @@
   ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
   ..\module\message_center\message_center.h ..\bsp\DWT\bsp_dwt.h \
   ..\bsp\USART\bsp_usart.h ..\Core\Inc\usart.h ..\module\rs485\rs485.h \
-  ..\application\robot_frame_config.h
+  ..\application\robot_frame_config.h ..\application\shoot\shoot.h \
+  ..\module\motor\DJI_motor\dji_motor.h

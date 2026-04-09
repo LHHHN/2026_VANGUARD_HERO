@@ -1,13 +1,13 @@
 /**
 ******************************************************************************
- * @file    procotol.c
- * @brief
- * @author
- ******************************************************************************
- * Copyright (c) 2023 Team
- * All rights reserved.
- ******************************************************************************
- */
+* @file    procotol.c
+* @brief
+* @author
+******************************************************************************
+* Copyright (c) 2023 Team
+* All rights reserved.
+******************************************************************************
+*/
 
 #include <string.h>
 #include <stdlib.h>
@@ -74,19 +74,18 @@ void VOFA_Display_IMU(void)
 	// vofa_data_view[10] = test_data_gyro[1];
 	// vofa_data_view[11] = test_data_gyro[2];
 
-//	// vofa_data_view[6] = imu_data.temperature;
-//	
-//	vofa_data_view[12] = INS.Pitch;
-//	vofa_data_view[13] = INS.Roll;
-//	vofa_data_view[14] = INS.Yaw;
-	
+	//	// vofa_data_view[6] = imu_data.temperature;
+	//
+	//	vofa_data_view[12] = INS.Pitch;
+	//	vofa_data_view[13] = INS.Roll;
+	//	vofa_data_view[14] = INS.Yaw;
 }
 
 void RC_Transfer_Control(void)
 {
 	// uart2_tx_message.angle_tar = target_yaw_pro;
 	// uart2_tx_message.rocker_r_ = rc_data->rc.rocker_r_;
-    // uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
+	// uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
 	// uart2_tx_message.rc_switch = 0x01 << (rc_data->rc.switch_right - 1) | 0x08 << (rc_data->rc.switch_left - 1) ;
 
 	uint8_t control_src = Get_Control_Source();
@@ -95,9 +94,9 @@ void RC_Transfer_Control(void)
 	uart2_tx_message.mouse_y = rc_data->mouse.y;
 	uart2_tx_message.rc_switch = 0x01 << (rc_data->rc.switch_right - 1) | 0x08 << (rc_data->rc.switch_left - 1);
 	uart2_tx_message.control_src = control_src;
-	uart2_tx_message.gimbal_mode = (uint8_t)gimbal_cmd.mode;
-	uart2_tx_message.shoot_mode = (uint8_t)shoot_cmd.mode;
+	uart2_tx_message.gimbal_mode = gimbal_cmd.mode;
+	uart2_tx_message.shoot_mode = shoot_cmd.mode;
 
-	//板间485通信
+	// 板间485通信
 	uart2_online_check();
 }

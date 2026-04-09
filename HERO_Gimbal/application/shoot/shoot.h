@@ -42,6 +42,9 @@ typedef struct
 	/* data */
 	shoot_mode_e mode;
 
+	float shoot_tar_1;
+	float shoot_tar_2;
+
 	uint8_t fire_launched;
 	shoot_speed_e shoot_speed_set;
 } __attribute__((packed)) shoot_cmd_t;

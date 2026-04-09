@@ -51,12 +51,11 @@
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
-  ..\module\rs485\rs485.h ..\application\INS\INS.h \
+  ..\module\rs485\rs485.h ..\application\shoot\shoot.h \
+  ..\module\motor\DJI_motor\dji_motor.h ..\application\INS\INS.h \
   ..\algorithm\filter\kalman_one_filter.h \
   ..\algorithm\filter\kalman\kalman_filter.h ..\bsp\DWT\bsp_dwt.h \
   ..\application\chassis\omni_mecanum_chassis.h \
   ..\application\robot_frame_config.h \
-  ..\module\motor\DM_motor\dm_motor.h \
-  ..\module\motor\DJI_motor\dji_motor.h \
-  ..\algorithm\controller\VMC\vmc.h \
+  ..\module\motor\DM_motor\dm_motor.h ..\algorithm\controller\VMC\vmc.h \
   ..\algorithm\filter\normal\normal_filter.h

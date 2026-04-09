@@ -15,10 +15,11 @@
 #include "usbd_cdc_if.h"
 
 #include "shoot.h"
+#include "rs485.h"
 
 uint8_t frame_buf[1024];
 
-extern shoot_cmd_t shoot_cmd ;
+extern shoot_cmd_t shoot_cmd;
 
 void VPC_Init(void)
 {
@@ -32,17 +33,17 @@ void VPC_Init(void)
 void VPC_UpdatePackets(void)
 {
   /*导航传输数据区*/
-//   nv_aim_packet_to_nuc.header = 0x5A; // 帧头赋值
-//   // nv_aim_packet_to_nuc.imu_roll = INS.Roll;
-//   nv_aim_packet_to_nuc.imu_pitch = INS.Pitch;
-//   nv_aim_packet_to_nuc.imu_yaw = INS.Yaw;
+  //   nv_aim_packet_to_nuc.header = 0x5A; // 帧头赋值
+  //   // nv_aim_packet_to_nuc.imu_roll = INS.Roll;
+  //   nv_aim_packet_to_nuc.imu_pitch = INS.Pitch;
+  //   nv_aim_packet_to_nuc.imu_yaw = INS.Yaw;
 
-// //   nv_aim_packet_to_nuc.joint_pitch = gimbal_motor_pitch->measure.rad; //lhn:；联调时增加
-//   nv_aim_packet_to_nuc.joint_yaw = INS.Yaw;
+  // //   nv_aim_packet_to_nuc.joint_pitch = gimbal_motor_pitch->measure.rad; //lhn:；联调时增加
+  //   nv_aim_packet_to_nuc.joint_yaw = INS.Yaw;
 
-//   nv_aim_packet_to_nuc.timestamp = 0; // 时间戳
-//   nv_aim_packet_to_nuc.robot_hp = 0;  // 血量
-//   nv_aim_packet_to_nuc.game_time = 0; // 比赛时间
+  //   nv_aim_packet_to_nuc.timestamp = 0; // 时间戳
+  //   nv_aim_packet_to_nuc.robot_hp = 0;  // 血量
+  //   nv_aim_packet_to_nuc.game_time = 0; // 比赛时间
 
   /*新视觉传输数据区*/ //(同济大学版本)
 
@@ -62,11 +63,19 @@ void VPC_UpdatePackets(void)
   vs_aim_packet_to_nuc.q[2] = INS.q[2];
   vs_aim_packet_to_nuc.q[3] = INS.q[3];
   vs_aim_packet_to_nuc.yaw = INS.Yaw;
-  vs_aim_packet_to_nuc.yaw_vel = 0;   //未定
+  vs_aim_packet_to_nuc.yaw_vel = 0; // 未定
   vs_aim_packet_to_nuc.pitch = INS.Pitch;
-  vs_aim_packet_to_nuc.pitch_vel = 0; //lhn:；联调时增加
-  vs_aim_packet_to_nuc.bullet_speed = 15.9; //未定
-  vs_aim_packet_to_nuc.bullet_count = 0; //未定
+  vs_aim_packet_to_nuc.pitch_vel = 0; // lhn:；联调时增加
+  if (uart2_rx_message.rc_switch == 0b00001100)
+  {
+    vs_aim_packet_to_nuc.bullet_speed = 11.9;
+  }
+  else if (uart2_rx_message.rc_switch == 0b00001010)
+  {
+    vs_aim_packet_to_nuc.bullet_speed = 15.9;
+  }
+  // vs_aim_packet_to_nuc.bullet_speed = 11.9; // 未定
+  vs_aim_packet_to_nuc.bullet_count = 0; // 未定
 
   // vs_aim_packet_to_nuc.mode = 0;
   // vs_aim_packet_to_nuc.q[0] = 0;
@@ -111,7 +120,7 @@ void VPC_UpdatePackets(void)
 /*根据帧头选择对应的数据处理*/
 void Choose_VPC_Type(void)
 {
-  uint16_t frame_len = cdc_rx_len; 
+  uint16_t frame_len = cdc_rx_len;
 
   /* 拷贝完整帧 */
   memcpy(frame_buf, cdc_rx_cache, frame_len);
@@ -120,13 +129,13 @@ void Choose_VPC_Type(void)
   /*导航部分*/
   if (frame_buf[0] == 0xA5)
   {
-    //memcpy(nv_buf_receive_from_nuc, frame_buf, sizeof(nv_receive_packet_t));
+    // memcpy(nv_buf_receive_from_nuc, frame_buf, sizeof(nv_receive_packet_t));
     NV_UnPack_Data_ROS2(frame_buf, &nv_aim_packet_from_nuc, sizeof(nv_receive_packet_t));
   }
   /*视觉部分*/
   else if (frame_buf[0] == 'S' && frame_buf[1] == 'P')
   {
-    //memcpy(vs_buf_receive_from_nuc, frame_buf, sizeof(vs_receive_packet_t));
+    // memcpy(vs_buf_receive_from_nuc, frame_buf, sizeof(vs_receive_packet_t));
     VS_UnPack_Data_ROS2(frame_buf, &vs_aim_packet_from_nuc, sizeof(vs_receive_packet_t));
   }
 
