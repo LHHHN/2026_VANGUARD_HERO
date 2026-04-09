@@ -2,6 +2,8 @@
 #define __RS485_H
 
 #include "main.h"
+#include "gimbal.h"
+#include "shoot.h"
 
 #define FRAME_HEADER 0xA5
 #define FRAME_TAILER 0x5A
@@ -15,15 +17,15 @@ typedef struct
     // int16_t rocker_r_; // 右水平
     // int16_t rocker_r1; // 右竖直
     // uint8_t rc_switch;  // 两侧拨杆
-    // float angle_tar; 
+    // float angle_tar;
 
     int16_t rocker_r1; // pitch 遥控器输入
     int16_t mouse_y;   // pitch 键鼠输入
 
-    uint8_t rc_switch;   // 两侧拨杆
-    uint8_t control_src; // 0: remote, 1: keymouse
-    uint8_t gimbal_mode; // 云台模式
-    uint8_t shoot_mode;  // 发射模式
+    uint8_t rc_switch;         // 两侧拨杆
+    uint8_t control_src;       // 0: remote, 1: keymouse
+    gimbal_mode_e gimbal_mode; // 云台模式
+    shoot_mode_e shoot_mode;   // 发射模式
 
     float angle_tar; // yaw 目标角
 
@@ -45,11 +47,11 @@ typedef struct
     float speed_yaw;
     float angle_yaw;
 
-    uint8_t vs_mode; // 0: 不控制, 1: 控制云台但不开火，2: 控制云台且开火
-    float vs_yaw_tar; //视觉给定的yaw目标角度
+    uint8_t vs_mode;  // 0: 不控制, 1: 控制云台但不开火，2: 控制云台且开火
+    float vs_yaw_tar; // 视觉给定的yaw目标角度
 
     uint8_t shoot_launched; // 0: 没有发射，1: 发射了
-    
+
     uint8_t frame_tailer;
     uint8_t check_sum;
 } __attribute__((packed)) Rx_packed_t;

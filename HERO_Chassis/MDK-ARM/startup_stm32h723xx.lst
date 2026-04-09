@@ -1264,11 +1264,9 @@ ARM Macro Assembler    Page 20
 Command Line: --debug --xref --diag_suppress=9931,A1950W --cpu=Cortex-M7.fp.dp 
 --depend=2026_vanguard_frame\startup_stm32h723xx.d -o2026_vanguard_frame\startu
 p_stm32h723xx.o -I../Middlewares/ST/ARM/DSP/Inc -I.\RTE\_2026_VANGUARD_Frame -I
-D:\keil5_543\pack\ARM\CMSIS\6.2.0\CMSIS\Core\Include -ID:\keil5_543\pack\Keil\S
-TM32H7xx_DFP\3.1.1\Drivers\CMSIS\Device\ST\STM32H7xx\Include --predefine="__MIC
-ROLIB SETA 1" --predefine="__UVISION_VERSION SETA 543" --predefine="STM32H723xx
- SETA 1" --predefine="_RTE_ SETA 1" --list=.\startup_stm32h723xx.lst startup_st
-m32h723xx.s
+D:\KEIL\Pack\ARM\CMSIS\6.3.0\CMSIS\Core\Include --predefine="__MICROLIB SETA 1"
+ --predefine="__UVISION_VERSION SETA 543" --predefine="STM32H723xx SETA 1" --pr
+edefine="_RTE_ SETA 1" --list=.\startup_stm32h723xx.lst startup_stm32h723xx.s
 
 
 

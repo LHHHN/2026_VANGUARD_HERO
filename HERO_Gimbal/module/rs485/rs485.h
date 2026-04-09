@@ -4,6 +4,9 @@
 #include "main.h"
 #include "robot_frame_config.h"
 
+#include "gimbal.h"
+#include "shoot.h"
+
 #define FRAME_HEADER 0xA5
 #define FRAME_TAILER 0x5A
 
@@ -46,10 +49,10 @@ typedef struct
     int16_t rocker_r1; // pitch 遥控器输入
     int16_t mouse_y;   // pitch 键鼠输入
 
-    uint8_t rc_switch;   // 两侧拨杆
-    uint8_t control_src; // 0: remote, 1: keymouse
-    uint8_t gimbal_mode; // 云台模式
-    uint8_t shoot_mode;  // 发射模式
+    uint8_t rc_switch;         // 两侧拨杆
+    uint8_t control_src;       // 0: remote, 1: keymouse
+    gimbal_mode_e gimbal_mode; // 云台模式
+    shoot_mode_e shoot_mode;   // 发射模式
     // uint8_t fire_cmd;    // 0: 无开火请求, 1: 有开火请求
     // uint8_t key_c;       // C键当前状态
     // uint8_t key_c_count; // C键触发计数

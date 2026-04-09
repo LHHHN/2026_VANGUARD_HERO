@@ -45,4 +45,6 @@ supervisor_t *Supervisor_Register(supervisor_init_config_t *config);
 
 void Supervisor_Reload(supervisor_t *instance);
 
+void Supervisor_Task(void);
+
 #endif /* __DEFENSE_CENTER_H__ */
