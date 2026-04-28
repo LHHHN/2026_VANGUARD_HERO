@@ -32,6 +32,7 @@
 
 #include "referee_task.h"
 
+#include "rs485.h"
 #include "bmi088.h"
 #include "ws2812.h"
 #include "buzzer.h"
@@ -59,7 +60,7 @@ RC_ctrl_t *rc_data;
 
 #endif
 
-// Referee_InfoTypedef *referee_data;
+// Referee_InfoTypedef * ;
 
 static void Frame_MCU_Init(void)
 {
@@ -82,12 +83,20 @@ static void Frame_Device_Init(void)
 	bmi088_h7 = BMI088_Register(&bmi088_init_h7);
 
 #if (REMOTE_TYPE == DT7)
+	#if RS485_CHA
 	rc_data = Remote_Control_Init(&huart5);
+	#else
+	#endif
 #elif (REMOTE_TYPE == WFLY_SBUS)
 	rc_data = WFLY_SBUS_Register();
 #endif
 
 	referee_outer_info = UI_Task_Init(&huart1, &referee_outer_interactive);
+
+#if RS485_CHA == 1
+#else	
+	rs485_command = RS485_Register(&huart2);
+#endif	
 	// referee_data = Referee_Init(&huart1);
 
 	// VOFA_Register( );

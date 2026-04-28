@@ -13,22 +13,24 @@
 #include <stdlib.h>
 
 #include "gimbal.h"
-#include "remote_control.h"
 
+#include "servo.h"
 #include "rs485.h"
-#include "pid.h"
 #include "serial.h"
+
+#include "remote_control.h"
+#include "remote_vt03.h"
+
+#include "pid.h"
 
 #include "INS.h"
 #include "user_lib.h"
 #include "kalman_one_filter.h"
 
+DM_motor_instance_t *pitch_motor;
 gimbal_cmd_t gimbal_cmd;
 
-DM_motor_instance_t *pitch_motor;
-
 float pitch_G;
-static uint8_t gimbal_keymouse_entry = 0;
 
 // imu参数
 PID_t pitch_angle_pid = {
@@ -101,6 +103,50 @@ motor_init_config_t pitch_init = {
     },
 };
 
+servo_instance_t *vt_servo;
+
+motor_init_config_t vt_servo_init = {
+    .controller_param_init_config = {
+        .angle_PID = NULL,
+        .speed_PID = NULL,
+        .current_PID = NULL,
+        .torque_PID = NULL,
+
+        .other_angle_feedback_ptr = NULL,
+        .other_speed_feedback_ptr = NULL,
+
+        .angle_feedforward_ptr = NULL,
+        .speed_feedforward_ptr = NULL,
+        .current_feedforward_ptr = NULL,
+        .torque_feedforward_ptr = NULL,
+
+        .pid_ref = 0.0f,
+    },
+    .controller_setting_init_config = {
+        .outer_loop_type = OPEN_LOOP,
+        .close_loop_type = OPEN_LOOP,
+
+        .motor_reverse_flag = MOTOR_DIRECTION_REVERSE,
+        .feedback_reverse_flag = FEEDBACK_DIRECTION_REVERSE,
+
+        .angle_feedback_source = OTHER_FEED,
+        .speed_feedback_source = OTHER_FEED,
+
+        .feedforward_flag = TORQUE_FEEDFORWARD,
+
+        .control_button = POLYCYCLIC_LOOP_CONTROL,
+    },
+
+    .motor_type = SERVO,
+};
+
+pwm_init_config_t vt_pwm_init = {
+    .htim = &htim1,
+    .channel = TIM_CHANNEL_1,
+    .dutyratio = 0.0f,
+    .period = 20000 - 1,
+};
+
 // PITCH斜坡函数
 ramp_function_source_t *pitch_speed_ramp;
 
@@ -131,9 +177,11 @@ void Gimbal_Init(void)
 
     // pitch应该也要加斜坡,感觉???
     pitch_speed_ramp = ramp_init(&pitch_speed_ramp_init);
+
+    vt_servo = Servo_Init(&vt_servo_init, &vt_pwm_init);
 }
 
-void Gimbal_Observer()
+void Gimbal_Observer(void)
 {
     // uart2_tx_message.rocker_l_ = rc_data->rc.rocker_l_;
     // uart2_tx_message.rocker_l1 = rc_data->rc.rocker_l1;
@@ -163,46 +211,124 @@ static void Gimbal_Disable(void);
  * 云台一旦进入自瞄模式,底盘需要传输对应的状态位和键鼠数据过来
  *********************/
 
+extern RC_ctrl_t *rc_data;
+extern VT03_ctrl_t *vt03_data;
+
+#include "chassis.h"
+
 // 设置云台模式
 void Gimbal_Set_Mode()
 {
-    /* ===改动地方=== */
+        if(rc_data -> online == 0 && vt03_data -> online == 0)
+        {
+            gimbal_cmd.mode = GIMBAL_DISABLE;
+        }
+        else
+        {
+            //遥控器控制
+            gimbal_cmd.key_state.key_EN_state = 0;
+            if( rc_data -> rc . switch_left == 1 )
+            {
+                switch (rc_data -> rc . switch_right)
+                {
+                case 1:
+                    /* code */
+                    gimbal_cmd.mode = GIMBAL_DISABLE;
+                    break;
+                case 3:
+                    /* code */
+                    gimbal_cmd.mode = GIMBAL_AUTO_AIMING;
+                    break;
+                case 2:
+                    /* code */
+                    gimbal_cmd.mode = GIMBAL_AUTO_AIMING;
+                    break;
+                default:
+                    gimbal_cmd.mode = GIMBAL_DISABLE;
+                    break;
+                }
+            }
+            else if( rc_data -> rc . switch_left == 3 )
+            {
+                switch (rc_data -> rc . switch_right)
+                {
+                case 1:
+                    /* code */
+                    gimbal_cmd.mode = GIMBAL_ENABLE;
+                    break;
+                case 3:
+                    /* code */
+                    gimbal_cmd.mode = GIMBAL_ENABLE;
+                    break;
+                case 2:
+                    /* code */
+                    gimbal_cmd.mode = GIMBAL_ENABLE;
+                    break;
+                default:
+                    gimbal_cmd.mode = GIMBAL_DISABLE;
+                    break;
+                }
+            }
+            else if( rc_data -> rc . switch_left == 2 )
+            {
+                switch (rc_data -> rc . switch_right)
+                {
+                case 1:
+                    /* code */
+                    gimbal_cmd.mode = GIMBAL_ZERO;
+                    break;
+                case 3:
+                    /* code */
+                    gimbal_cmd.mode = GIMBAL_ENABLE;
+                    break;
+                case 2:
+                    /* code */
+                    gimbal_cmd.key_state.key_EN_state = 1;
+                    break;
+                default:
+                    gimbal_cmd.mode = GIMBAL_DISABLE;
+                    break;
+                }
+            }
+            else
+            {
+                gimbal_cmd.mode = GIMBAL_DISABLE;
+            }
+        }        
 
-    /* ======================设置云台的整体控制模式============================= */
-
-    // 不再使用先前对摇杆数值进行确认的模式,底盘主控将直接发送云台模式和发射模式
-    gimbal_keymouse_entry = 0;
-
-    switch (uart2_rx_message.gimbal_mode)
+    if (gimbal_cmd.key_state.key_EN_state == 1)
     {
-    case GIMBAL_DISABLE:
-        gimbal_cmd.mode = GIMBAL_DISABLE;
-        break;
-
-    case GIMBAL_AUTO_AIMING:
-        gimbal_cmd.mode = GIMBAL_AUTO_AIMING;
-        break;
-
-    case GIMBAL_ENABLE:
-        gimbal_cmd.mode = GIMBAL_ENABLE;
-        break;
-
-    case GIMBAL_ZERO:
-        gimbal_cmd.mode = GIMBAL_ZERO;
-        break;
-    default:
-        gimbal_cmd.mode = GIMBAL_DISABLE;
-        break;
+        if (chassis_cmd.mode == CHASSIS_DISABLE)
+        {
+            gimbal_cmd.mode = GIMBAL_DISABLE;
+            gimbal_cmd.key_state.gimbal_EN_state = 0;
+        }
+        else if(chassis_cmd.mode != CHASSIS_DISABLE)
+        {
+            gimbal_cmd.mode = GIMBAL_ENABLE;
+            gimbal_cmd.key_state.gimbal_EN_state = 1;
+        }
+        if(gimbal_cmd.key_state.gimbal_EN_state == 1)
+        {
+            /* 蹬腿云台跟随键鼠 */
+            if (vt03_data->mouse.press_r == 1)
+            {
+                gimbal_cmd.mode = GIMBAL_AUTO_AIMING;
+            }
+            else if(vt03_data->mouse.press_r == 0 && gimbal_cmd.mode == GIMBAL_AUTO_AIMING)
+            {
+                gimbal_cmd.mode = GIMBAL_ENABLE;
+            }
+            if(vt03_data->key->q == 1)
+            {
+                gimbal_cmd.mode = GIMBAL_ZERO;
+            }
+            else if(vt03_data->key->q ==0 && gimbal_cmd.mode == GIMBAL_ZERO)
+            {
+                gimbal_cmd.mode = GIMBAL_ENABLE;
+            }
+        }
     }
-
-    // 底盘一旦使用键鼠使能,云台必定使能
-    if (gimbal_cmd.mode == GIMBAL_ENABLE && uart2_rx_message.control_src == CONTROL_SRC_KEYMOUSE)
-    {
-        gimbal_keymouse_entry = 1;
-    }
-    /* ======================设置云台的整体控制模式============================= */
-
-    /* ===改动地方=== */
 
     if (gimbal_cmd.mode == GIMBAL_ENABLE || gimbal_cmd.mode == GIMBAL_AUTO_AIMING || gimbal_cmd.mode == GIMBAL_ZERO)
     {
@@ -238,7 +364,7 @@ static float pitch_l = -0.1f;
 // 更新目标量
 void Gimbal_Reference()
 {
-    pitch_G = pitch_m * 9.8 * pitch_l * cosf(INS.Pitch);
+    pitch_G = pitch_m * 9.8f * pitch_l * cosf(INS.Pitch);
     pitch_vs_tar = vs_aim_packet_from_nuc.pitch;
     pitch_imu_test = -INS.Pitch;
     pitch_imu_speed_test = INS.Gyro[0];
@@ -262,22 +388,19 @@ static float pitch_target_pro;
 // 计算控制量
 void Gimbal_Console()
 {
-    // if (gimbal_cmd.mode == GIMBAL_ENABLE || gimbal_cmd.mode == GIMBAL_ZERO)
     if (gimbal_cmd.mode == GIMBAL_ENABLE)
     {
-        /* ===改动地方=== */
-        if (uart2_rx_message.control_src == CONTROL_SRC_REMOTE)
+        if (gimbal_cmd.key_state.key_EN_state == 0)
         {
-            gimbal_cmd.pitch_v = (float)uart2_rx_message.rocker_r1 * REMOTE_PITCH_SEN;
+            gimbal_cmd.yaw_v = -(float)rc_data->rc.rocker_r_ * REMOTE_YAW_SEN;
+            gimbal_cmd.pitch_v = (float)rc_data->rc.rocker_r1 * REMOTE_PITCH_SEN;
         }
-        else
+        else if(gimbal_cmd.key_state.key_EN_state == 1)
         {
-            // gimbal_cmd.pitch_v = (float)uart2_rx_message.mouse_y * REMOTE_PITCH_SEN;
-
-            gimbal_cmd.pitch_v = ramp_calc(pitch_speed_ramp, (float)uart2_rx_message.mouse_y * KEY_PITCH_SEN);
+            gimbal_cmd.yaw_v = (float)vt03_data->mouse.y * KEY_PITCH_SEN;
+            gimbal_cmd.pitch_v = ramp_calc(pitch_speed_ramp, (float)vt03_data->mouse.y * KEY_PITCH_SEN);
             pitch_speed_ramp->real_value = gimbal_cmd.pitch_v;
         }
-        /* ===改动地方=== */
 
         if (pitch_motor->receive_data.position <= PTICH_MIN_ANGLE)
         {
@@ -306,53 +429,22 @@ void Gimbal_Console()
             gimbal_cmd.pitch_target += gimbal_cmd.pitch_v;
         }
     }
-
     else if (gimbal_cmd.mode == GIMBAL_AUTO_AIMING)
     {
         /* hyw???为什么这里视觉的pitch整段被注释了🤷‍♂️ */
-        if (vs_aim_packet_from_nuc.mode == 1 || vs_aim_packet_from_nuc.mode == 2)
+        if (vs_aim_packet_from_nuc.mode == 0)
         {
-            if (pitch_motor->receive_data.position <= PTICH_MIN_ANGLE)
+            if(gimbal_cmd.key_state.key_EN_state == 0)
             {
-                if (vs_aim_packet_from_nuc.pitch > gimbal_cmd.pitch_target)
-                {
-                    gimbal_cmd.pitch_target = -vs_aim_packet_from_nuc.pitch;
-                }
-                else
-                {
-                    gimbal_cmd.pitch_target = INS.Pitch;
-                }
+                gimbal_cmd.yaw_v = -(float) rc_data -> rc . rocker_r_ * REMOTE_YAW_SEN;
+                gimbal_cmd.pitch_v = (float)rc_data->rc.rocker_r1 * REMOTE_PITCH_SEN;
             }
-            else if (pitch_motor->receive_data.position >= PTICH_MAX_ANGLE)
+            else if(gimbal_cmd.key_state.key_EN_state == 1)
             {
-                if (vs_aim_packet_from_nuc.pitch < gimbal_cmd.pitch_target)
-                {
-                    gimbal_cmd.pitch_target = -vs_aim_packet_from_nuc.pitch;
-                }
-                else
-                {
-                    gimbal_cmd.pitch_target = INS.Pitch;
-                }
+                gimbal_cmd.yaw_v = (float)vt03_data->mouse.y * KEY_PITCH_SEN;
+                gimbal_cmd.pitch_v = ramp_calc(pitch_speed_ramp, (float)vt03_data->mouse.y * KEY_PITCH_SEN);
+                pitch_speed_ramp->real_value = gimbal_cmd.pitch_v;
             }
-            else
-            {
-                gimbal_cmd.pitch_v = 0.0f;
-                gimbal_cmd.pitch_target = -vs_aim_packet_from_nuc.pitch;
-            }
-
-            /* ===改动地方=== */
-            // if (uart2_rx_message.control_src == CONTROL_SRC_REMOTE)
-            // {
-            //     gimbal_cmd.pitch_v = (float)uart2_rx_message.rocker_r1 * REMOTE_PITCH_SEN;
-            // }
-            // else
-            // {
-            //     // gimbal_cmd.pitch_v = (float)uart2_rx_message.mouse_y * REMOTE_PITCH_SEN;
-
-            //     gimbal_cmd.pitch_v = ramp_calc(pitch_speed_ramp, (float)uart2_rx_message.mouse_y * KEY_PITCH_SEN);
-            //     pitch_speed_ramp->real_value = gimbal_cmd.pitch_v;
-            // }
-            /* ===改动地方=== */
 
             if (pitch_motor->receive_data.position <= PTICH_MIN_ANGLE)
             {
@@ -380,23 +472,39 @@ void Gimbal_Console()
             {
                 gimbal_cmd.pitch_target += gimbal_cmd.pitch_v;
             }
-        }
-        else if (vs_aim_packet_from_nuc.mode == 0)
-        {
 
-            /* ===改动地方=== */
-            if (uart2_rx_message.control_src == CONTROL_SRC_REMOTE)
+        }
+        else if (vs_aim_packet_from_nuc.mode == 1 || vs_aim_packet_from_nuc.mode == 2)
+        {
+            gimbal_cmd.yaw_target = vs_aim_packet_from_nuc.yaw;
+
+            if (pitch_motor->receive_data.position <= PTICH_MIN_ANGLE)
             {
-                gimbal_cmd.pitch_v = (float)uart2_rx_message.rocker_r1 * REMOTE_PITCH_SEN;
+                if (vs_aim_packet_from_nuc.pitch > gimbal_cmd.pitch_target)
+                {
+                    gimbal_cmd.pitch_target = -vs_aim_packet_from_nuc.pitch;
+                } 
+                else
+                {
+                    gimbal_cmd.pitch_target = INS.Pitch;
+                }
+            }
+            else if (pitch_motor->receive_data.position >= PTICH_MAX_ANGLE)
+            {
+                if (vs_aim_packet_from_nuc.pitch < gimbal_cmd.pitch_target)
+                {
+                    gimbal_cmd.pitch_target = -vs_aim_packet_from_nuc.pitch;
+                }
+                else
+                {
+                    gimbal_cmd.pitch_target = INS.Pitch;
+                }
             }
             else
             {
-                // gimbal_cmd.pitch_v = (float)uart2_rx_message.mouse_y * REMOTE_PITCH_SEN;
-
-                gimbal_cmd.pitch_v = ramp_calc(pitch_speed_ramp, (float)uart2_rx_message.mouse_y * KEY_PITCH_SEN);
-                pitch_speed_ramp->real_value = gimbal_cmd.pitch_v;
+                gimbal_cmd.pitch_v = 0.0f;
+                gimbal_cmd.pitch_target = -vs_aim_packet_from_nuc.pitch;
             }
-            /* ===改动地方=== */
 
             if (pitch_motor->receive_data.position <= PTICH_MIN_ANGLE)
             {
@@ -428,19 +536,14 @@ void Gimbal_Console()
         else
         {
             gimbal_cmd.pitch_v = 0.0f;
+            gimbal_cmd.yaw_v = 0.0f;
         }
     }
-
     else
     {
         gimbal_cmd.pitch_v = 0.0f;
+        gimbal_cmd.yaw_v = 0.0f;
     }
-    // pitch_motor ->transmit_data.velocity_des = PITCH_VELOCITY_MAX;
-
-    // while(gimbal_cmd.pitch_target - INS.Pitch > PI)
-    //     gimbal_cmd.pitch_target -= 2 * PI ;
-    // while(gimbal_cmd.pitch_target - INS.Pitch < - PI)
-    //     gimbal_cmd.pitch_target += 2 * PI ;
 
     if (gimbal_cmd.pitch_target <= PTICH_MIN_ANGLE)
     {
@@ -449,7 +552,7 @@ void Gimbal_Console()
     else if (gimbal_cmd.pitch_target >= PTICH_MAX_ANGLE)
     {
         gimbal_cmd.pitch_target = PTICH_MAX_ANGLE;
-    }
+    }	
 }
 
 // 发送控制量
@@ -457,8 +560,11 @@ void Gimbal_Send_Cmd()
 {
     pitch_target_pro = Kalman_One_Filter(&pitch_mess_kf, gimbal_cmd.pitch_target);
     DM_Motor_SetTar(pitch_motor, gimbal_cmd.pitch_target);
-    // DM_Motor_SetTar(pitch_motor , pitch_target_pro);
+
     DM_Motor_Control(pitch_motor);
+
+    // Servo_SetTar(vt_servo, ???, ABS);
+    // Servo_Control(vt_servo);
 }
 
 static void Gimbal_Enable(void)

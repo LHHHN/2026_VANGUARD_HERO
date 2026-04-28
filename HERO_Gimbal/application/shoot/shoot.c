@@ -13,11 +13,16 @@
 #include <stdlib.h>
 
 #include "shoot.h"
+#include "chassis.h"
+
+#include "bsp_can.h"
 
 #include "remote_control.h"
-#include "pid.h"
-#include "bsp_can.h"
+#include "remote_vt03.h"
+
 #include "rs485.h"
+
+#include "pid.h"
 
 DJI_motor_instance_t *shoot_m3508_motor[3];
 shoot_cmd_t shoot_cmd;
@@ -110,82 +115,146 @@ static void Shoot_Enable(void);
 static void Shoot_Disable(void);
 
 extern RC_ctrl_t *rc_data;
+extern VT03_ctrl_t *vt03_data;
 
 void Shoot_Set_Mode(void)
 {
-    // #ifdef RMUC
-    //     // 不再通过拨杆组合直接判断发射模式，底盘主控直接下发发射模式
-    //     switch (uart2_rx_message.shoot_mode)
-    //     {
-    //     case SHOOT_DISABLE:
-    //         shoot_cmd.mode = SHOOT_DISABLE;
-    //         break;
+    static uint8_t last_key_cnt[16] = {0};
+    static uint8_t key_mode_last = 0;
 
-    //     case SHOOT_ENABLE:
-    //         shoot_cmd.mode = SHOOT_ENABLE;
-    //         shoot_cmd.shoot_speed_set = SHOOT_SPEED_12MPS;
-    //         break;
+#define KEY_CLICK(k) (vt03_data->key_count[KEY_PRESS][(k)] != last_key_cnt[(k)])
+#define KEY_ACK(k) (last_key_cnt[(k)] = vt03_data->key_count[KEY_PRESS][(k)])
+        if (rc_data->online == 0 && vt03_data->online == 0)
+        {
+            shoot_cmd.mode = SHOOT_DISABLE;
+        }
+        else
+        {
+            // 遥控器控制
+            shoot_cmd.key_state.key_EN_state = 0;
+            if (rc_data->rc.switch_left == 1)
+            {
+                switch (rc_data->rc.switch_right)
+                {
+                case 1:
+                    /* code */
+                    shoot_cmd.mode = SHOOT_DISABLE;
+                    break;
+                case 3:
+                    /* code */
+                    shoot_cmd.mode = SHOOT_AUTO_AIMING;
+                    shoot_cmd.shoot_speed_set = SHOOT_SPEED_12MPS;
+                    break;
+                case 2:
+                    /* code */
+                    shoot_cmd.mode = SHOOT_AUTO_AIMING;
+                    shoot_cmd.shoot_speed_set = SHOOT_SPEED_16MPS;
+                    break;
+                default:
+                    shoot_cmd.mode = SHOOT_DISABLE;
+                    break;
+                }
+            }
+            else if (rc_data->rc.switch_left == 3)
+            {
+                switch (rc_data->rc.switch_right)
+                {
+                case 1:
+                    /* code */
+                    shoot_cmd.mode = SHOOT_DISABLE;
+                    break;
+                case 3:
+                    /* code */
+                    shoot_cmd.mode = SHOOT_ENABLE;
+                    shoot_cmd.shoot_speed_set = SHOOT_SPEED_12MPS;
+                    break;
+                case 2:
+                    /* code */
+                    shoot_cmd.mode = SHOOT_ENABLE;
+                    shoot_cmd.shoot_speed_set = SHOOT_SPEED_16MPS;
+                    break;
+                default:
+                    shoot_cmd.mode = SHOOT_DISABLE;
+                    break;
+                }
+            }
+            else if (rc_data->rc.switch_left == 2)
+            {
+                switch (rc_data->rc.switch_right)
+                {
+                case 1:
+                    /* code */
+                    shoot_cmd.mode = SHOOT_DISABLE;
+                    break;
+                case 3:
+                    /* code */
+                    shoot_cmd.mode = SHOOT_DISABLE;
+                    break;
+                case 2:
+                    /* code */
+                    shoot_cmd.key_state.key_EN_state = 1;
+                    break;
+                default:
+                    shoot_cmd.mode = SHOOT_DISABLE;
+                    break;
+                }
+            }
+            else
+            {
+                shoot_cmd.mode = SHOOT_DISABLE;
+            }
+        }
 
-    //     case SHOOT_AUTO_AIMING:
-    //         shoot_cmd.mode = SHOOT_AUTO_AIMING;
-    //         shoot_cmd.shoot_speed_set = SHOOT_SPEED_16MPS;
-    //         break;
-
-    //     case SHOOT_STOP:
-    //         shoot_cmd.mode = SHOOT_STOP;
-    //         break;
-
-    //     default:
-    //         shoot_cmd.mode = SHOOT_STOP;
-    //         break;
-    //     }
-
-    //     if (shoot_cmd.mode == SHOOT_ENABLE || shoot_cmd.mode == SHOOT_STOP || shoot_cmd.mode == SHOOT_AUTO_AIMING)
-    //     {
-    //         Shoot_Enable();
-    //     }
-    //     else
-    //     {
-    //         Shoot_Disable();
-    //     }
-    // #elif defined(RMUL)
-    // 不再通过拨杆组合直接判断发射模式，底盘主控直接下发发射模式
-    switch (uart2_rx_message.shoot_mode)
+    if (shoot_cmd.key_state.key_EN_state == 1 && key_mode_last == 0)
     {
-    case SHOOT_DISABLE:
-        shoot_cmd.mode = SHOOT_DISABLE;
-        break;
+        for (uint8_t i = 0; i < 16; i++)
+        {
+            last_key_cnt[i] = vt03_data->key_count[KEY_PRESS][i];
+        }
+    }
+    key_mode_last = shoot_cmd.key_state.key_EN_state;
 
-    case SHOOT_ENABLE:
-        shoot_cmd.mode = SHOOT_ENABLE;
-        // shoot_cmd.shoot_speed_set = SHOOT_SPEED_12MPS;
-        if (uart2_rx_message.rc_switch == 0b00100100)
+    if (shoot_cmd.key_state.key_EN_state == 1)
+    {
+        if (chassis_cmd.key_state.chassis_EN_state == 1)
         {
-            shoot_cmd.shoot_speed_set = SHOOT_SPEED_12MPS;
-        }
-        else if (uart2_rx_message.rc_switch == 0b00100010)
-        {
-            shoot_cmd.shoot_speed_set = SHOOT_SPEED_16MPS;
-        }
-        break;
+            if (KEY_CLICK(Key_F))
+            {
+                if (shoot_cmd.mode == SHOOT_DISABLE)
+                {
+                    shoot_cmd.mode = SHOOT_ENABLE;
+                    shoot_cmd.key_state.shoot_EN_state = 1;
+                }
+                else
+                {
+                    shoot_cmd.mode = SHOOT_DISABLE;
+                    shoot_cmd.key_state.shoot_EN_state = 0;
+                }
+                KEY_ACK(Key_F);
+            }
 
-    case SHOOT_AUTO_AIMING:
-        shoot_cmd.mode = SHOOT_AUTO_AIMING;
-        if (uart2_rx_message.rc_switch == 0b00001100)
-        {
-            shoot_cmd.shoot_speed_set = SHOOT_SPEED_12MPS;
+            if (shoot_cmd.key_state.shoot_EN_state == 1)
+            {
+                // 自瞄
+                if (rc_data->mouse.press_r == 1)
+                {
+                    shoot_cmd.mode = SHOOT_AUTO_AIMING;
+                }
+                else if (rc_data->mouse.press_r == 0 && shoot_cmd.mode == SHOOT_AUTO_AIMING)
+                {
+                    shoot_cmd.mode = SHOOT_ENABLE;
+                }
+            }
         }
-        else if (uart2_rx_message.rc_switch == 0b00001010)
+        else
         {
-            shoot_cmd.shoot_speed_set = SHOOT_SPEED_16MPS;
+            shoot_cmd.mode = SHOOT_DISABLE;
+            shoot_cmd.key_state.shoot_EN_state = 0;
         }
-        break;
-
-    default:
-        shoot_cmd.mode = SHOOT_DISABLE;
-        break;
     }
 
+#undef KEY_CLICK
+#undef KEY_ACK
     if (shoot_cmd.mode == SHOOT_ENABLE || shoot_cmd.mode == SHOOT_AUTO_AIMING)
     {
         Shoot_Enable();
@@ -194,7 +263,29 @@ void Shoot_Set_Mode(void)
     {
         Shoot_Disable();
     }
-    // #endif
+
+    if (rs485_tx_message.control_remote_flag == 0)
+    {
+        if(rc_data->rc.dial == 660)
+        {
+            shoot_cmd.fire_allowed = 1;
+        }
+        else if(rc_data->rc.dial == 0)
+        {
+            shoot_cmd.fire_allowed = 0;
+        }
+    }
+    else if (rs485_tx_message.control_remote_flag == 1)
+    {
+        if(vt03_data->mouse.press_l == 1)
+        {
+            shoot_cmd.fire_allowed = 1;
+        }
+        else
+        {
+            shoot_cmd.fire_allowed = 0;
+        }
+    }
 }
 
 float shoot_kp_test;
@@ -209,11 +300,8 @@ void Shoot_Reference(void)
     static uint8_t last_key_cnt[16] = {0};
     static uint8_t key_mode_last = 0;
 
-#define KEY_CLICK(k) (rc_data->key_count[KEY_PRESS][(k)] != last_key_cnt[(k)])
-#define KEY_ACK(k) (last_key_cnt[(k)] = rc_data->key_count[KEY_PRESS][(k)])
-
-#ifdef RMUC
-
+#define KEY_CLICK(k) (vt03_data->key_count[KEY_PRESS][(k)] != last_key_cnt[(k)])
+#define KEY_ACK(k) (last_key_cnt[(k)] = vt03_data->key_count[KEY_PRESS][(k)])
     for (int i = 0; i < 3; i++)
     {
         // shoot_m3508_motor[i]->motor_controller.speed_PID->kp = shoot_kp_test;
@@ -252,48 +340,6 @@ void Shoot_Reference(void)
     {
         shoot_cmd.fire_launched = 0;
     }
-
-#elif defined(RMUL)
-    for (int i = 0; i < 3; i++)
-    {
-        // shoot_m3508_motor[i]->motor_controller.speed_PID->kp = shoot_kp_test;
-        // shoot_m3508_motor[i]->motor_controller.speed_PID->ki = shoot_ki_test;
-        // shoot_m3508_motor[i]->motor_controller.speed_PID->kd = shoot_kd_test;
-    }
-    shoot_speed_test_0 = shoot_m3508_motor[0]->receive_data.speed;
-    shoot_speed_test_1 = shoot_m3508_motor[1]->receive_data.speed;
-    shoot_speed_test_2 = -shoot_m3508_motor[2]->receive_data.speed;
-
-    float shoot_speed_average = (shoot_speed_test_0 + shoot_speed_test_1 + shoot_speed_test_2) / 3.0f;
-
-    if (shoot_cmd.shoot_speed_set == SHOOT_SPEED_12MPS)
-    {
-        if (shoot_speed_average < (shoot_tar_1 - 500.0f))
-        {
-            shoot_cmd.fire_launched = 1;
-        }
-        else if (shoot_speed_average > (shoot_tar_1 - 100.0f))
-        {
-            shoot_cmd.fire_launched = 0;
-        }
-    }
-    else if (shoot_cmd.shoot_speed_set == SHOOT_SPEED_16MPS)
-    {
-        if (shoot_speed_average < (shoot_tar_16mps_1 - 500.0f))
-        {
-            shoot_cmd.fire_launched = 1;
-        }
-        else if (shoot_speed_average > (shoot_tar_16mps_1 - 100.0f))
-        {
-            shoot_cmd.fire_launched = 0;
-        }
-    }
-    else
-    {
-        shoot_cmd.fire_launched = 0;
-    }
-
-#endif
 #undef KEY_CLICK
 #undef KEY_ACK
 }
@@ -344,7 +390,7 @@ void Shoot_Console(void)
 }
 
 void Shoot_Send_Cmd(void)
-{
+{   
     DJI_Motor_Control(NULL);
     CAN_Transmit(&shoot_m3519_motor, 2);
 }
@@ -355,7 +401,6 @@ static void Shoot_Enable(void)
     {
         DJI_Motor_Enable(shoot_m3508_motor[i]);
     }
-    // DJI_Motor_Enable(shoot_m3508_motor);
 }
 
 static void Shoot_Disable(void)

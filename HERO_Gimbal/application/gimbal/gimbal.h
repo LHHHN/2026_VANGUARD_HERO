@@ -18,6 +18,8 @@
 
 #define REMOTE_PITCH_SEN 0.000005f
 #define KEY_PITCH_SEN 0.000008f
+#define REMOTE_YAW_SEN 0.000005f
+#define KEY_YAW_SEN 0.00001f
 #define PITCH_VELOCITY_MAX 2.0F
 #define PTICH_MAX_ANGLE 0.750f // 云台俯仰最大角度，单位：弧度
 #define PTICH_MIN_ANGLE -0.35f // 云台俯仰最小角度，单位：弧度
@@ -35,14 +37,27 @@ typedef enum
 	GIMBAL_ZERO = 3,		/* 回中模式 */
 } gimbal_mode_e;
 
+typedef struct 
+{
+	uint8_t key_EN_state;
+    uint8_t gimbal_EN_state;
+	/* data */
+}gimbal_key_state_e;
+
 typedef struct
 {
 	/* data */
 	gimbal_mode_e mode;
+	gimbal_key_state_e key_state;
+	
 	float pitch_diff;
 	float pitch_v;
 	float pitch_target; // PITCH目标
+	float yaw_v;
+	float yaw_target;
 } __attribute__((packed)) gimbal_cmd_t;
+
+extern gimbal_cmd_t gimbal_cmd;
 
 void Gimbal_Init(void);
 

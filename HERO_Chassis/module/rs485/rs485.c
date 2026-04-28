@@ -1,155 +1,113 @@
 #include "rs485.h"
-#include "main.h"
-#include "dma.h"
-#include "usart.h"
-#include "gpio.h"
-#include <string.h>
-#include "chassis.h"
 
-#define FRAME_HEADER 0xA5 // 帧头
-#define FRAME_TAILER 0x5A // 帧尾
+#include "defense_center.h"
 
-Tx_packed_t uart2_tx_message; // 发送数据结构体
-Rx_packed_t uart2_rx_message; // 接收数据结构体
+#include "CRC.h"
 
-uint8_t uart2_receive_buffer[sizeof(Rx_packed_t) * 3]; // 接收缓冲区
-uint8_t uart2_transmit_buffer[sizeof(Tx_packed_t)];    // 发送缓冲区
+#include "bsp_usart.h"
 
-uint8_t ready_to_transmit = 0; // 发送就绪标志位
-uint8_t ready_to_receive = 1;  // 接收就绪标志位
+#define BUFF_RS485_RECEIVE_SIZE 128
 
-uint8_t uart2_status = 0;       // 状态标志位
-uint32_t last_uart2_uwTick = 0; // 上次发送时间戳
+rs485_command_t rs485_command;
 
-uint16_t uart2_buffer_length = 0;
-uint8_t uart2_current_byte = 0;
+static USART_instance_t *rs485_usart_instance;
+static supervisor_t *rs485_supervisor_instance;
 
-float cnttttt = 0;
-uint8_t rs485_status = 0;
+tx_chassis_t rs485_tx_message;
+rx_gimbal_t rs485_rx_message;
 
-static void uart2_append_byte(uint8_t byte)
+uint8_t rs485_tx_message_temp[sizeof(tx_chassis_t)];
+uint8_t rs485_rx_message_temp[sizeof(rx_gimbal_t) * 2];
+
+uint8_t rs485_receive_en_flag = 0;
+
+static void RS485_Rx_Callback(void)
 {
-    if (uart2_buffer_length >= sizeof(uart2_receive_buffer))
-    {
-        memmove(uart2_receive_buffer, uart2_receive_buffer + 1, sizeof(uart2_receive_buffer) - 1);
-        uart2_buffer_length = sizeof(uart2_receive_buffer) - 1;
-    }
-    uart2_receive_buffer[uart2_buffer_length++] = byte;
-}
-
-static uint8_t uart2_extract_frame(Rx_packed_t *frame)
-{
-    while (uart2_buffer_length >= sizeof(Rx_packed_t))
-    {
-        if (uart2_receive_buffer[0] != FRAME_HEADER)
-        {
-            memmove(uart2_receive_buffer, uart2_receive_buffer + 1, uart2_buffer_length - 1);
-            uart2_buffer_length--;
-            continue;
-        }
-
-        if (uart2_receive_buffer[sizeof(Rx_packed_t) - 2] != FRAME_TAILER)
-        {
-            memmove(uart2_receive_buffer, uart2_receive_buffer + 1, uart2_buffer_length - 1);
-            uart2_buffer_length--;
-            continue;
-        }
-
-        uint8_t received_check_sum = 0;
-        for (uint16_t i = 0; i < sizeof(Rx_packed_t) - 1; i++)
-        {
-            received_check_sum += uart2_receive_buffer[i];
-        }
-
-        if (received_check_sum != uart2_receive_buffer[sizeof(Rx_packed_t) - 1])
-        {
-            memmove(uart2_receive_buffer, uart2_receive_buffer + 1, uart2_buffer_length - 1);
-            uart2_buffer_length--;
-            continue;
-        }
-
-        memcpy(frame, uart2_receive_buffer, sizeof(Rx_packed_t));
-        memmove(uart2_receive_buffer, uart2_receive_buffer + sizeof(Rx_packed_t), uart2_buffer_length - sizeof(Rx_packed_t));
-        uart2_buffer_length -= sizeof(Rx_packed_t);
-        return 1;
-    }
-
-    return 0;
-}
-
-// 记得启用接收中断HAL_UART_Receive_IT(&huart2, &uart2_current_byte, 1);
-
-void uart2_send_data(Tx_packed_t *data_p) // 发送数据函数
-{
-    data_p->frame_header = FRAME_HEADER;
-    data_p->frame_tailer = FRAME_TAILER;
-    data_p->check_sum = 0;
-    for (uint8_t i = 0; i < sizeof(Tx_packed_t) - 1; i++) // 计算校验和，这里校验和放在帧尾后面
-    {
-        data_p->check_sum += ((uint8_t *)data_p)[i];
-    }
-    memcpy(uart2_transmit_buffer, data_p, sizeof(Tx_packed_t));
+		HAL_UART_DMAStop(rs485_usart_instance->usart_handle);
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);
-    HAL_UART_Transmit_IT(&huart2, uart2_transmit_buffer, sizeof(Tx_packed_t));
-}
-
-void uart2_transmit_control(void) // 发送控制函数，发送时直接调用这个函数即可
-{
-    if (uart2_status == ready_to_transmit)
+    Supervisor_Reload(rs485_supervisor_instance);// 先喂狗
+    if(rs485_usart_instance->recv_buff[0] == FRAME_HEADER && rs485_usart_instance->recv_buff[sizeof(rx_gimbal_t) - 1] == FRAME_TAILER)
     {
-        uart2_send_data(&uart2_tx_message);
+        memcpy(&rs485_rx_message_temp, rs485_usart_instance->recv_buff, sizeof(rx_gimbal_t));
+        rs485_receive_en_flag = 1;
+        rs485_command.online = 1; // 遥控器在线
     }
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // 接收回调函数
+static void RS485_Lost_Callback(void *id)
 {
-    if (huart == &huart2)
-    {
-        uart2_append_byte(uart2_current_byte);
+	memset(&rs485_rx_message, 0, sizeof(rs485_rx_message)); // 清空遥控器数据
+    HAL_UARTEx_ReceiveToIdle_DMA(rs485_usart_instance->usart_handle,
+			                             rs485_usart_instance->recv_buff,
+			                             rs485_usart_instance->recv_buff_size);
+	__HAL_DMA_DISABLE_IT(rs485_usart_instance->usart_handle->hdmarx, DMA_IT_HT);    
+	rs485_receive_en_flag = 0;
+    rs485_command.online = 0; // 遥控器离线
+}
 
-        if (uart2_extract_frame(&uart2_rx_message))
+void RS485_Handle_Rx_Data(void)
+{
+    if(rs485_rx_message_temp[0] != FRAME_HEADER || rs485_rx_message_temp[sizeof(rx_gimbal_t) - 1] != FRAME_TAILER)
+    {
+        memset(&rs485_rx_message_temp, 0, sizeof(rs485_rx_message_temp));
+        rs485_receive_en_flag = 0;
+    }
+    else
+    {
+        if(rs485_receive_en_flag == 1)
         {
-            // target_angle_yaw = target_angle_yaw + uart2_rx_message.delta_target_angle_yaw;
-
-            last_uart2_uwTick = uwTick;
-            uart2_status = ready_to_transmit;
-            uart2_transmit_control();
-            cnttttt++;
+            if (Verify_CRC8_Check_Sum(rs485_rx_message_temp + 1, sizeof(rx_gimbal_t) - 2))
+            {   
+                memcpy(&rs485_rx_message, rs485_rx_message_temp, sizeof(rx_gimbal_t));
+                Supervisor_Reload(rs485_supervisor_instance); // 重载daemon,避免数据更新后一直不被读取而导致数据更新不及时
+            }
+            memset(&rs485_tx_message_temp, 0, sizeof(rs485_tx_message_temp));
+            rs485_receive_en_flag = 0;
         }
-        HAL_UART_Receive_IT(&huart2, &uart2_current_byte, 1);
     }
+//    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);
 }
 
-void uart2_online_check(void)
+void RS485_Handle_Tx_Data(void)
 {
-    if (uwTick - last_uart2_uwTick > 100)
-    {
-        // uart2_rx_message.chassis_mode = 0;
-        // uart2_rx_message.target_x_speed = 0;
-        // uart2_rx_message.target_y_speed = 0;
-        // uart2_rx_message.target_omega_speed = 0;
-
-        uart2_rx_message.speed_yaw = 0;
-        uart2_rx_message.angle_yaw = uart2_rx_message.angle_yaw;
-        uart2_rx_message.vs_mode = 0;
-        uart2_rx_message.vs_yaw_tar = uart2_rx_message.vs_yaw_tar;
-        uart2_rx_message.shoot_launched = 1;
-    }
+    rs485_tx_message.frame_header = FRAME_HEADER;
+    rs485_tx_message.frame_tailer = FRAME_TAILER;
+    memcpy(&rs485_tx_message_temp, &rs485_tx_message, sizeof(tx_chassis_t));
+    Append_CRC8_Check_Sum(rs485_tx_message_temp + 1, sizeof(tx_chassis_t) - 2);
+    USART_Send(rs485_usart_instance, (uint8_t *)rs485_tx_message_temp, sizeof(rs485_tx_message_temp), USART_TRANSFER_DMA);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) // 发送回调函数
 {
-    if (huart == &huart2)
+    if (huart == rs485_usart_instance->usart_handle)
     {
         HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_RESET);
-        uart2_status = ready_to_receive;
     }
 }
 
-// void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) // 错误回调函数
-// {
-//     memset(uart2_receive_buffer, 0, sizeof(uart2_receive_buffer));
-//     uart2_buffer_length = 0;
-//     memset(&uart2_rx_message, 0, sizeof(Rx_packed_t));
-//     HAL_UART_Receive_IT(&huart2, &uart2_current_byte, 1);
-// }
+/**
+ * @brief 初始化遥控器,该函数会将遥控器注册到串口
+ *
+ * @attention 注意分配正确的串口硬件,遥控器在C板上使用USART3
+ *
+ */
+rs485_command_t RS485_Register(UART_HandleTypeDef *rs485_handle)
+{	
+	usart_init_config_t conf;
+	conf.module_callback = RS485_Rx_Callback;
+	conf.usart_handle    = rs485_handle;
+	conf.recv_buff_size  = BUFF_RS485_RECEIVE_SIZE;
+	rs485_usart_instance    = USART_Register(&conf);
+
+	// 进行守护进程的注册,用于定时检查遥控器是否正常工作
+	supervisor_init_config_t supervisor_conf = {
+		.reload_count = 10, 
+		.handler_callback = RS485_Lost_Callback,
+		.owner_id = NULL,
+	};
+	rs485_supervisor_instance = Supervisor_Register(&supervisor_conf);
+
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, GPIO_PIN_SET);
+    return rs485_command;
+}

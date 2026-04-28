@@ -13,58 +13,247 @@
 #include <stdlib.h>
 
 #include "chassis.h"
+#include "remote_control.h"
+#include "remote_vt03.h"
 
-#include "DM_motor.h"
-#include "DJI_motor.h"
+#include "rs485.h"
 
-/******************************DJI电机底盘初始化实例*****************************/
+// 底板轮毂电机初始化参数
+chassis_cmd_t chassis_cmd;
 
-// static DJI_motor_instance_t *chassis_motor[4];
+void Chassis_Init(void)
+{
+    memset(&chassis_cmd, 0, sizeof(chassis_cmd_t));
+}
 
-// motor_init_config_t chassis_motor_config = {
-//      .controller_param_init_config = {
-// 		.angle_PID = NULL,
-// 		.speed_PID = NULL,
-// 		.current_PID = NULL,
-// 		.torque_PID = NULL,
+extern RC_ctrl_t *rc_data;
+extern VT03_ctrl_t *vt03_data;
 
-// 		.other_angle_feedback_ptr = NULL,
-// 		.other_speed_feedback_ptr = NULL,
+void Chassis_Set_Mode(void)
+{
+   static uint8_t last_key_cnt[16] = {0};
+   static uint8_t key_mode_last = 0;
 
-// 		.angle_feedforward_ptr = NULL,
-// 		.speed_feedforward_ptr = NULL,
-// 		.current_feedforward_ptr = NULL,
-// 		.torque_feedforward_ptr = NULL,
+#define KEY_CLICK(k) (vt03_data->key_count[KEY_PRESS][(k)] != last_key_cnt[(k)])
+#define KEY_ACK(k) (last_key_cnt[(k)] = vt03_data->key_count[KEY_PRESS][(k)])            
+       if (rc_data->online == 0 && vt03_data->online == 0)
+       {
+           chassis_cmd.mode = CHASSIS_DISABLE;
+       }
+       else
+       {    
+           chassis_cmd.key_state.key_EN_state = 0;
+           // 遥控器控制
+           if (rc_data->rc.switch_left == 1)
+           {
+               switch (rc_data->rc.switch_right)
+               {
+               case 1:
+                   /* code */
+                   chassis_cmd.mode = CHASSIS_DISABLE;
+                   break;
+               case 3:
+                   /* code */
+                   chassis_cmd.mode = CHASSIS_STOP;
+                   break;
+               case 2:
+                   /* code */
+                   chassis_cmd.mode = CHASSIS_STOP;
+                   break;
+               default:
+                   chassis_cmd.mode = CHASSIS_DISABLE;
+                   break;
+               }
+           }
+           else if (rc_data->rc.switch_left == 3)
+           {
+               switch (rc_data->rc.switch_right)
+               {
+               case 1:
+                   /* code */
+                   chassis_cmd.mode = CHASSIS_FOLLOW;
+                   break;
+               case 3:
+                   /* code */
+                   chassis_cmd.mode = CHASSIS_STOP;
+                   break;
+               case 2:
+                   /* code */
+                   chassis_cmd.mode = CHASSIS_STOP;
+                   break;
+               default:
+                   chassis_cmd.mode = CHASSIS_DISABLE;
+                   break;
+               }
+           }
+           else if (rc_data->rc.switch_left == 2)
+           {
+               switch (rc_data->rc.switch_right)
+               {
+               case 1:
+                   /* code */
+                   chassis_cmd.mode = CHASSIS_UPSTEP;
+                   break;
+               case 3:
+                   /* code */
+                   chassis_cmd.mode = CHASSIS_SPIN;
+                   break;
+               case 2:
+                   /* code */
+                   chassis_cmd.key_state.key_EN_state = 1;
+                   break;
+               default:
+                   chassis_cmd.mode = CHASSIS_DISABLE;
+                   break;
+               }
+           }
+           else
+           {
+               chassis_cmd.mode = CHASSIS_DISABLE;
+           }
+       }
 
-// 		.pid_ref = 0.0f,
-// 	},
-// 	.controller_setting_init_config = {
-// 		.close_loop_type = TORQUE_LOOP,
+   if (chassis_cmd.key_state.key_EN_state == 1 && key_mode_last == 0)
+   {
+       for (uint8_t i = 0; i < 16; i++)
+       {
+           last_key_cnt[i] = vt03_data->key_count[KEY_PRESS][i];
+       }
+   }
+   key_mode_last = chassis_cmd.key_state.key_EN_state;
 
-// 		.motor_reverse_flag = MOTOR_DIRECTION_NORMAL,
-// 		.feedback_reverse_flag = FEEDBACK_DIRECTION_NORMAL,
+   if (chassis_cmd.key_state.key_EN_state == 1)
+   {
+       if (KEY_CLICK(Key_B))
+       {
+           if (chassis_cmd.mode == CHASSIS_DISABLE)
+           {
+               chassis_cmd.mode = CHASSIS_FOLLOW;
+               chassis_cmd.key_state.chassis_EN_state = 1;
+           }
+           else
+           {
+               chassis_cmd.mode = CHASSIS_DISABLE;
+               chassis_cmd.key_state.chassis_EN_state = 0;
+           }
+           KEY_ACK(Key_B);
+       }
 
-// 		.angle_feedback_source = MOTOR_FEED,
-// 		.speed_feedback_source = MOTOR_FEED,
+       if (chassis_cmd.key_state.chassis_EN_state == 1)
+       {
+           /* 蹬腿键鼠 */
+           if (vt03_data->key->q == 1)
+           {
+               chassis_cmd.mode = CHASSIS_UPSTEP;
+           }
+           else if (vt03_data->key->q == 0 && chassis_cmd.mode == CHASSIS_UPSTEP)
+           {
+               chassis_cmd.mode = CHASSIS_FOLLOW;
+           }
 
-// 		.feedforward_flag = FEEDFORWARD_NONE,
-// 	},
+           if (KEY_CLICK(Key_E))
+           {
+               if (chassis_cmd.mode == CHASSIS_FOLLOW)
+               {
+                   chassis_cmd.mode = CHASSIS_SPIN;
+               }
+               else if (chassis_cmd.mode == CHASSIS_SPIN)
+               {
+                   chassis_cmd.mode = CHASSIS_FOLLOW;
+               }
+           }
+           KEY_ACK(Key_E);
+       }      
+   }
+#undef KEY_CLICK
+#undef KEY_ACK      
+}
 
-// 	.motor_type = M3508,
+void Chassis_Observer(void)
+{
+   ;
+}
 
-// 	.can_init_config = {
-// 		.can_handle = &hfdcan3,
-// 		.tx_id = 0x00,
-// 		.rx_id = 0x00,
-// 	},
+// 更新目标值
+void Chassis_Reference(void)
+{
+   static float chassis_yaw_target = 0.0f;
 
-// 	.motor_control_type = TORQUE_LOOP_CONTROL,
-// };
+   if (chassis_cmd.mode == CHASSIS_SPIN)
+   {
+       chassis_cmd.target_wz = SPIN_SET;
+       if (chassis_cmd.key_state.key_EN_state == 0)
+       {
+           chassis_cmd.target_vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
+           chassis_cmd.target_vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
+       }
+       else if (chassis_cmd.key_state.key_EN_state == 1)
+       {
+           chassis_cmd.target_vx = (float)(vt03_data->key->w - vt03_data->key->s) * KEY_X_SEN;
+           chassis_cmd.target_vy = (float)(vt03_data->key->a - vt03_data->key->d) * KEY_Y_SEN;
+           if (vt03_data->key->shift == 1)
+           {
+               chassis_cmd.target_wz = SPIN_SET_PRO;
+           }
+       }
+   }
+   else if (chassis_cmd.mode == CHASSIS_FOLLOW)
+   {
+       if (chassis_cmd.key_state.key_EN_state == 0)
+       {
+           chassis_cmd.target_vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
+           chassis_cmd.target_vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
+       }
+       else if (chassis_cmd.key_state.key_EN_state == 1)
+       {
+           // if ((vt03_data->key->shift == 1) && (super_cap_instance->receive_data.capEnergyJ >= 100))
+           if (vt03_data->key->shift == 1)
+           {
+               chassis_cmd.target_vx = (float)(vt03_data->key->w - vt03_data->key->s) * KEY_X_SEN_PRO;
+               chassis_cmd.target_vy = (float)(vt03_data->key->a - vt03_data->key->d) * KEY_Y_SEN_PRO;
+           }
+           else
+           {
+               chassis_cmd.target_vx = (float)(vt03_data->key->w - vt03_data->key->s) * KEY_X_SEN;
+               chassis_cmd.target_vy = (float)(vt03_data->key->a - vt03_data->key->d) * KEY_Y_SEN;
+           }
+       }
+       chassis_cmd.target_wz = 0.0f;
+   }
+   else if (chassis_cmd.mode == CHASSIS_UPSTEP)
+   {
+       if (chassis_cmd.key_state.key_EN_state == 0)
+       {
+           chassis_cmd.target_vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
+           chassis_cmd.target_vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
+           chassis_cmd.target_wz = rc_data->rc.rocker_r_ * REMOTE_OMEGA_Z_SEN;
+       }
+       else if (chassis_cmd.key_state.key_EN_state == 1)
+       {
+           chassis_cmd.target_vx = (float)(vt03_data->key->w - vt03_data->key->s) * KEY_X_SEN;
+           chassis_cmd.target_vy = (float)(vt03_data->key->a - vt03_data->key->d) * KEY_Y_SEN;
+           chassis_cmd.target_wz = rc_data->mouse.x * KEY_OMEGA_Z_SEN;
+       }
+       if (rc_data->rc.rocker_r1 >= 0 && chassis_cmd.leg_state == LEG_NORMAL)
+       {
+           chassis_cmd.target_leg_angle = rc_data->rc.rocker_r1 * 0.0013f; // 660换算成弧度0-0.88rad
+       }
+   }
+   else if (chassis_cmd.mode == CHASSIS_STOP)
+   {
+       chassis_cmd.target_wz = 0.0f;
+       chassis_cmd.target_vx = 0.0f;
+       chassis_cmd.target_vy = 0.0f;
+       chassis_cmd.target_leg_angle = 0.0f;
+   }
+}
 
-//   for (uint8_t i = 0; i < 4; i++)
-//   {
-//     chassis_motor_config.can_init_config.tx_id = i + 1;
-//     chassis_motor[i] = DJI_Motor_Init(&chassis_config);
-//   }
+void Chassis_Console(void)
+{
+   ;
+}
 
-/******************************DJI电机底盘初始化实例*****************************/
+void Chassis_Send_Cmd(void)
+{
+    ;
+}

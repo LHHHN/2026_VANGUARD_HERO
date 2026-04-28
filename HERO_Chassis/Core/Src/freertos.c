@@ -61,27 +61,27 @@ extern RC_ctrl_t *rc_data;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-uint32_t defaultTaskBuffer[128];
+uint32_t defaultTaskBuffer[ 128 ];
 osStaticThreadDef_t defaultTaskControlBlock;
 const osThreadAttr_t defaultTask_attributes = {
-    .name = "defaultTask",
-    .cb_mem = &defaultTaskControlBlock,
-    .cb_size = sizeof(defaultTaskControlBlock),
-    .stack_mem = &defaultTaskBuffer[0],
-    .stack_size = sizeof(defaultTaskBuffer),
-    .priority = (osPriority_t)osPriorityNormal,
+  .name = "defaultTask",
+  .cb_mem = &defaultTaskControlBlock,
+  .cb_size = sizeof(defaultTaskControlBlock),
+  .stack_mem = &defaultTaskBuffer[0],
+  .stack_size = sizeof(defaultTaskBuffer),
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for UI_Task */
 osThreadId_t UI_TaskHandle;
-uint32_t UI_TaskBuffer[512];
+uint32_t UI_TaskBuffer[ 512 ];
 osStaticThreadDef_t UI_TaskControlBlock;
 const osThreadAttr_t UI_Task_attributes = {
-    .name = "UI_Task",
-    .cb_mem = &UI_TaskControlBlock,
-    .cb_size = sizeof(UI_TaskControlBlock),
-    .stack_mem = &UI_TaskBuffer[0],
-    .stack_size = sizeof(UI_TaskBuffer),
-    .priority = (osPriority_t)osPriorityLow,
+  .name = "UI_Task",
+  .cb_mem = &UI_TaskControlBlock,
+  .cb_size = sizeof(UI_TaskControlBlock),
+  .stack_mem = &UI_TaskBuffer[0],
+  .stack_size = sizeof(UI_TaskBuffer),
+  .priority = (osPriority_t) osPriorityLow,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,12 +95,11 @@ void Start_UI_Task(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
- * @brief  FreeRTOS initialization
- * @param  None
- * @retval None
- */
-void MX_FREERTOS_Init(void)
-{
+  * @brief  FreeRTOS initialization
+  * @param  None
+  * @retval None
+  */
+void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
@@ -135,6 +134,7 @@ void MX_FREERTOS_Init(void)
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
+
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -242,3 +242,4 @@ void Start_UI_Task(void *argument)
 /* USER CODE BEGIN Application */
 /******************************这里是塞💩的地方，请随便塞💩*****************************/
 /* USER CODE END Application */
+

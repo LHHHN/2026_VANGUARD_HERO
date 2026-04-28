@@ -63,4 +63,4 @@
   ..\Middlewares\ST\STM32_USB_Device_Library\Core\Inc\usbd_core.h \
   ..\Middlewares\ST\STM32_USB_Device_Library\Core\Inc\usbd_ctlreq.h \
   ..\application\shoot\shoot.h ..\module\motor\DJI_motor\dji_motor.h \
-  ..\module\rs485\rs485.h ..\application\robot_frame_config.h
+  ..\module\rs485\rs485.h

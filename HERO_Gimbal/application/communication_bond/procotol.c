@@ -13,15 +13,15 @@
 #include <stdlib.h>
 
 #include "procotol.h"
+#include "chassis.h"
+#include "gimbal.h"
+#include "shoot.h"
 #include "INS.h"
 
 #include "vofa.h"
 #include "bmi088.h"
 #include "wfly_control.h"
 #include "remote_control.h"
-#include "omni_mecanum_chassis.h"
-#include "gimbal.h"
-#include "shoot.h"
 
 #include "VPC.h"
 #include "Serial.h"
@@ -29,12 +29,10 @@
 #include "rs485.h"
 
 extern bmi088_data_t imu_data;
-// extern wfly_t *rc_data;
 extern RC_ctrl_t *rc_data;
 extern INS_behaviour_t INS;
 extern float test_data_acc[3];
 extern float test_data_gyro[3];
-extern shoot_cmd_t shoot_cmd;
 
 float INS_YAW_angle_test;
 float INS_YAW_speed_test;
@@ -92,6 +90,7 @@ void VS_Receive_Control(void)
 //float vs_pitch_tar;
 void RC_Receive_Control(void)
 {
+#if RS485_CHA == 1	
 	YAW_tar = uart2_rx_message.angle_tar;
 	INS_YAW_angle_test = INS.Yaw;
 	INS_YAW_speed_test = INS.Gyro[2];
@@ -100,10 +99,30 @@ void RC_Receive_Control(void)
 	uart2_tx_message.vs_yaw_tar = vs_aim_packet_from_nuc.yaw;
 	uart2_tx_message.vs_mode = vs_aim_packet_from_nuc.mode;
 	uart2_tx_message.shoot_launched = shoot_cmd.fire_launched;
-
 //	vs_yaw_tar = vs_aim_packet_from_nuc.yaw;
 //	vs_pitch_tar = vs_aim_packet_from_nuc.pitch;
 
 	//板间485通信
 	uart2_online_check();
+#else
+	RS485_Handle_Rx_Data();
+	rs485_tx_message.chassis_mode = chassis_cmd.mode;
+	rs485_tx_message.gimbal_mode = gimbal_cmd.mode;
+	rs485_tx_message.shoot_mode = shoot_cmd.mode;
+	rs485_tx_message.chassis_target_vx = chassis_cmd.target_vx;
+	rs485_tx_message.chassis_target_vy = chassis_cmd.target_vy;
+	rs485_tx_message.chassis_target_wz = chassis_cmd.target_wz;
+	rs485_tx_message.chassis_target_leg_angle = chassis_cmd.target_leg_angle;
+	rs485_tx_message.gimbal_target_yaw = gimbal_cmd.yaw_target;
+	rs485_tx_message.gimbal_target_yaw_speed = gimbal_cmd.yaw_v;
+	rs485_tx_message.gimbal_measure_yaw = INS.Yaw;
+	rs485_tx_message.gimbal_measure_yaw_speed = INS.Gyro[2];
+	rs485_tx_message.gimbal_measure_pitch = INS.Pitch;
+	rs485_tx_message.shoot_fire_en_flag = shoot_cmd.fire_allowed;
+	rs485_tx_message.shoot_launched_flag = shoot_cmd.fire_launched;
+	rs485_tx_message.auto_aiming_flag = vs_aim_packet_from_nuc.mode;
+	rs485_tx_message.control_remote_flag = chassis_cmd.key_state.key_EN_state;
+	RS485_Handle_Tx_Data();
+#endif	
 }
+

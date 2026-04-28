@@ -73,6 +73,8 @@
 "2026_vanguard_frame\lk_motor.o"
 "2026_vanguard_frame\rs485.o"
 "2026_vanguard_frame\serial.o"
+"2026_vanguard_frame\remote_vt03.o"
+"2026_vanguard_frame\servo.o"
 "2026_vanguard_frame\robot_frame_config.o"
 "2026_vanguard_frame\pid.o"
 "2026_vanguard_frame\user_lib.o"

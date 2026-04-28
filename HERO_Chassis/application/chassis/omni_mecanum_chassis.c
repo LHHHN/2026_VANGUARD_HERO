@@ -10,18 +10,22 @@
 */
 
 #include "omni_mecanum_chassis.h"
-#include "super_cap.h"
-#include <math.h>
+
 #include "INS.h"
-#include "pid.h"
-#include "remote_control.h"
-#include "user_lib.h"
-#include "signal_generator.h"
-#include "bsp_dwt.h"
-#include "rs485.h"
 #include "gimbal.h"
 
-extern super_cap_instance_t *super_cap_instance;
+#include "super_cap.h"
+#include "remote_control.h"
+#include "rs485.h"
+
+#include "user_lib.h"
+#include "pid.h"
+
+#include "power_ctrl.h"
+
+#include "bsp_dwt.h"
+
+//extern super_cap_instance_t *super_cap_instance;
 
 // 底板轮毂电机初始化参数
 
@@ -320,6 +324,8 @@ float leg_cnt = 0.0f; // 离地时间计数
 
 void Chassis_Set_Mode(void)
 {
+#if RS485_CHA
+
     static uint8_t last_key_cnt[16] = {0};
     static uint8_t key_mode_last = 0;
 
@@ -459,27 +465,26 @@ void Chassis_Set_Mode(void)
 
 #undef KEY_CLICK
 #undef KEY_ACK
+#else    
+
+    chassis_cmd.mode = rs485_rx_message.chassis_mode;
 
     if (chassis_cmd.mode == CHASSIS_UPSTEP)
     {
-        leg_angle_ramp[0]->decrease_value = 1;
-        leg_angle_ramp[1]->decrease_value = 1;
+        leg_angle_ramp[0]->decrease_value = 1.0f;
+        leg_angle_ramp[1]->decrease_value = 1.0f;
     }
     else
     {
-        leg_angle_ramp[0]->decrease_value = 0.0005;
-        leg_angle_ramp[1]->decrease_value = 0.0005;
+        leg_angle_ramp[0]->decrease_value = 0.0005f;
+        leg_angle_ramp[1]->decrease_value = 0.0005f;
     }
 
     // 离地检查
     if (DM_arthrosis_motor[0]->receive_data.torque < -3.0f &&
         DM_arthrosis_motor[1]->receive_data.torque > 3.0f)
     {
-        // if(DM_arthrosis_motor[0]->receive_data.position < 0.1f &&
-        //     DM_arthrosis_motor[1]->receive_data.position > -0.1f)
-        // {
         chassis_cmd.leg_state = LEG_LIFTOFF;
-        // }
     }
     else if (chassis_cmd.leg_state == LEG_LIFTOFF)
     {
@@ -502,6 +507,7 @@ void Chassis_Set_Mode(void)
             }
         }
     }
+#endif
 }
 
 float leg_angle_test_L;
@@ -534,7 +540,7 @@ float wheel_speed_fb1;
 float wheel_speed_fb2;
 float wheel_speed_fb3;
 
-void Chassis_Observer()
+void Chassis_Observer(void)
 {
     leg_angle_test_L = DM_arthrosis_motor[0]->receive_data.position;
     leg_angle_test_R = -DM_arthrosis_motor[1]->receive_data.position;
@@ -577,6 +583,7 @@ void Chassis_Observer()
 // 更新目标值
 void Chassis_Reference(void)
 {
+#if RS485_CHA    
     static float chassis_yaw_target = 0.0f;
     static uint8_t chassis_hold_flag = 0;
 
@@ -691,7 +698,6 @@ void Chassis_Reference(void)
         chassis_cmd.vy = 0.0f;
         chassis_cmd.leg_angle = 0.0f;
     }
-
     if (chassis_cmd.key_state.key_EN_state == 1)
     {
         chassis_cmd.vx_real = ramp_calc(vx_speed_ramp, chassis_cmd.vx);
@@ -707,8 +713,8 @@ void Chassis_Reference(void)
         chassis_cmd.vy_real = chassis_cmd.vy;
     }
 
-    if (chassis_cmd.mode == CHASSIS_SPIN)
-    {
+    //  if (chassis_cmd.mode == CHASSIS_SPIN)
+    // {
         float vx_gimbal;
         float vy_gimbal;
         float yaw_rel;
@@ -720,7 +726,7 @@ void Chassis_Reference(void)
         // 将云台坐标系下的平移指令旋转到底盘坐标系，使 SPIN 下 W/S 仍沿云台朝向运动。
         chassis_cmd.vx_real = vx_gimbal * cosf(yaw_rel) + vy_gimbal * sinf(yaw_rel);
         chassis_cmd.vy_real = -vx_gimbal * sinf(yaw_rel) + vy_gimbal * cosf(yaw_rel);
-    }
+    // }
 
     if (chassis_cmd.leg_state == LEG_NORMAL && chassis_cmd.mode != CHASSIS_UPSTEP)
     {
@@ -730,6 +736,130 @@ void Chassis_Reference(void)
     {
         chassis_cmd.leg_angle = 0.40f;
     }
+#else
+    static float chassis_yaw_target = 0.0f;
+    static uint8_t chassis_hold_flag = 0;
+
+    if (chassis_cmd.mode != CHASSIS_DISABLE)
+    {
+        Chassis_Enable();
+        Leg_Start();
+    }
+    else
+    {
+        Leg_Stop();
+        Chassis_Disable();
+    }
+
+    if (chassis_cmd.mode == CHASSIS_SPIN)
+    {
+        chassis_cmd.omega_follow = 0;
+        if (rs485_rx_message.control_remote_flag == 0)
+        {
+            chassis_cmd.vx = rs485_rx_message.chassis_target_vx;
+            chassis_cmd.vy = rs485_rx_message.chassis_target_vy;
+            chassis_cmd.omega_z = rs485_rx_message.chassis_target_wz;
+            ramp_clear(vx_speed_ramp);
+            ramp_clear(vy_speed_ramp);
+            ramp_clear(wz_speed_ramp);
+        }
+        else if (rs485_rx_message.control_remote_flag == 1)
+        {
+            chassis_cmd.vx = rs485_rx_message.chassis_target_vx;
+            chassis_cmd.vy = rs485_rx_message.chassis_target_vy;
+            chassis_cmd.omega_z = rs485_rx_message.chassis_target_wz;
+        }
+        chassis_cmd.v_track = 0.0f;
+    }
+    else if (chassis_cmd.mode == CHASSIS_FOLLOW)
+    {
+        if (rs485_rx_message.control_remote_flag == 0)
+        {
+            chassis_cmd.vx = rs485_rx_message.chassis_target_vx;
+            chassis_cmd.vy = rs485_rx_message.chassis_target_vy;
+            chassis_cmd.omega_z = rs485_rx_message.chassis_target_wz;
+            ramp_clear(vx_speed_ramp);
+            ramp_clear(vy_speed_ramp);
+            ramp_clear(wz_speed_ramp);
+        }
+        else if (rs485_rx_message.control_remote_flag == 1)
+        {
+             chassis_cmd.vx = rs485_rx_message.chassis_target_vx;
+             chassis_cmd.vy = rs485_rx_message.chassis_target_vy;
+        }
+        chassis_cmd.omega_z = 0.0f;
+        chassis_cmd.v_track = 0.0f;
+        //TODO
+        chassis_cmd.omega_follow = 0.0f;//PID_Position(&chasiss_follow_pid, gimbal_MF9025_motor->receive_data.RAD_single_round, FOLLOW_OMEGA_Z);
+    }
+    else if (chassis_cmd.mode == CHASSIS_UPSTEP)
+    {
+        if (rs485_rx_message.control_remote_flag == 0)
+        {
+            chassis_cmd.vx = rs485_rx_message.chassis_target_vx;
+            chassis_cmd.vy = rs485_rx_message.chassis_target_vy;
+            chassis_cmd.omega_z = rs485_rx_message.chassis_target_wz;
+            ramp_clear(vx_speed_ramp);
+            ramp_clear(vy_speed_ramp);
+            ramp_clear(wz_speed_ramp);
+        }
+        else if (rs485_rx_message.control_remote_flag == 1)
+        {
+            chassis_cmd.vx = rs485_rx_message.chassis_target_vx;
+            chassis_cmd.vy = rs485_rx_message.chassis_target_vy;
+            chassis_cmd.omega_z = rs485_rx_message.chassis_target_wz;
+        }
+        chassis_cmd.omega_follow = 0.0f;
+        if (rs485_rx_message.chassis_target_leg_angle >= 0 && chassis_cmd.leg_state == LEG_NORMAL)
+        {
+            chassis_cmd.leg_angle = rs485_rx_message.chassis_target_leg_angle; // 660换算成弧度0-0.88rad
+        }
+        chassis_cmd.v_track = 10.0f;
+    }
+    else if (chassis_cmd.mode == CHASSIS_STOP)
+    {
+        chassis_cmd.omega_z = 0.0f;
+        chassis_cmd.omega_follow = 0.0f;
+        chassis_cmd.vx = 0.0f;
+        chassis_cmd.vy = 0.0f;
+        chassis_cmd.leg_angle = 0.0f;
+    }
+    if (rs485_rx_message.control_remote_flag == 1)
+    {
+        chassis_cmd.vx_real = ramp_calc(vx_speed_ramp, chassis_cmd.vx);
+        chassis_cmd.vy_real = ramp_calc(vy_speed_ramp, chassis_cmd.vy);
+        chassis_cmd.omega_follow = ramp_calc(wz_speed_ramp, (float)chassis_cmd.omega_follow);
+        vx_speed_ramp->real_value = chassis_cmd.vx_real;
+        vy_speed_ramp->real_value = chassis_cmd.vy_real;
+        wz_speed_ramp->real_value = chassis_cmd.omega_follow;
+    }
+    else
+    {
+        chassis_cmd.vx_real = chassis_cmd.vx;
+        chassis_cmd.vy_real = chassis_cmd.vy;
+    }
+
+        float vx_gimbal;
+        float vy_gimbal;
+        float yaw_rel;
+
+        vx_gimbal = chassis_cmd.vx_real;
+        vy_gimbal = chassis_cmd.vy_real;
+        yaw_rel = Normalize_Rad(gimbal_MF9025_motor->receive_data.RAD_single_round - FOLLOW_OMEGA_Z);
+
+        // 将云台坐标系下的平移指令旋转到底盘坐标系，使 SPIN 下 W/S 仍沿云台朝向运动。
+        chassis_cmd.vx_real = vx_gimbal * cosf(yaw_rel) + vy_gimbal * sinf(yaw_rel);
+        chassis_cmd.vy_real = -vx_gimbal * sinf(yaw_rel) + vy_gimbal * cosf(yaw_rel);
+
+    if (chassis_cmd.leg_state == LEG_NORMAL && chassis_cmd.mode != CHASSIS_UPSTEP)
+    {
+        chassis_cmd.leg_angle = 0.0f;
+    }
+    else if (chassis_cmd.leg_state == LEG_LIFTOFF)
+    {
+        chassis_cmd.leg_angle = 0.40f;
+    }
+#endif
 }
 
 /*
@@ -748,33 +878,14 @@ void Chassis_Console(void)
                 top      -->vy
            \\ /    \ //
            1\\      //0
-
     */
     float omega_z = chassis_cmd.omega_z + chassis_cmd.omega_follow;
 
-    // chassis_cmd.wheel_target[0] = ((- chassis_cmd.vx + omega_z * OMNI_WIDTH /2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
-    // chassis_cmd.wheel_target[1] = ((  chassis_cmd.vx + omega_z * OMNI_WIDTH /2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
-    // chassis_cmd.wheel_target[2] = ((  chassis_cmd.vx + chassis_cmd.vy - omega_z * (MECANUM_WIDTH + LENGTH) / 2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
-    // chassis_cmd.wheel_target[3] = ((- chassis_cmd.vx + chassis_cmd.vy - omega_z * (MECANUM_WIDTH + LENGTH) / 2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
-
-    // chassis_cmd.wheel_target[0] = ((- chassis_cmd.vx + omega_z * OMNI_WIDTH /2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
-    // chassis_cmd.wheel_target[1] = ((  chassis_cmd.vx + omega_z * OMNI_WIDTH /2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
-    // chassis_cmd.wheel_target[2] = ((  chassis_cmd.vx + chassis_cmd.vy + omega_z * (MECANUM_WIDTH + LENGTH) / 2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
-    // chassis_cmd.wheel_target[3] = ((- chassis_cmd.vx + chassis_cmd.vy + omega_z * (MECANUM_WIDTH + LENGTH) / 2)/ WHEEL_RADIUS) * (RPM_2_RAD_PER_SEC * 60 / 2 / PI / WHEEL_RADIUS) ;
-
-    // chassis_cmd.wheel_target[0] = ((-chassis_cmd.vx + omega_z * OMNI_WIDTH / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-    // chassis_cmd.wheel_target[1] = ((chassis_cmd.vx + omega_z * OMNI_WIDTH / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-    // // chassis_cmd.wheel_target[0] = ((-chassis_cmd.vx + chassis_cmd.vy + omega_z * (MECANUM_WIDTH + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-    // // chassis_cmd.wheel_target[1] = ((chassis_cmd.vx + chassis_cmd.vy + omega_z * (MECANUM_WIDTH + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-    // chassis_cmd.wheel_target[2] = ((chassis_cmd.vx + chassis_cmd.vy + omega_z * (MECANUM_WIDTH + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-    // chassis_cmd.wheel_target[3] = ((-chassis_cmd.vx + chassis_cmd.vy + omega_z * (MECANUM_WIDTH + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-
-    // chassis_cmd.wheel_target[0] = ((-chassis_cmd.vx_real + omega_z * OMNI_WIDTH / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-    // chassis_cmd.wheel_target[1] = ((chassis_cmd.vx_real + omega_z * OMNI_WIDTH / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
     chassis_cmd.wheel_target[0] = ((-chassis_cmd.vx_real - chassis_cmd.vy_real + omega_z * (MECANUM_WIDTH + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
     chassis_cmd.wheel_target[1] = ((chassis_cmd.vx_real - chassis_cmd.vy_real + omega_z * (MECANUM_WIDTH + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
     chassis_cmd.wheel_target[2] = ((chassis_cmd.vx_real + chassis_cmd.vy_real + omega_z * (MECANUM_WIDTH + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
     chassis_cmd.wheel_target[3] = ((-chassis_cmd.vx_real + chassis_cmd.vy_real + omega_z * (MECANUM_WIDTH + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+
 }
 
 // float leg_tar = 0.0f; //调试用
@@ -808,18 +919,19 @@ void Chassis_Send_Cmd()
     DM_Motor_SetTar(DM_arthrosis_motor[0], ramp_calc(leg_angle_ramp[0], chassis_cmd.leg_angle));
     leg_angle_ramp_L = ramp_calc(leg_angle_ramp[0], chassis_cmd.leg_angle);
     // DM_Motor_SetTar(DM_arthrosis_motor[0], chassis_cmd.leg_angle);
-    // DM_Motor_Control(DM_arthrosis_motor[0]);
 
     leg_angle_ramp[1]->real_value = DM_arthrosis_motor[1]->receive_data.position; // 斜坡函数当前值更新
     DM_Motor_SetTar(DM_arthrosis_motor[1], ramp_calc(leg_angle_ramp[1], -chassis_cmd.leg_angle));
     leg_angle_ramp_R = ramp_calc(leg_angle_ramp[1], -chassis_cmd.leg_angle);
     // DM_Motor_SetTar(DM_arthrosis_motor[1], -chassis_cmd.leg_angle);
-    // DM_Motor_Control(DM_arthrosis_motor[1]);
 
     DM_Motor_SetTar(DM_track_motor[0], -chassis_cmd.v_track);
     // DM_Motor_Control(DM_track_motor[0]);
     DM_Motor_SetTar(DM_track_motor[1], chassis_cmd.v_track);
     // DM_Motor_Control(DM_track_motor[1]);
+
+    Chassis_Disable();
+
     DM_Motor_Control(NULL);
 }
 

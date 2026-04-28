@@ -32,6 +32,7 @@ void VPC_Init(void)
 /* 更新发送给上位机的数据包 */
 void VPC_UpdatePackets(void)
 {
+	
   /*导航传输数据区*/
   //   nv_aim_packet_to_nuc.header = 0x5A; // 帧头赋值
   //   // nv_aim_packet_to_nuc.imu_roll = INS.Roll;
@@ -66,15 +67,16 @@ void VPC_UpdatePackets(void)
   vs_aim_packet_to_nuc.yaw_vel = 0; // 未定
   vs_aim_packet_to_nuc.pitch = INS.Pitch;
   vs_aim_packet_to_nuc.pitch_vel = 0; // lhn:；联调时增加
-  if (uart2_rx_message.rc_switch == 0b00001100)
-  {
-    vs_aim_packet_to_nuc.bullet_speed = 11.9;
-  }
-  else if (uart2_rx_message.rc_switch == 0b00001010)
-  {
-    vs_aim_packet_to_nuc.bullet_speed = 15.9;
-  }
+//  if (rs485_rx_message.rc_switch == 0b00001100)
+//  {
+//    vs_aim_packet_to_nuc.bullet_speed = 11.9;
+//  }
+//  else if (rs485_rx_message.rc_switch == 0b00001010)
+//  {
+//    vs_aim_packet_to_nuc.bullet_speed = 15.9;
+//  }
   // vs_aim_packet_to_nuc.bullet_speed = 11.9; // 未定
+	vs_aim_packet_to_nuc.bullet_speed = 12.1f;
   vs_aim_packet_to_nuc.bullet_count = 0; // 未定
 
   // vs_aim_packet_to_nuc.mode = 0;

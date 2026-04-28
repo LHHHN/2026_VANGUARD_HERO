@@ -29,6 +29,7 @@
 #include "INS.h"
 #include "procotol.h"
 
+#include "rs485.h"
 #include "bmi088.h"
 #include "ws2812.h"
 #include "buzzer.h"
@@ -36,6 +37,7 @@
 #include "wfly_control.h"
 #include "vofa.h"
 #include "VPC.h"
+#include "remote_vt03.h"
 
 #include "bsp_dwt.h"
 #include "bsp_usart.h"
@@ -56,6 +58,7 @@ RC_ctrl_t *rc_data;
 
 #endif
 
+VT03_ctrl_t *vt03_data;
 
 static void Frame_MCU_Init(void)
 {
@@ -77,14 +80,21 @@ static void Frame_Device_Init(void)
 	// BMI088_Init(&hspi2,0);
 	bmi088_h7 = BMI088_Register(&bmi088_init_h7);
 
-
 #if(REMOTE_TYPE == DT7)
+	#if RS485_CHA
+  #else
 	rc_data = Remote_Control_Init(&huart5);
+  #endif	
 #elif(REMOTE_TYPE == WFLY_SBUS)
 	rc_data = WFLY_SBUS_Register();	
 #endif
 	
+	vt03_data = Vt03_Control_Init(&huart1);
 	
+#if RS485_CHA == 1
+#else	
+	rs485_command = RS485_Register(&huart2);
+#endif
 	// VOFA_Register( );
 
 	/******************************module模块初始化*****************************/
@@ -97,7 +107,9 @@ static void Frame_Device_Init(void)
 
 	Shoot_Init( );
 
-	VPC_Init();
+	VPC_Init( );
+
+	Daemon_Task_Init( );
 	/******************************application组件初始化*****************************/
 }
 

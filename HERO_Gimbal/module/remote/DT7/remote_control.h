@@ -65,6 +65,8 @@
 // 待测试的位域结构体,可以极大提升解析速度
 typedef union
 {
+	uint8_t online;
+
 	struct // 用于访问键盘状态
 	{
 		uint16_t w    : 1;
@@ -91,6 +93,7 @@ typedef union
 // @todo 当前结构体嵌套过深,需要进行优化
 typedef struct
 {
+	uint8_t online;
 	struct
 	{
 		int16_t rocker_l_; // 左水平

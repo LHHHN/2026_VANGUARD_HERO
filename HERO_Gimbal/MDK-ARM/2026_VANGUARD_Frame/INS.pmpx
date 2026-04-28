@@ -55,7 +55,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">INS.Yaw</member>
-			<member name="last_addr" type="uint32">0x24000B28</member>
+			<member name="last_addr" type="uint32">0x24000CA0</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -104,7 +104,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">INS.Pitch</member>
-			<member name="last_addr" type="uint32">0x24000B24</member>
+			<member name="last_addr" type="uint32">0x24000C9C</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -153,7 +153,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">INS.Roll</member>
-			<member name="last_addr" type="uint32">0x24000B20</member>
+			<member name="last_addr" type="uint32">0x24000C98</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -202,7 +202,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">nv_aim_packet_from_nuc.yaw</member>
-			<member name="last_addr" type="uint32">0x24003DF6</member>
+			<member name="last_addr" type="uint32">0x24004102</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -251,7 +251,7 @@
 			<member name="unit" type="string">unit</member>
 			<member name="period" type="sint32">1000</member>
 			<member name="address" type="string">nv_aim_packet_from_nuc.pitch</member>
-			<member name="last_addr" type="uint32">0x24003DFA</member>
+			<member name="last_addr" type="uint32">0x24004106</member>
 			<member name="byte_size" type="sint32">4</member>
 			<member name="description" type="string"/>
 			<member name="comment" type="string"/>
@@ -495,7 +495,7 @@
 		</object>
 		<object name="ObjId0022" type="CPrjItemRS_VarInfo">
 			<member name="variable" type="CObject_ptr">ObjId0044</member>
-			<member name="visible" type="sint32">1</member>
+			<member name="visible" type="sint32">0</member>
 			<member name="y_block" type="sint32">0</member>
 			<member name="color" type="uint32">0x9338B3</member>
 		</object>
@@ -507,7 +507,7 @@
 		</object>
 		<object name="ObjId0042" type="CPrjItemRS_VarInfo">
 			<member name="variable" type="CObject_ptr">ObjId0005</member>
-			<member name="visible" type="sint32">0</member>
+			<member name="visible" type="sint32">1</member>
 			<member name="y_block" type="sint32">1</member>
 			<member name="color" type="uint32">0x227DF3</member>
 		</object>
@@ -525,7 +525,7 @@
 		</object>
 		<object name="ObjId0047" type="CPrjItemRS_VarInfo">
 			<member name="variable" type="CObject_ptr">ObjId0006</member>
-			<member name="visible" type="sint32">0</member>
+			<member name="visible" type="sint32">1</member>
 			<member name="y_block" type="sint32">2</member>
 			<member name="color" type="uint32">0x478C00</member>
 		</object>

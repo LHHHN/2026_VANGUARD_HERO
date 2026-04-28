@@ -64,11 +64,11 @@
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
-  ..\bsp\USART\bsp_usart.h ..\Core\Inc\usart.h ..\module\imu\bmi088.h \
-  ..\bsp\PWM\bsp_pwm.h ..\Core\Inc\tim.h ..\bsp\SPI\bsp_spi.h \
-  ..\Core\Inc\spi.h ..\bsp\GPIO\bsp_gpio.h ..\Core\Inc\gpio.h \
-  ..\module\led\WS2812\ws2812.h ..\module\buzzer\buzzer.h \
-  ..\module\remote\DT7\remote_control.h \
+  ..\bsp\USART\bsp_usart.h ..\Core\Inc\usart.h ..\module\rs485\rs485.h \
+  ..\module\imu\bmi088.h ..\bsp\PWM\bsp_pwm.h ..\Core\Inc\tim.h \
+  ..\bsp\SPI\bsp_spi.h ..\Core\Inc\spi.h ..\bsp\GPIO\bsp_gpio.h \
+  ..\Core\Inc\gpio.h ..\module\led\WS2812\ws2812.h \
+  ..\module\buzzer\buzzer.h ..\module\remote\DT7\remote_control.h \
   ..\module\remote\WFLY\wfly_control.h ..\module\referee\referee.h \
   ..\module\vofa\vofa.h ..\bsp\DWT\bsp_dwt.h \
   ..\application\chassis\balance_chassis.h \

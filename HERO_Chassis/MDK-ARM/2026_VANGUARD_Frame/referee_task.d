@@ -59,7 +59,7 @@
   ..\Core\Inc\fdcan.h ..\module\motor\DJI_motor\dji_motor.h \
   ..\algorithm\controller\VMC\vmc.h \
   ..\algorithm\filter\normal\normal_filter.h ..\application\INS\INS.h \
-  ..\module\rs485\rs485.h ..\application\gimbal\gimbal.h \
-  ..\module\motor\LK_motor\LK_motor.h ..\application\shoot\shoot.h \
-  ..\application\chassis\chassis.h ..\module\super_cap\super_cap.h \
+  ..\module\rs485\rs485.h ..\application\chassis\chassis.h \
+  ..\application\gimbal\gimbal.h ..\module\motor\LK_motor\LK_motor.h \
+  ..\application\shoot\shoot.h ..\module\super_cap\super_cap.h \
   ..\module\remote\DT7\remote_control.h

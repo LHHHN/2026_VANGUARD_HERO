@@ -104,6 +104,7 @@ static void sbus_to_rc(const uint8_t *sbus_buf)
  */
 static void Remote_Control_Rx_Callback(void)
 {
+	rc_ctrl[0].online = 1;
 	Supervisor_Reload(rc_supervisor_instance);         // 先喂狗
 	sbus_to_rc(rc_usart_instance->recv_buff); // 进行协议解析
 }
@@ -114,6 +115,7 @@ static void Remote_Control_Rx_Callback(void)
  */
 static void RC_Lost_Callback(void *id)
 {
+	rc_ctrl[0].online = 0;
 	memset(rc_ctrl, 0, sizeof(rc_ctrl)); // 清空遥控器数据
 	USART_Service_Init(rc_usart_instance); // 尝试重新启动接收
 }
@@ -134,9 +136,9 @@ RC_ctrl_t *Remote_Control_Init(UART_HandleTypeDef *rc_usart_handle)
 
 	// 进行守护进程的注册,用于定时检查遥控器是否正常工作
 	supervisor_init_config_t supervisor_conf = {
-		.reload_count = 1000, // 100ms未收到数据视为离线,遥控器的接收频率实际上是1000/14Hz(大约70Hz)
+		.reload_count = 10, 
 		.handler_callback = RC_Lost_Callback,
-		.owner_id = NULL, // 只有1个遥控器,不需要owner_id
+		.owner_id = NULL, 
 	};
 	rc_supervisor_instance = Supervisor_Register(&supervisor_conf);
 

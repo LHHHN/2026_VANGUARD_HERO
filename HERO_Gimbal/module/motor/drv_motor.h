@@ -120,7 +120,9 @@ typedef enum
 	DM4310,
 	DM4340,
 	DM8009P,
+	DM10010,
 	MF9025,
+	SERVO,
 } motor_model_e;
 
 typedef enum

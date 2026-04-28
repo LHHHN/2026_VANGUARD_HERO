@@ -1,10 +1,7 @@
 2026_vanguard_frame/chassis.o: ..\application\chassis\chassis.c \
-  ..\application\chassis\chassis.h ..\module\motor\DM_motor\DM_motor.h \
-  ..\module\motor\drv_motor.h ..\algorithm\controller\PID\pid.h \
-  ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
-  ..\Drivers\CMSIS\Include\cmsis_compiler.h \
-  ..\Drivers\CMSIS\Include\cmsis_armclang.h ..\bsp\CAN\bsp_can.h \
-  ..\Core\Inc\main.h ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
+  ..\application\chassis\chassis.h ..\module\remote\DT7\remote_control.h \
+  ..\bsp\USART\bsp_usart.h ..\Core\Inc\main.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
   ..\Core\Inc\stm32h7xx_hal_conf.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_rcc.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_def.h \
@@ -40,5 +37,5 @@
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_pcd.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_ll_usb.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_pcd_ex.h \
-  ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
-  ..\module\motor\DJI_motor\DJI_motor.h
+  ..\Core\Inc\usart.h ..\module\remote\VT03\remote_vt03.h \
+  ..\algorithm\basic_function\CRC.h ..\module\rs485\rs485.h

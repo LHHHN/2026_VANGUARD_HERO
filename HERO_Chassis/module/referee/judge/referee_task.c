@@ -607,12 +607,13 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
 		_Interactive_data->ammo_mode = 0; // gimbal_message_chat.ammo;
 	}
 
-	_Interactive_data->friction_mode = uart2_rx_message.shoot_launched; // gimbal_message_chat.friction_state;
+	//TODO
+	_Interactive_data->friction_mode = 0.0f;//uart2_rx_message.shoot_launched; // gimbal_message_chat.friction_state;
 	_Interactive_data->chassis_mode = chassis_cmd.mode;					// chassis_cmd.chassis;
 	_Interactive_data->gimbal_mode = gimbal_cmd.mode;					// gimbal_cmd.gimbal;
 	_Interactive_data->shoot_mode = shoot_cmd.mode;						// shoot_cmd.shooter;
-	_Interactive_data->Super_Power = trans_thresholds(super_cap_instance->receive_data.capEnergy, 0, 250, 0, 100);
-	_Interactive_data->Chassis_Power_Limit = super_cap_instance->receive_data.chassisPower;
+//	_Interactive_data->Super_Power = trans_thresholds(super_cap_instance->receive_data.capEnergy, 0, 250, 0, 100);
+//	_Interactive_data->Chassis_Power_Limit = super_cap_instance->receive_data.chassisPower;
 
 	//   RobotModeTest(Interactive_data); // 测试用函数，实现模式自动变化,用于检查该任务和裁判系统是否连接正常
 

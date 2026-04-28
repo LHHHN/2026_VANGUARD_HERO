@@ -83,6 +83,7 @@ void VOFA_Display_IMU(void)
 
 void RC_Transfer_Control(void)
 {
+#if RS485_CHA == 1		
 	// uart2_tx_message.angle_tar = target_yaw_pro;
 	// uart2_tx_message.rocker_r_ = rc_data->rc.rocker_r_;
 	// uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
@@ -99,4 +100,9 @@ void RC_Transfer_Control(void)
 
 	// 板间485通信
 	uart2_online_check();
+#else
+	RS485_Handle_Rx_Data();
+	rs485_tx_message.chassis_beat++;
+	RS485_Handle_Tx_Data();
+#endif
 }

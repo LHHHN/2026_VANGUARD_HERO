@@ -31,6 +31,13 @@ typedef enum
 	SHOOT_AUTO_AIMING = 2,
 } shoot_mode_e;
 
+typedef struct 
+{
+	uint8_t key_EN_state;
+    uint8_t shoot_EN_state;
+	/* data */
+}shoot_key_state_e;
+
 typedef enum
 {
 	SHOOT_SPEED_12MPS = 0,
@@ -40,16 +47,19 @@ typedef enum
 typedef struct
 {
 	/* data */
+	shoot_key_state_e key_state ;
 	shoot_mode_e mode;
 
 	float shoot_tar_1;
 	float shoot_tar_2;
 
+	uint8_t fire_allowed;
 	uint8_t fire_launched;
 	shoot_speed_e shoot_speed_set;
 } __attribute__((packed)) shoot_cmd_t;
 
 extern DJI_motor_instance_t *shoot_m3508_motor[3];
+extern shoot_cmd_t shoot_cmd;
 
 void Shoot_Init(void);
 

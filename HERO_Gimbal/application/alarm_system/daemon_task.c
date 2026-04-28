@@ -52,9 +52,10 @@ static void Daemon_Task( void *argument )
 {
     uint32_t time = osKernelGetTickCount( );
 
+    Daemon_Init();
     for( ; ; )
     {
-
+        Daemon_Proc();
         
         daemon_task_diff = osKernelGetTickCount( ) - time;
         time = osKernelGetTickCount( );

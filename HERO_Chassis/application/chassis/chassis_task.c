@@ -84,7 +84,9 @@ static void Chassis_Task(void *argument)
 {
 	Chassis_Publish( );
 
+#if RS485_CHA	
 	HAL_UART_Receive_IT(&huart2, &uart2_current_byte, 1);
+#endif
 	
 	uint32_t time = osKernelGetTickCount( );
 

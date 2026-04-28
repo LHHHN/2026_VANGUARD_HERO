@@ -33,11 +33,6 @@
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_tim_ex.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
-  ..\application\gimbal\gimbal.h ..\module\motor\LK_motor\LK_motor.h \
-  ..\module\motor\drv_motor.h ..\algorithm\controller\PID\pid.h \
-  ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
-  ..\Drivers\CMSIS\Include\cmsis_compiler.h ..\bsp\CAN\bsp_can.h \
-  ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
-  ..\application\shoot\shoot.h ..\module\motor\DJI_motor\dji_motor.h \
-  ..\Core\Inc\dma.h ..\Core\Inc\usart.h ..\Core\Inc\gpio.h \
-  ..\application\chassis\chassis.h
+  ..\module\defense_center\defense_center.h \
+  ..\algorithm\basic_function\CRC.h ..\bsp\USART\bsp_usart.h \
+  ..\Core\Inc\usart.h

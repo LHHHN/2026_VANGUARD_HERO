@@ -38,7 +38,8 @@
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
   ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
-  ..\bsp\DWT\bsp_dwt.h ..\algorithm\basic_function\user_lib.h \
+  ..\bsp\DWT\bsp_dwt.h ..\algorithm\controller\PowerControl\power_ctrl.h \
+  ..\algorithm\basic_function\user_lib.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h \
   ..\Core\Inc\FreeRTOSConfig.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h \

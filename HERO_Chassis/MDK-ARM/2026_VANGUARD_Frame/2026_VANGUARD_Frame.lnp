@@ -97,6 +97,7 @@
 "2026_vanguard_frame\ols.o"
 "2026_vanguard_frame\rls.o"
 "2026_vanguard_frame\lms.o"
+"2026_vanguard_frame\power_ctrl.o"
 "2026_vanguard_frame\robot_frame_init.o"
 "2026_vanguard_frame\chassis.o"
 "2026_vanguard_frame\chassis_task.o"
