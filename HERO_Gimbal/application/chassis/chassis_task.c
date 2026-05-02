@@ -3,10 +3,10 @@
  * @file    chassis_task.c
  * @brief
  * @author
- ******************************************************************************
+******************************************************************************
  * Copyright (c) 2023 Team
  * All rights reserved.
- ******************************************************************************
+******************************************************************************
  */
 
 #include <string.h>
@@ -18,6 +18,7 @@
 #include "cmsis_os2.h"
 
 #include "chassis_task.h"
+#include "control_task.h"
 #include "chassis.h"
 
 #include "message_center.h"
@@ -37,19 +38,12 @@ uint32_t chassis_high_water;
 #endif /* __weak */
 
 __weak void Chassis_Publish(void);
-
 __weak void Chassis_Init(void);
-
 __weak void Chassis_Handle_Exception(void);
-
 __weak void Chassis_Set_Mode(void);
-
 __weak void Chassis_Observer(void);
-
 __weak void Chassis_Reference(void);
-
 __weak void Chassis_Console(void);
-
 __weak void Chassis_Send_Cmd(void);
 
 osThreadId_t robot_cmd_task_handel;
@@ -74,121 +68,61 @@ void Chassis_Task_Init(void)
 
 uint32_t chassis_task_diff;
 
-// float chassis_time;
-// float chassis_frq;
-
 static void Chassis_Task(void *argument)
 {
-	Chassis_Publish( );
-
-	uint32_t time = osKernelGetTickCount( );
-
-	osDelay(2);
-
-	for (; ;)
-	{
-		/******************************底盘测试达妙收发代码*****************************/
-
-		//		static uint32_t chassis_cnt = 0;
-		//		chassis_cnt++;
-		//		if((chassis_cnt % 1500) == 0) // 100Hz
-		//		{
-		//			DM_Motor_Enable(NULL);
-		//		}
-		//		else if((chassis_cnt % 1000) == 0)
-		//		{
-		//			DM_Motor_Disable(NULL);
-		//		}
-
-		/******************************底盘测试达妙收发代码*****************************/
-
-		/******************************底盘测试运行总时长代码*****************************/
-		// TIME_ELAPSE(chassis_time, Chassis_Observer( );
-		// Chassis_Handle_Exception( );
-		// Chassis_Set_Mode( );
-		// Chassis_Reference( );
-		// Chassis_Console( );
-		// Chassis_Send_Cmd( );
-		// )
-		// ;
-
-		// chassis_frq = 1.0f / chassis_time;
-		/******************************底盘测试运行总时长代码*****************************/
-		// 更新状态量
-		Chassis_Observer( );
-		// 处理异常
-		Chassis_Handle_Exception( );
-		// 设置底盘模式
-		Chassis_Set_Mode( );
-		// 更新目标量
-		Chassis_Reference( );
-		// 计算控制量
-		Chassis_Console( );
-		// 发送控制量
-		Chassis_Send_Cmd( );
-
-		chassis_task_diff = osKernelGetTickCount( ) - time;
-		time              = osKernelGetTickCount( );
-		osDelayUntil(time + CHASSIS_TASK_PERIOD);
-
+	static const control_task_hook_t chassis_steps[] = {
+		Chassis_Observer,
+		Chassis_Handle_Exception,
+		Chassis_Set_Mode,
+		Chassis_Reference,
+		Chassis_Console,
+		Chassis_Send_Cmd,
+	};
+	static const control_task_config_t chassis_task_config = {
+		.publish = Chassis_Publish,
+		.start = NULL,
+		.steps = chassis_steps,
+		.step_count = (uint8_t)(sizeof(chassis_steps) / sizeof(chassis_steps[0])),
+		.period_ms = CHASSIS_TASK_PERIOD,
+		.startup_delay_ms = 2,
+		.diff_ms = &chassis_task_diff,
 #if INCLUDE_uxTaskGetStackHighWaterMark
-		chassis_high_water = uxTaskGetStackHighWaterMark(NULL);
+		.stack_high_water = &chassis_high_water,
 #endif
-	}
+	};
+
+	(void)argument;
+	Control_Task_Run(&chassis_task_config);
 }
 
 __weak void Chassis_Publish(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Chassis_Init(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Chassis_Handle_Exception(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Chassis_Set_Mode(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Chassis_Observer(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Chassis_Reference(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Chassis_Console(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Chassis_Send_Cmd(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }

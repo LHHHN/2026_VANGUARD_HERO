@@ -102,6 +102,12 @@ void RC_Transfer_Control(void)
 	uart2_online_check();
 #else
 	RS485_Handle_Rx_Data();
+	if(rs485_command.online == 0)
+	{
+		rs485_rx_message.chassis_mode = CHASSIS_DISABLE;
+		rs485_rx_message.gimbal_mode = GIMBAL_DISABLE;
+		rs485_rx_message.shoot_mode = SHOOT_DISABLE;
+	}
 	rs485_tx_message.chassis_beat++;
 	RS485_Handle_Tx_Data();
 #endif

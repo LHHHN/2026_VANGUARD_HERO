@@ -293,8 +293,8 @@ void Chassis_Init(void)
     DM_Motor_Enable(DM_track_motor[0]);
     DM_Motor_Enable(DM_track_motor[1]);
 
-    chassis_cmd.key_state.key_EN_state = 0;
-    chassis_cmd.key_state.chassis_EN_state = 0;
+    chassis_cmd.key_state.keyboard_control = 0;
+    chassis_cmd.key_state.keyboard_armed = 0;
 }
 
 extern INS_behaviour_t INS;
@@ -338,7 +338,7 @@ void Chassis_Set_Mode(void)
     }
     else
     {
-        chassis_cmd.key_state.key_EN_state = 0;
+        chassis_cmd.key_state.keyboard_control = 0;
         // 遥控器控制
         if (rc_data->rc.switch_left == 1)
         {
@@ -397,7 +397,7 @@ void Chassis_Set_Mode(void)
             case 2:
                 /* code */
                 // chassis_cmd.mode = CHASSIS_DISABLE;
-                chassis_cmd.key_state.key_EN_state = 1;
+                chassis_cmd.key_state.keyboard_control = 1;
                 break;
             default:
                 chassis_cmd.mode = CHASSIS_DISABLE;
@@ -410,33 +410,33 @@ void Chassis_Set_Mode(void)
         }
     }
 
-    if (chassis_cmd.key_state.key_EN_state == 1 && key_mode_last == 0)
+    if (chassis_cmd.key_state.keyboard_control == 1 && key_mode_last == 0)
     {
         for (uint8_t i = 0; i < 16; i++)
         {
             last_key_cnt[i] = rc_data->key_count[KEY_PRESS][i];
         }
     }
-    key_mode_last = chassis_cmd.key_state.key_EN_state;
+    key_mode_last = chassis_cmd.key_state.keyboard_control;
 
-    if (chassis_cmd.key_state.key_EN_state == 1)
+    if (chassis_cmd.key_state.keyboard_control == 1)
     {
         if (KEY_CLICK(Key_B))
         {
             if (chassis_cmd.mode == CHASSIS_DISABLE)
             {
                 chassis_cmd.mode = CHASSIS_FOLLOW;
-                chassis_cmd.key_state.chassis_EN_state = 1;
+                chassis_cmd.key_state.keyboard_armed = 1;
             }
             else
             {
                 chassis_cmd.mode = CHASSIS_DISABLE;
-                chassis_cmd.key_state.chassis_EN_state = 0;
+                chassis_cmd.key_state.keyboard_armed = 0;
             }
             KEY_ACK(Key_B);
         }
 
-        if (chassis_cmd.key_state.chassis_EN_state == 1)
+        if (chassis_cmd.key_state.keyboard_armed == 1)
         {
             /* 蹬腿键鼠 */
             if (rc_data->key->q == 1)
@@ -613,7 +613,7 @@ void Chassis_Reference(void)
         chassis_cmd.omega_follow = 0;
         // chassis_cmd.vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
         // chassis_cmd.vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
-        if (chassis_cmd.key_state.key_EN_state == 0)
+        if (chassis_cmd.key_state.keyboard_control == 0)
         {
             chassis_cmd.vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
             chassis_cmd.vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
@@ -621,7 +621,7 @@ void Chassis_Reference(void)
             ramp_clear(vy_speed_ramp);
             ramp_clear(wz_speed_ramp);
         }
-        else if (chassis_cmd.key_state.key_EN_state == 1)
+        else if (chassis_cmd.key_state.keyboard_control == 1)
         {
             chassis_cmd.vx = (float)(rc_data->key->w - rc_data->key->s) * KEY_X_SEN;
             chassis_cmd.vy = (float)(rc_data->key->a - rc_data->key->d) * KEY_Y_SEN;
@@ -636,7 +636,7 @@ void Chassis_Reference(void)
     }
     else if (chassis_cmd.mode == CHASSIS_FOLLOW)
     {
-        if (chassis_cmd.key_state.key_EN_state == 0)
+        if (chassis_cmd.key_state.keyboard_control == 0)
         {
             chassis_cmd.vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
             chassis_cmd.vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
@@ -644,7 +644,7 @@ void Chassis_Reference(void)
             ramp_clear(vy_speed_ramp);
             ramp_clear(wz_speed_ramp);
         }
-        else if (chassis_cmd.key_state.key_EN_state == 1)
+        else if (chassis_cmd.key_state.keyboard_control == 1)
         {
             // if ((rc_data->key->shift == 1) && (super_cap_instance->receive_data.capEnergyJ >= 100))
             if (rc_data->key->shift == 1)
@@ -668,7 +668,7 @@ void Chassis_Reference(void)
         // chassis_cmd.vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
         // chassis_cmd.vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
         // chassis_cmd.omega_z = rc_data->rc.rocker_r_ * REMOTE_OMEGA_Z_SEN;
-        if (chassis_cmd.key_state.key_EN_state == 0)
+        if (chassis_cmd.key_state.keyboard_control == 0)
         {
             chassis_cmd.vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
             chassis_cmd.vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
@@ -677,7 +677,7 @@ void Chassis_Reference(void)
             ramp_clear(vy_speed_ramp);
             ramp_clear(wz_speed_ramp);
         }
-        else if (chassis_cmd.key_state.key_EN_state == 1)
+        else if (chassis_cmd.key_state.keyboard_control == 1)
         {
             chassis_cmd.vx = (float)(rc_data->key->w - rc_data->key->s) * KEY_X_SEN;
             chassis_cmd.vy = (float)(rc_data->key->a - rc_data->key->d) * KEY_Y_SEN;
@@ -698,7 +698,7 @@ void Chassis_Reference(void)
         chassis_cmd.vy = 0.0f;
         chassis_cmd.leg_angle = 0.0f;
     }
-    if (chassis_cmd.key_state.key_EN_state == 1)
+    if (chassis_cmd.key_state.keyboard_control == 1)
     {
         chassis_cmd.vx_real = ramp_calc(vx_speed_ramp, chassis_cmd.vx);
         chassis_cmd.vy_real = ramp_calc(vy_speed_ramp, chassis_cmd.vy);

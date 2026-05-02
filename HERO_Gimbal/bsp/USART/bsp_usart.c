@@ -195,10 +195,31 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 			usart_instances[i]->beat = 0;
 			if (usart_instances[i]->module_callback != NULL)
 			{
+				if (huart->hdmarx != NULL && huart->hdmarx->Init.Mode == DMA_CIRCULAR)
+				{
+					uint16_t pos = Size;
+					if (pos > usart_instances[i]->recv_buff_size)
+					{
+						pos = usart_instances[i]->recv_buff_size;
+					}
+
+					if (pos != usart_instances[i]->rx_last_pos)
+					{
+						usart_instances[i]->rx_start_pos = usart_instances[i]->rx_last_pos;
+						usart_instances[i]->current_size = pos;
+						usart_instances[i]->module_callback( );
+						usart_instances[i]->rx_last_pos = pos;
+					}
+					return;
+				}
+
 				usart_instances[i]->current_size = Size;
 				usart_instances[i]->module_callback( );
 				memset(usart_instances[i]->recv_buff, 0, Size); // 接收结束后清空buffer,对于变长数据是必要的
 			}
+			usart_instances[i]->rx_start_pos = 0;
+			usart_instances[i]->rx_last_pos = 0;
+			usart_instances[i]->current_size = 0;
 			HAL_UARTEx_ReceiveToIdle_DMA(usart_instances[i]->usart_handle,
 			                             usart_instances[i]->recv_buff,
 			                             usart_instances[i]->recv_buff_size);
@@ -221,6 +242,9 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 	{
 		if (huart == usart_instances[i]->usart_handle)
 		{
+			usart_instances[i]->rx_start_pos = 0;
+			usart_instances[i]->rx_last_pos = 0;
+			usart_instances[i]->current_size = 0;
 			// HAL_UART_DMAStop(usart_instances[i]->usart_handle);
 			//检查错误标志位
 			if (__HAL_UART_GET_FLAG(usart_instances[i]->usart_handle, UART_FLAG_NE)) //噪声错误标志位

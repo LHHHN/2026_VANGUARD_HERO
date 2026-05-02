@@ -47,7 +47,8 @@
   ..\module\buzzer\buzzer.h ..\bsp\PWM\bsp_pwm.h ..\Core\Inc\tim.h \
   ..\module\led\WS2812\ws2812.h ..\bsp\SPI\bsp_spi.h ..\Core\Inc\spi.h \
   ..\module\remote\DT7\remote_control.h ..\bsp\USART\bsp_usart.h \
-  ..\Core\Inc\usart.h ..\module\referee\judge\referee_task.h \
+  ..\Core\Inc\usart.h ..\module\rs485\rs485.h \
+  ..\module\referee\judge\referee_task.h \
   ..\module\referee\judge\rm_referee.h \
   ..\module\referee\judge\referee_protocol.h \
   ..\algorithm\basic_function\user_lib.h \

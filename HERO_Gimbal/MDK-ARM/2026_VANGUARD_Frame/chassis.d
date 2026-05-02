@@ -1,7 +1,7 @@
 2026_vanguard_frame/chassis.o: ..\application\chassis\chassis.c \
-  ..\application\chassis\chassis.h ..\module\remote\DT7\remote_control.h \
-  ..\bsp\USART\bsp_usart.h ..\Core\Inc\main.h \
-  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
+  ..\application\chassis\chassis.h ..\application\control_source.h \
+  ..\module\remote\DT7\remote_control.h ..\bsp\USART\bsp_usart.h \
+  ..\Core\Inc\main.h ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
   ..\Core\Inc\stm32h7xx_hal_conf.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_rcc.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_def.h \

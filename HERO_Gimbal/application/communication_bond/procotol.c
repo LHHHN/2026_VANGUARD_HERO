@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "procotol.h"
+#include "control_source.h"
 #include "chassis.h"
 #include "gimbal.h"
 #include "shoot.h"
@@ -22,6 +23,7 @@
 #include "bmi088.h"
 #include "wfly_control.h"
 #include "remote_control.h"
+#include "remote_vt03.h"
 
 #include "VPC.h"
 #include "Serial.h"
@@ -30,6 +32,7 @@
 
 extern bmi088_data_t imu_data;
 extern RC_ctrl_t *rc_data;
+extern VT03_ctrl_t *vt03_data;
 extern INS_behaviour_t INS;
 extern float test_data_acc[3];
 extern float test_data_gyro[3];
@@ -121,7 +124,7 @@ void RC_Receive_Control(void)
 	rs485_tx_message.shoot_fire_en_flag = shoot_cmd.fire_allowed;
 	rs485_tx_message.shoot_launched_flag = shoot_cmd.fire_launched;
 	rs485_tx_message.auto_aiming_flag = vs_aim_packet_from_nuc.mode;
-	rs485_tx_message.control_remote_flag = chassis_cmd.key_state.key_EN_state;
+	rs485_tx_message.control_remote_flag = Control_Is_VT03(Control_Get_Source(rc_data, vt03_data));
 	RS485_Handle_Tx_Data();
 #endif	
 }

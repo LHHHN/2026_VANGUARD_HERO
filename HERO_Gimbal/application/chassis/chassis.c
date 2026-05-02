@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "chassis.h"
+#include "control_source.h"
 #include "remote_control.h"
 #include "remote_vt03.h"
 
@@ -33,16 +34,18 @@ void Chassis_Set_Mode(void)
 {
    static uint8_t last_key_cnt[16] = {0};
    static uint8_t key_mode_last = 0;
+   const control_source_e control_source = Control_Get_Source(rc_data, vt03_data);
+   const uint8_t keyboard_control = Control_Is_VT03(control_source);
 
 #define KEY_CLICK(k) (vt03_data->key_count[KEY_PRESS][(k)] != last_key_cnt[(k)])
 #define KEY_ACK(k) (last_key_cnt[(k)] = vt03_data->key_count[KEY_PRESS][(k)])            
-       if (rc_data->online == 0 && vt03_data->online == 0)
+       if (control_source == CONTROL_SOURCE_NONE)
        {
            chassis_cmd.mode = CHASSIS_DISABLE;
+           chassis_cmd.key_state.keyboard_armed = 0;
        }
-       else
+       else if (control_source == CONTROL_SOURCE_RC)
        {    
-           chassis_cmd.key_state.key_EN_state = 0;
            // 遥控器控制
            if (rc_data->rc.switch_left == 1)
            {
@@ -100,7 +103,7 @@ void Chassis_Set_Mode(void)
                    break;
                case 2:
                    /* code */
-                   chassis_cmd.key_state.key_EN_state = 1;
+                   chassis_cmd.mode = CHASSIS_STOP;
                    break;
                default:
                    chassis_cmd.mode = CHASSIS_DISABLE;
@@ -113,33 +116,33 @@ void Chassis_Set_Mode(void)
            }
        }
 
-   if (chassis_cmd.key_state.key_EN_state == 1 && key_mode_last == 0)
+   if (keyboard_control == 1U && key_mode_last == 0U)
    {
        for (uint8_t i = 0; i < 16; i++)
        {
            last_key_cnt[i] = vt03_data->key_count[KEY_PRESS][i];
        }
    }
-   key_mode_last = chassis_cmd.key_state.key_EN_state;
+   key_mode_last = keyboard_control;
 
-   if (chassis_cmd.key_state.key_EN_state == 1)
+   if (keyboard_control == 1U)
    {
        if (KEY_CLICK(Key_B))
        {
            if (chassis_cmd.mode == CHASSIS_DISABLE)
            {
                chassis_cmd.mode = CHASSIS_FOLLOW;
-               chassis_cmd.key_state.chassis_EN_state = 1;
+               chassis_cmd.key_state.keyboard_armed = 1;
            }
            else
            {
                chassis_cmd.mode = CHASSIS_DISABLE;
-               chassis_cmd.key_state.chassis_EN_state = 0;
+               chassis_cmd.key_state.keyboard_armed = 0;
            }
            KEY_ACK(Key_B);
        }
 
-       if (chassis_cmd.key_state.chassis_EN_state == 1)
+       if (chassis_cmd.key_state.keyboard_armed == 1)
        {
            /* 蹬腿键鼠 */
            if (vt03_data->key->q == 1)
@@ -178,16 +181,17 @@ void Chassis_Observer(void)
 void Chassis_Reference(void)
 {
    static float chassis_yaw_target = 0.0f;
+   const control_source_e control_source = Control_Get_Source(rc_data, vt03_data);
 
    if (chassis_cmd.mode == CHASSIS_SPIN)
    {
        chassis_cmd.target_wz = SPIN_SET;
-       if (chassis_cmd.key_state.key_EN_state == 0)
+       if (control_source == CONTROL_SOURCE_RC)
        {
            chassis_cmd.target_vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
            chassis_cmd.target_vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
        }
-       else if (chassis_cmd.key_state.key_EN_state == 1)
+       else if (control_source == CONTROL_SOURCE_VT03)
        {
            chassis_cmd.target_vx = (float)(vt03_data->key->w - vt03_data->key->s) * KEY_X_SEN;
            chassis_cmd.target_vy = (float)(vt03_data->key->a - vt03_data->key->d) * KEY_Y_SEN;
@@ -199,12 +203,12 @@ void Chassis_Reference(void)
    }
    else if (chassis_cmd.mode == CHASSIS_FOLLOW)
    {
-       if (chassis_cmd.key_state.key_EN_state == 0)
+       if (control_source == CONTROL_SOURCE_RC)
        {
            chassis_cmd.target_vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
            chassis_cmd.target_vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
        }
-       else if (chassis_cmd.key_state.key_EN_state == 1)
+       else if (control_source == CONTROL_SOURCE_VT03)
        {
            // if ((vt03_data->key->shift == 1) && (super_cap_instance->receive_data.capEnergyJ >= 100))
            if (vt03_data->key->shift == 1)
@@ -222,21 +226,25 @@ void Chassis_Reference(void)
    }
    else if (chassis_cmd.mode == CHASSIS_UPSTEP)
    {
-       if (chassis_cmd.key_state.key_EN_state == 0)
+       if (control_source == CONTROL_SOURCE_RC)
        {
            chassis_cmd.target_vx = (float)rc_data->rc.rocker_l1 * REMOTE_X_SEN;
            chassis_cmd.target_vy = (float)rc_data->rc.rocker_l_ * REMOTE_Y_SEN;
            chassis_cmd.target_wz = rc_data->rc.rocker_r_ * REMOTE_OMEGA_Z_SEN;
        }
-       else if (chassis_cmd.key_state.key_EN_state == 1)
+       else if (control_source == CONTROL_SOURCE_VT03)
        {
            chassis_cmd.target_vx = (float)(vt03_data->key->w - vt03_data->key->s) * KEY_X_SEN;
            chassis_cmd.target_vy = (float)(vt03_data->key->a - vt03_data->key->d) * KEY_Y_SEN;
-           chassis_cmd.target_wz = rc_data->mouse.x * KEY_OMEGA_Z_SEN;
+           chassis_cmd.target_wz = vt03_data->mouse.x * KEY_OMEGA_Z_SEN;
        }
-       if (rc_data->rc.rocker_r1 >= 0 && chassis_cmd.leg_state == LEG_NORMAL)
+       if (control_source == CONTROL_SOURCE_RC && rc_data->rc.rocker_r1 >= 0 && chassis_cmd.leg_state == LEG_NORMAL)
        {
            chassis_cmd.target_leg_angle = rc_data->rc.rocker_r1 * 0.0013f; // 660换算成弧度0-0.88rad
+       }
+       else if (control_source == CONTROL_SOURCE_VT03 && vt03_data->rc.rocker_r1 >= 0 && chassis_cmd.leg_state == LEG_NORMAL)
+       {
+           chassis_cmd.target_leg_angle = vt03_data->rc.rocker_r1 * 0.0013f;
        }
    }
    else if (chassis_cmd.mode == CHASSIS_STOP)

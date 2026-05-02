@@ -14,6 +14,7 @@
 
 #include "shoot.h"
 #include "chassis.h"
+#include "control_source.h"
 
 #include "bsp_can.h"
 
@@ -121,17 +122,20 @@ void Shoot_Set_Mode(void)
 {
     static uint8_t last_key_cnt[16] = {0};
     static uint8_t key_mode_last = 0;
+    const control_source_e control_source = Control_Get_Source(rc_data, vt03_data);
+    const uint8_t keyboard_control = Control_Is_VT03(control_source);
 
 #define KEY_CLICK(k) (vt03_data->key_count[KEY_PRESS][(k)] != last_key_cnt[(k)])
 #define KEY_ACK(k) (last_key_cnt[(k)] = vt03_data->key_count[KEY_PRESS][(k)])
-        if (rc_data->online == 0 && vt03_data->online == 0)
+        if (control_source == CONTROL_SOURCE_NONE)
         {
             shoot_cmd.mode = SHOOT_DISABLE;
+            shoot_cmd.key_state.keyboard_armed = 0;
+            shoot_cmd.fire_allowed = 0;
         }
-        else
+        else if (control_source == CONTROL_SOURCE_RC)
         {
             // 遥控器控制
-            shoot_cmd.key_state.key_EN_state = 0;
             if (rc_data->rc.switch_left == 1)
             {
                 switch (rc_data->rc.switch_right)
@@ -192,7 +196,7 @@ void Shoot_Set_Mode(void)
                     break;
                 case 2:
                     /* code */
-                    shoot_cmd.key_state.key_EN_state = 1;
+                    shoot_cmd.mode = SHOOT_DISABLE;
                     break;
                 default:
                     shoot_cmd.mode = SHOOT_DISABLE;
@@ -205,42 +209,42 @@ void Shoot_Set_Mode(void)
             }
         }
 
-    if (shoot_cmd.key_state.key_EN_state == 1 && key_mode_last == 0)
+    if (keyboard_control == 1U && key_mode_last == 0U)
     {
         for (uint8_t i = 0; i < 16; i++)
         {
             last_key_cnt[i] = vt03_data->key_count[KEY_PRESS][i];
         }
     }
-    key_mode_last = shoot_cmd.key_state.key_EN_state;
+    key_mode_last = keyboard_control;
 
-    if (shoot_cmd.key_state.key_EN_state == 1)
+    if (keyboard_control == 1U)
     {
-        if (chassis_cmd.key_state.chassis_EN_state == 1)
+        if (chassis_cmd.key_state.keyboard_armed == 1)
         {
             if (KEY_CLICK(Key_F))
             {
                 if (shoot_cmd.mode == SHOOT_DISABLE)
                 {
                     shoot_cmd.mode = SHOOT_ENABLE;
-                    shoot_cmd.key_state.shoot_EN_state = 1;
+                    shoot_cmd.key_state.keyboard_armed = 1;
                 }
                 else
                 {
                     shoot_cmd.mode = SHOOT_DISABLE;
-                    shoot_cmd.key_state.shoot_EN_state = 0;
+                    shoot_cmd.key_state.keyboard_armed = 0;
                 }
                 KEY_ACK(Key_F);
             }
 
-            if (shoot_cmd.key_state.shoot_EN_state == 1)
+            if (shoot_cmd.key_state.keyboard_armed == 1)
             {
                 // 自瞄
-                if (rc_data->mouse.press_r == 1)
+                if (vt03_data->mouse.press_r == 1)
                 {
                     shoot_cmd.mode = SHOOT_AUTO_AIMING;
                 }
-                else if (rc_data->mouse.press_r == 0 && shoot_cmd.mode == SHOOT_AUTO_AIMING)
+                else if (vt03_data->mouse.press_r == 0 && shoot_cmd.mode == SHOOT_AUTO_AIMING)
                 {
                     shoot_cmd.mode = SHOOT_ENABLE;
                 }
@@ -249,7 +253,7 @@ void Shoot_Set_Mode(void)
         else
         {
             shoot_cmd.mode = SHOOT_DISABLE;
-            shoot_cmd.key_state.shoot_EN_state = 0;
+            shoot_cmd.key_state.keyboard_armed = 0;
         }
     }
 
@@ -264,7 +268,7 @@ void Shoot_Set_Mode(void)
         Shoot_Disable();
     }
 
-    if (rs485_tx_message.control_remote_flag == 0)
+    if (control_source == CONTROL_SOURCE_RC)
     {
         if(rc_data->rc.dial == 660)
         {
@@ -275,7 +279,7 @@ void Shoot_Set_Mode(void)
             shoot_cmd.fire_allowed = 0;
         }
     }
-    else if (rs485_tx_message.control_remote_flag == 1)
+    else if (control_source == CONTROL_SOURCE_VT03)
     {
         if(vt03_data->mouse.press_l == 1)
         {

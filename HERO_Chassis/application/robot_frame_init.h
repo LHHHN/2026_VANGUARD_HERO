@@ -15,5 +15,6 @@
 #include <stdint.h>
 
 extern void Robot_Frame_Init(void);
+extern void Robot_Frame_Task_Init(void);
 
 #endif /* __ROBOT_FRAME_INIT_H__ */

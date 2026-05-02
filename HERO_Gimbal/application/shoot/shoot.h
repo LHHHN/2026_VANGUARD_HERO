@@ -33,8 +33,7 @@ typedef enum
 
 typedef struct 
 {
-	uint8_t key_EN_state;
-    uint8_t shoot_EN_state;
+    uint8_t keyboard_armed;
 	/* data */
 }shoot_key_state_e;
 

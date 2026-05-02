@@ -113,7 +113,7 @@ static void Frame_Device_Init(void)
 	/******************************application组件初始化*****************************/
 }
 
-static void Frame_Task_Init(void)
+void Robot_Frame_Task_Init(void)
 {
 	/******************************测试任务初始化时间*****************************/
 
@@ -156,8 +156,6 @@ void Robot_Frame_Init(void)
 	Frame_MCU_Init();
 
 	Frame_Device_Init();
-
-	Frame_Task_Init();
 
 	// __enable_irq( );
 }

@@ -27,6 +27,25 @@ gimbal_cmd_t gimbal_cmd;
 
 extern INS_behaviour_t INS;
 
+static float Gimbal_Get_Measure_Yaw(void)
+{
+#if RS485_CHA
+    return uart2_rx_message.angle_yaw;
+#else
+    return rs485_rx_message.gimbal_measure_yaw;
+#endif
+}
+
+static float Gimbal_Unwrap_Yaw(float yaw, float reference)
+{
+    while(yaw - reference > PI)
+        yaw -= 2.0f * PI;
+    while(yaw - reference < -PI)
+        yaw += 2.0f * PI;
+
+    return yaw;
+}
+
 // PID_t gimbal_angle_pid = {
 //     // .kp = 5.0f,
 //     // .ki = 0.0f,
@@ -246,12 +265,19 @@ void Gimbal_Set_Mode()
 
     if( gimbal_cmd.mode == GIMBAL_ENABLE && gimbal_MF9025_motor->motor_state_flag != MOTOR_ENABLE)
     {
-        target_yaw = rs485_rx_message.gimbal_target_yaw;
+        target_yaw = Gimbal_Unwrap_Yaw(Gimbal_Get_Measure_Yaw(), target_yaw);
         Gimbal_Enable();
     }
     else if( gimbal_cmd.mode == GIMBAL_AUTO_AIMING && gimbal_MF9025_motor->motor_state_flag != MOTOR_ENABLE)
     {
-        target_yaw = rs485_rx_message.gimbal_target_yaw;
+        if(rs485_rx_message.auto_aiming_flag == 1 || rs485_rx_message.auto_aiming_flag == 2)
+        {
+            target_yaw = Gimbal_Unwrap_Yaw(rs485_rx_message.gimbal_target_yaw, target_yaw);
+        }
+        else
+        {
+            target_yaw = Gimbal_Unwrap_Yaw(Gimbal_Get_Measure_Yaw(), target_yaw);
+        }
         Gimbal_Enable();
     }
     else if ( gimbal_cmd.mode == GIMBAL_DISABLE && gimbal_MF9025_motor->motor_state_flag != MOTOR_DISABLE)
@@ -396,15 +422,8 @@ void Gimbal_Console(void)
         }
         else if(rs485_rx_message.auto_aiming_flag == 1 || rs485_rx_message.auto_aiming_flag == 2)
         {
-            if(rs485_rx_message.gimbal_target_yaw != 0)
-            {
-                gimbal_cmd.v_yaw = 0.0f;
-                target_yaw = rs485_rx_message.gimbal_target_yaw;
-            }
-            else
-            {
-                target_yaw = target_yaw;
-            }
+            gimbal_cmd.v_yaw = 0.0f;
+            target_yaw = Gimbal_Unwrap_Yaw(rs485_rx_message.gimbal_target_yaw, target_yaw);
         }
         else
         {
@@ -421,16 +440,20 @@ void Gimbal_Console(void)
     else
     {
         gimbal_cmd.v_yaw = 0.0f ;
-        target_yaw = INS.Yaw ;
+        target_yaw = Gimbal_Unwrap_Yaw(Gimbal_Get_Measure_Yaw(), target_yaw);
     }
 
-    target_yaw_pro = Kalman_One_Filter(&mess_kf , target_yaw) ;
-    while(target_yaw_pro - rs485_rx_message.gimbal_measure_yaw > PI)
-        target_yaw_pro -= 2 * PI ;
-    while(target_yaw_pro - rs485_rx_message.gimbal_measure_yaw < -PI)
-        target_yaw_pro += 2 * PI ;
-         
-    LK_Motor_SetTar(gimbal_MF9025_motor, target_yaw_pro);   
+    // target_yaw_pro = Kalman_One_Filter(&mess_kf , target_yaw) ;
+    // while(target_yaw_pro - measure_yaw > PI)
+    //     target_yaw_pro -= 2 * PI ;
+    // while(target_yaw_pro - measure_yaw < -PI)
+    //     target_yaw_pro += 2 * PI ;
+    // LK_Motor_SetTar(gimbal_MF9025_motor, target_yaw_pro);
+    while(target_yaw - rs485_rx_message.gimbal_measure_yaw > PI)
+        target_yaw -= 2 * PI ;
+    while(target_yaw - rs485_rx_message.gimbal_measure_yaw < -PI)
+        target_yaw += 2 * PI ;
+    LK_Motor_SetTar(gimbal_MF9025_motor, target_yaw);
 }
 
 void Gimbal_Send_Cmd(void)

@@ -42,6 +42,7 @@
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_pcd_ex.h \
   ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
   ..\module\motor\DM_motor\dm_motor.h ..\application\chassis\chassis.h \
-  ..\module\remote\DT7\remote_control.h ..\bsp\USART\bsp_usart.h \
-  ..\Core\Inc\usart.h ..\module\remote\VT03\remote_vt03.h \
-  ..\algorithm\basic_function\CRC.h ..\module\rs485\rs485.h
+  ..\application\control_source.h ..\module\remote\DT7\remote_control.h \
+  ..\bsp\USART\bsp_usart.h ..\Core\Inc\usart.h \
+  ..\module\remote\VT03\remote_vt03.h ..\algorithm\basic_function\CRC.h \
+  ..\module\rs485\rs485.h

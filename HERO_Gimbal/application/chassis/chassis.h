@@ -43,8 +43,7 @@ typedef enum
 
 typedef struct
 {
-    uint8_t key_EN_state;
-    uint8_t chassis_EN_state;
+    uint8_t keyboard_armed;
 } chassis_key_state_e;
 
 typedef enum

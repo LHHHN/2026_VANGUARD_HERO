@@ -31,6 +31,7 @@
 #include "buzzer.h"
 #include "ws2812.h"
 #include "remote_control.h"
+#include "rs485.h"
 
 #include "referee_task.h"
 
@@ -129,6 +130,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  Robot_Frame_Task_Init();
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -186,6 +188,14 @@ void StartDefaultTask(void *argument)
     {
       Buzzer_Play(Call_Airsupport_sound, 0);
     }
+
+    if(rs485_command.online == 0)
+	  {
+		  if((beat % 1000) == 0)
+		  {
+			  Buzzer_Play(Err_sound, 0);
+		  }
+	  }
 
     // 有💩
     //     uint32_t rand_data = 0;

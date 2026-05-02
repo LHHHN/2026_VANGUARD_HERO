@@ -592,7 +592,7 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
 	}
 	else
 	{
-		_Interactive_data->control_mode = chassis_cmd.key_state.key_EN_state; // control_cmd.control;
+		_Interactive_data->control_mode = rs485_rx_message.control_remote_flag; // control_cmd.control;
 	}
 	if (user_abs(shoot_stir_motor->receive_data.real_current) > 15000)
 	{

@@ -39,7 +39,9 @@ typedef enum
 // 由于串口是独占的点对点通信,所以不需要考虑多个module同时使用一个串口的情况,因此不用加入id;当然也可以选择加入,这样在bsp层可以访问到module的其他信息
 typedef struct
 {
-	uint8_t current_size;
+	uint16_t current_size;
+	uint16_t rx_start_pos;
+	uint16_t rx_last_pos;
 	uint8_t recv_buff[USART_RXBUFF_LIMIT]; // 预先定义的最大buff大小,如果太小请修改USART_RXBUFF_LIMIT
 	uint16_t recv_buff_size;                // 模块接收一包数据的大小
 	UART_HandleTypeDef *usart_handle;      // 实例对应的usart_handle

@@ -1,13 +1,9 @@
 2026_vanguard_frame/procotol.o: \
   ..\application\communication_bond\procotol.c \
   ..\application\communication_bond\procotol.h \
-  ..\application\chassis\chassis.h ..\application\gimbal\gimbal.h \
-  ..\module\motor\DM_motor\DM_motor.h ..\module\motor\drv_motor.h \
-  ..\algorithm\controller\PID\pid.h \
-  ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
-  ..\Drivers\CMSIS\Include\cmsis_compiler.h \
-  ..\Drivers\CMSIS\Include\cmsis_armclang.h ..\bsp\CAN\bsp_can.h \
-  ..\Core\Inc\main.h ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
+  ..\application\control_source.h ..\module\remote\DT7\remote_control.h \
+  ..\bsp\USART\bsp_usart.h ..\Core\Inc\main.h \
+  ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal.h \
   ..\Core\Inc\stm32h7xx_hal_conf.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_rcc.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_def.h \
@@ -43,14 +39,18 @@
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_pcd.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_ll_usb.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_pcd_ex.h \
+  ..\Core\Inc\usart.h ..\module\remote\VT03\remote_vt03.h \
+  ..\algorithm\basic_function\CRC.h ..\application\chassis\chassis.h \
+  ..\application\gimbal\gimbal.h ..\module\motor\DM_motor\DM_motor.h \
+  ..\module\motor\drv_motor.h ..\algorithm\controller\PID\pid.h \
+  ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
+  ..\Drivers\CMSIS\Include\cmsis_compiler.h ..\bsp\CAN\bsp_can.h \
   ..\Core\Inc\fdcan.h ..\module\defense_center\defense_center.h \
   ..\application\shoot\shoot.h ..\module\motor\DJI_motor\dji_motor.h \
-  ..\application\INS\INS.h ..\module\vofa\vofa.h \
-  ..\bsp\USART\bsp_usart.h ..\Core\Inc\usart.h ..\module\imu\bmi088.h \
+  ..\application\INS\INS.h ..\module\vofa\vofa.h ..\module\imu\bmi088.h \
   ..\bsp\PWM\bsp_pwm.h ..\Core\Inc\tim.h ..\bsp\SPI\bsp_spi.h \
   ..\Core\Inc\spi.h ..\bsp\GPIO\bsp_gpio.h ..\Core\Inc\gpio.h \
   ..\module\remote\WFLY\wfly_control.h \
-  ..\module\remote\DT7\remote_control.h \
   ..\application\communication_bond\VPC.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h \
   ..\Core\Inc\FreeRTOSConfig.h \

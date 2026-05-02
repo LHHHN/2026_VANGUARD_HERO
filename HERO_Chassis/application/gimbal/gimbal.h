@@ -35,19 +35,10 @@ typedef enum
 	GIMBAL_ZERO = 3,
 }gimbal_mode_e;
 
-typedef struct 
-{
-	uint8_t key_EN_state;
-    uint8_t gimbal_EN_state;
-	/* data */
-}gimbal_key_state_e;
-
-
 typedef struct
 {
 	/* data */
 	gimbal_mode_e mode;
-	gimbal_key_state_e key_state ;
 
 	float yaw_diff;
 	float v_yaw;          //YAW_角速度

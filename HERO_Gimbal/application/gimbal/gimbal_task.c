@@ -3,10 +3,10 @@
  * @file    gimbal_task.c
  * @brief
  * @author
- ******************************************************************************
+******************************************************************************
  * Copyright (c) 2023 Team
  * All rights reserved.
- ******************************************************************************
+******************************************************************************
  */
 
 #include <string.h>
@@ -18,6 +18,7 @@
 #include "cmsis_os2.h"
 
 #include "gimbal_task.h"
+#include "control_task.h"
 #include "gimbal.h"
 
 #include "message_center.h"
@@ -37,19 +38,12 @@ uint32_t gimbal_high_water;
 #endif /* __weak */
 
 __weak void Gimbal_Publish(void);
-
 __weak void Gimbal_Init(void);
-
 __weak void Gimbal_Observer(void);
-
 __weak void Gimbal_Handle_Exception(void);
-
 __weak void Gimbal_Set_Mode(void);
-
 __weak void Gimbal_Reference(void);
-
 __weak void Gimbal_Console(void);
-
 __weak void Gimbal_Send_Cmd(void);
 
 osThreadId_t gimbal_task_handel;
@@ -58,6 +52,7 @@ static publisher_t *gimbal_publisher;
 static subscriber_t *gimbal_subscriber;
 
 static void Gimbal_Task(void *argument);
+static void Gimbal_Task_Start(void);
 
 void Gimbal_Task_Init(void)
 {
@@ -74,108 +69,68 @@ void Gimbal_Task_Init(void)
 
 uint32_t gimbal_task_diff;
 
-// float gimbal_time;
-// float gimbal_frq;
+static void Gimbal_Task_Start(void)
+{
+#if RS485_CHA
+	HAL_UART_Receive_IT(&huart2, &uart2_current_byte, 1);
+#endif
+}
 
 static void Gimbal_Task(void *argument)
 {
-	Gimbal_Publish( );
-
-#if RS485_CHA	
-	HAL_UART_Receive_IT(&huart2, &uart2_current_byte, 1);
-#endif
-	
-	uint32_t time = osKernelGetTickCount( );
-
-	osDelay(2);
-
-	for (; ;)
-	{
-		// TIME_ELAPSE(gimbal_time, Gimbal_Observer( );
-		// Gimbal_Handle_Exception( );
-		// Gimbal_Set_Mode( );
-		// Gimbal_Reference( );
-		// Gimbal_Console( );
-		// Gimbal_Send_Cmd( );
-		// )
-		// ;
-		// gimbal_frq = 1.0f / gimbal_time;
-
-		// 处理异常
-		Gimbal_Handle_Exception( );
-		// 更新状态量
-		Gimbal_Observer( );
-		// 设置云台模式
-		Gimbal_Set_Mode( );
-		// 更新目标量
-		Gimbal_Reference( );
-		// 计算控制量
-		Gimbal_Console( );
-		// 发送控制量
-		Gimbal_Send_Cmd( );
-
-		gimbal_task_diff = osKernelGetTickCount( ) - time;
-		time             = osKernelGetTickCount( );
-		osDelayUntil(time + GIMBAL_TASK_PERIOD);
-		
+	static const control_task_hook_t gimbal_steps[] = {
+		Gimbal_Handle_Exception,
+		Gimbal_Observer,
+		Gimbal_Set_Mode,
+		Gimbal_Reference,
+		Gimbal_Console,
+		Gimbal_Send_Cmd,
+	};
+	static const control_task_config_t gimbal_task_config = {
+		.publish = Gimbal_Publish,
+		.start = Gimbal_Task_Start,
+		.steps = gimbal_steps,
+		.step_count = (uint8_t)(sizeof(gimbal_steps) / sizeof(gimbal_steps[0])),
+		.period_ms = GIMBAL_TASK_PERIOD,
+		.startup_delay_ms = 2,
+		.diff_ms = &gimbal_task_diff,
 #if INCLUDE_uxTaskGetStackHighWaterMark
-		gimbal_high_water = uxTaskGetStackHighWaterMark(NULL);
+		.stack_high_water = &gimbal_high_water,
 #endif
-	}
+	};
+
+	(void)argument;
+	Control_Task_Run(&gimbal_task_config);
 }
 
 __weak void Gimbal_Publish(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Gimbal_Init(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Gimbal_Observer(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Gimbal_Handle_Exception(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Gimbal_Set_Mode(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Gimbal_Reference(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Gimbal_Console(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }
 
 __weak void Gimbal_Send_Cmd(void)
 {
-	/*
-	 NOTE : 在其他文件中定义具体内容
-	*/
 }

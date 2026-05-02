@@ -109,11 +109,10 @@ static void Frame_Device_Init(void)
 
 	VPC_Init( );
 
-	Daemon_Task_Init( );
 	/******************************application组件初始化*****************************/
 }
 
-static void Frame_Task_Init(void)
+void Robot_Frame_Task_Init(void)
 {
 	/******************************测试任务初始化时间*****************************/
 
@@ -129,6 +128,8 @@ static void Frame_Task_Init(void)
 	/******************************测试任务初始化时间*****************************/
 
 	/******************************任务初始化*****************************/
+
+	Daemon_Task_Init( );
 
 	Buzzer_Task_Init( );
 
@@ -152,8 +153,6 @@ void Robot_Frame_Init(void)
 	Frame_MCU_Init( );
 
 	Frame_Device_Init( );
-
-	Frame_Task_Init( );
 
 	// __enable_irq( );
 }

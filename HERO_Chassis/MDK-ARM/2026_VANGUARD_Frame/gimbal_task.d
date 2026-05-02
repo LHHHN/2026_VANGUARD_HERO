@@ -10,9 +10,9 @@
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
-  ..\application\gimbal\gimbal_task.h ..\application\gimbal\gimbal.h \
-  ..\module\motor\LK_motor\LK_motor.h ..\module\motor\drv_motor.h \
-  ..\algorithm\controller\PID\pid.h \
+  ..\application\gimbal\gimbal_task.h ..\application\control_task.h \
+  ..\application\gimbal\gimbal.h ..\module\motor\LK_motor\LK_motor.h \
+  ..\module\motor\drv_motor.h ..\algorithm\controller\PID\pid.h \
   ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
   ..\Drivers\CMSIS\Include\cmsis_compiler.h \
   ..\Drivers\CMSIS\Include\cmsis_armclang.h ..\bsp\CAN\bsp_can.h \

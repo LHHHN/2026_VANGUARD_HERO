@@ -10,7 +10,8 @@
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
-  ..\application\chassis\chassis_task.h ..\application\chassis\chassis.h \
+  ..\application\chassis\chassis_task.h ..\application\control_task.h \
+  ..\application\chassis\chassis.h \
   ..\module\message_center\message_center.h \
   ..\module\motor\DM_motor\DM_motor.h ..\module\motor\drv_motor.h \
   ..\algorithm\controller\PID\pid.h \

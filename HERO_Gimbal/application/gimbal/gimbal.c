@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "gimbal.h"
+#include "control_source.h"
 
 #include "servo.h"
 #include "rs485.h"
@@ -219,14 +220,15 @@ extern VT03_ctrl_t *vt03_data;
 // 设置云台模式
 void Gimbal_Set_Mode()
 {
-        if(rc_data -> online == 0 && vt03_data -> online == 0)
+        const control_source_e control_source = Control_Get_Source(rc_data, vt03_data);
+
+        if(control_source == CONTROL_SOURCE_NONE)
         {
             gimbal_cmd.mode = GIMBAL_DISABLE;
         }
-        else
+        else if(control_source == CONTROL_SOURCE_RC)
         {
             //遥控器控制
-            gimbal_cmd.key_state.key_EN_state = 0;
             if( rc_data -> rc . switch_left == 1 )
             {
                 switch (rc_data -> rc . switch_right)
@@ -283,7 +285,7 @@ void Gimbal_Set_Mode()
                     break;
                 case 2:
                     /* code */
-                    gimbal_cmd.key_state.key_EN_state = 1;
+                    gimbal_cmd.mode = GIMBAL_ENABLE;
                     break;
                 default:
                     gimbal_cmd.mode = GIMBAL_DISABLE;
@@ -296,19 +298,17 @@ void Gimbal_Set_Mode()
             }
         }        
 
-    if (gimbal_cmd.key_state.key_EN_state == 1)
+    if (control_source == CONTROL_SOURCE_VT03)
     {
         if (chassis_cmd.mode == CHASSIS_DISABLE)
         {
             gimbal_cmd.mode = GIMBAL_DISABLE;
-            gimbal_cmd.key_state.gimbal_EN_state = 0;
         }
         else if(chassis_cmd.mode != CHASSIS_DISABLE)
         {
             gimbal_cmd.mode = GIMBAL_ENABLE;
-            gimbal_cmd.key_state.gimbal_EN_state = 1;
         }
-        if(gimbal_cmd.key_state.gimbal_EN_state == 1)
+        if(chassis_cmd.mode != CHASSIS_DISABLE)
         {
             /* 蹬腿云台跟随键鼠 */
             if (vt03_data->mouse.press_r == 1)
@@ -388,16 +388,18 @@ static float pitch_target_pro;
 // 计算控制量
 void Gimbal_Console()
 {
+    const control_source_e control_source = Control_Get_Source(rc_data, vt03_data);
+
     if (gimbal_cmd.mode == GIMBAL_ENABLE)
     {
-        if (gimbal_cmd.key_state.key_EN_state == 0)
+        if (control_source == CONTROL_SOURCE_RC)
         {
             gimbal_cmd.yaw_v = -(float)rc_data->rc.rocker_r_ * REMOTE_YAW_SEN;
             gimbal_cmd.pitch_v = (float)rc_data->rc.rocker_r1 * REMOTE_PITCH_SEN;
         }
-        else if(gimbal_cmd.key_state.key_EN_state == 1)
+        else if(control_source == CONTROL_SOURCE_VT03)
         {
-            gimbal_cmd.yaw_v = (float)vt03_data->mouse.y * KEY_PITCH_SEN;
+            gimbal_cmd.yaw_v = (float)vt03_data->mouse.x * KEY_YAW_SEN;
             gimbal_cmd.pitch_v = ramp_calc(pitch_speed_ramp, (float)vt03_data->mouse.y * KEY_PITCH_SEN);
             pitch_speed_ramp->real_value = gimbal_cmd.pitch_v;
         }
@@ -431,17 +433,17 @@ void Gimbal_Console()
     }
     else if (gimbal_cmd.mode == GIMBAL_AUTO_AIMING)
     {
-        /* hyw???为什么这里视觉的pitch整段被注释了🤷‍♂️ */
+
         if (vs_aim_packet_from_nuc.mode == 0)
         {
-            if(gimbal_cmd.key_state.key_EN_state == 0)
+            if(control_source == CONTROL_SOURCE_RC)
             {
                 gimbal_cmd.yaw_v = -(float) rc_data -> rc . rocker_r_ * REMOTE_YAW_SEN;
                 gimbal_cmd.pitch_v = (float)rc_data->rc.rocker_r1 * REMOTE_PITCH_SEN;
             }
-            else if(gimbal_cmd.key_state.key_EN_state == 1)
+            else if(control_source == CONTROL_SOURCE_VT03)
             {
-                gimbal_cmd.yaw_v = (float)vt03_data->mouse.y * KEY_PITCH_SEN;
+                gimbal_cmd.yaw_v = (float)vt03_data->mouse.x * KEY_YAW_SEN;
                 gimbal_cmd.pitch_v = ramp_calc(pitch_speed_ramp, (float)vt03_data->mouse.y * KEY_PITCH_SEN);
                 pitch_speed_ramp->real_value = gimbal_cmd.pitch_v;
             }
