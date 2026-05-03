@@ -46,4 +46,6 @@
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_tim_ex.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart.h \
   ..\Drivers\STM32H7xx_HAL_Driver\Inc\stm32h7xx_hal_uart_ex.h \
-  ..\module\message_center\message_center.h
+  ..\module\super_cap\super_cap.h \
+  ..\module\defense_center\defense_center.h ..\bsp\CAN\bsp_can.h \
+  ..\Core\Inc\fdcan.h ..\module\message_center\message_center.h

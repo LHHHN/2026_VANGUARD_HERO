@@ -63,4 +63,8 @@
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os.h \
-  ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h
+  ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
+  ..\module\super_cap\super_cap.h ..\module\referee\judge\referee_task.h \
+  ..\module\referee\judge\rm_referee.h \
+  ..\module\referee\judge\referee_protocol.h \
+  ..\algorithm\controller\PowerControl\power_ctrl.h

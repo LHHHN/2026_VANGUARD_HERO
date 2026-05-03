@@ -21,6 +21,7 @@
 #include "procotol.h"
 
 #include "bsp_dwt.h"
+#include "super_cap.h"
 
 #include "message_center.h"
 
@@ -52,7 +53,13 @@ float procotol_time ;
 
 static void Procotol_Task(void *argument)
 {
+    (void)argument;
+
     uint32_t time = osKernelGetTickCount( );
+    uint8_t super_cap_tick = 0;
+
+    // 超电CAN实例放在procotol任务中初始化，后续同任务内周期发送控制帧。
+    Super_Cap_instance = Super_Capacitor_Init(&super_cap_init_config);
 
     for (; ;)
     {
@@ -62,6 +69,11 @@ static void Procotol_Task(void *argument)
 		// 		;
         VOFA_Display_IMU( );
         RC_Transfer_Control( );
+        if (++super_cap_tick >= SUPER_CAP_PROCOTOL_DIVIDER)
+        {
+            super_cap_tick = 0;
+            SuperCap_PowerControl_Update( );
+        }
 
         procotol_task_diff = osKernelGetTickCount( ) - time;
         time               = osKernelGetTickCount( );

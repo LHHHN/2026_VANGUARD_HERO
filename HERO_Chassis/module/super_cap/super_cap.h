@@ -12,6 +12,23 @@
 #define SUPER_CAP_POWER_INIT 35U //裁判初始功率限制，单位瓦(W)
 #define SUPER_CAP_ENERGY_BUFFER_INIT 60U //裁判初始能量缓冲，单位焦耳(J)
 
+/* 发给超电的裁判功率限制上下限 */
+#define SUPER_CAP_POWER_LIMIT_MIN_W 35U
+#define SUPER_CAP_POWER_LIMIT_MAX_W 250U
+
+/* 软件功率控制输出上下限 */
+#define SUPER_CAP_CHASSIS_POWER_MIN_W 35.0f
+#define SUPER_CAP_CHASSIS_POWER_MAX_W 250.0f
+
+/* 超电能量是0~255映射值，这里直接用原始值分档 */
+#define SUPER_CAP_ENERGY_15_RAW 38U
+#define SUPER_CAP_ENERGY_20_RAW 51U
+#define SUPER_CAP_ENERGY_40_RAW 102U
+#define SUPER_CAP_ENERGY_70_RAW 179U
+
+/* procotol_task为1ms周期，超电管理每2ms运行一次 */
+#define SUPER_CAP_PROCOTOL_DIVIDER 2U
+
 // 超电上报状态中的错误等级，仅取 statusCode 的低两位
 typedef enum
 {
@@ -32,7 +49,7 @@ typedef struct
     // 对应超电发送给主控的状态帧
     super_cap_error_e errorCode;      // 由 statusCode 低两位解析出的错误等级
     float chassisPower;               // DATA[1..4]，底盘功率，单位 W
-    int16_t chassisPowerLimit;        // DATA[5..6]，底盘最大可用功率，单位 W
+    uint16_t chassisPowerLimit;       // DATA[5..6]，底盘最大可用功率，单位 W
     uint8_t capEnergy;                // DATA[7]，电容能量映射值 0-255
     float capEnergyJ;                 // 将 0-255 的能量映射为 0-2000J 后的结果
 } super_cap_callback_t;

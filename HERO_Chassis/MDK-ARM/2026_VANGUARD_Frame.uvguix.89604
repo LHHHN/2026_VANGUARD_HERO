@@ -3670,7 +3670,7 @@
       <Doc>
         <Name>..\application\communication_bond\procotol.c</Name>
         <ColumnNumber>0</ColumnNumber>
-        <TopLine>61</TopLine>
+        <TopLine>66</TopLine>
         <CurrentLine>93</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
@@ -3732,9 +3732,9 @@
       </Doc>
       <Doc>
         <Name>..\module\super_cap\super_cap.h</Name>
-        <ColumnNumber>35</ColumnNumber>
+        <ColumnNumber>1</ColumnNumber>
         <TopLine>43</TopLine>
-        <CurrentLine>47</CurrentLine>
+        <CurrentLine>51</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>

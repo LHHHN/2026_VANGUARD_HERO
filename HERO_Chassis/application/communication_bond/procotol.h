@@ -28,4 +28,6 @@ extern void VOFA_Display_IMU(void);
 
 extern void RC_Transfer_Control(void);
 
+extern void SuperCap_PowerControl_Update(void);
+
 #endif /* __PROCOTOL_H__ */

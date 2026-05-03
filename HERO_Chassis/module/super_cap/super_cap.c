@@ -25,6 +25,10 @@ Super_Cap_instance_t *Super_Cap_instance; //只有1例,在这里定义,在这里
 //使能
 void Super_Cap_Enable(Super_Cap_instance_t *superCap)
 {
+    if (superCap == NULL)
+    {
+        return;
+    }
     superCap->transmit_data.enableDCDC = 1;
     superCap->working_type = ENABLE_DCDC;
 }
@@ -32,6 +36,10 @@ void Super_Cap_Enable(Super_Cap_instance_t *superCap)
 //失能
 void Super_Cap_Disable(Super_Cap_instance_t *superCap)
 {
+    if (superCap == NULL)
+    {
+        return;
+    }
     superCap->transmit_data.enableDCDC = 0;
     superCap->working_type = DISABLE_DCDC;
 }
@@ -48,7 +56,7 @@ static void Super_Cap_Decode(CAN_instance_t *superCap_can)
 
     super_cap->online = 1;
 
-    receive_data->errorCode = (super_cap_error_e)(rxbuff[0] & 0b11100000); // 错误等级在 statusCode 的高三位
+    receive_data->errorCode = (super_cap_error_e)(rxbuff[0] & 0x03); // 文档规定错误等级只看statusCode低两位
     memcpy(&receive_data->chassisPower, &rxbuff[1], sizeof(float)); // DATA[1..4] 按照 float 原样拷贝
     receive_data->chassisPowerLimit = (uint16_t)(rxbuff[5] | (rxbuff[6] << 8)); // DATA[5..6]
     receive_data->capEnergy = rxbuff[7]; // DATA[7]
@@ -91,10 +99,11 @@ Super_Cap_instance_t *Super_Capacitor_Init(can_init_config_t *config)
 
     Super_Cap_Enable(instance);
     instance->transmit_data.refereePowerLimit = SUPER_CAP_POWER_INIT; // 设置初始功率限制
-    instance->transmit_data.refereeEnergyBuffer = SUPER_CAP_ENERGY_BUFFER_INIT; // 初始能量缓冲为0
+    instance->transmit_data.refereeEnergyBuffer = SUPER_CAP_ENERGY_BUFFER_INIT; // 设置初始能量缓冲
 
     DWT_Delay(0.1);
 
+    Super_Cap_instance = instance;
     return instance;
 }
 
@@ -135,6 +144,11 @@ void Super_Cap_Error_Judge(Super_Cap_instance_t *superCap)
 // 发送数据
 void Super_Cap_SendData(Super_Cap_instance_t *superCap)
 {
+    if (superCap == NULL || superCap->super_cap_can_instance == NULL)
+    {
+        return;
+    }
+
     Super_Cap_Error_Judge(superCap);
 
     superCap->super_cap_can_instance->tx_buff[0] = (superCap->transmit_data.enableDCDC & 0x01) |
