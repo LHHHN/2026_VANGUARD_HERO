@@ -69,7 +69,6 @@
   ..\bsp\SPI\bsp_spi.h ..\Core\Inc\spi.h ..\bsp\GPIO\bsp_gpio.h \
   ..\Core\Inc\gpio.h ..\module\led\WS2812\ws2812.h \
   ..\module\buzzer\buzzer.h ..\module\remote\DT7\remote_control.h \
-  ..\module\remote\WFLY\wfly_control.h ..\module\referee\referee.h \
-  ..\module\vofa\vofa.h ..\bsp\DWT\bsp_dwt.h \
-  ..\application\chassis\balance_chassis.h \
+  ..\module\remote\WFLY\wfly_control.h ..\module\vofa\vofa.h \
+  ..\bsp\DWT\bsp_dwt.h ..\application\chassis\balance_chassis.h \
   ..\module\imu\BMI088\BMI088driver.h

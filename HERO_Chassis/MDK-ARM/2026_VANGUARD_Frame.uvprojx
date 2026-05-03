@@ -2265,101 +2265,6 @@
               <FilePath>..\module\rs485\rs485.h</FilePath>
             </File>
             <File>
-              <FileName>referee.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\module\referee\referee.c</FilePath>
-            </File>
-            <File>
-              <FileName>referee.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\module\referee\referee.h</FilePath>
-            </File>
-            <File>
-              <FileName>ui.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\module\ShooterUI\ui.c</FilePath>
-            </File>
-            <File>
-              <FileName>ui.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\module\ShooterUI\ui.h</FilePath>
-            </File>
-            <File>
-              <FileName>ui_Infantry_group1_0.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\module\ShooterUI\ui_Infantry_group1_0.c</FilePath>
-            </File>
-            <File>
-              <FileName>ui_Infantry_group1_0.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\module\ShooterUI\ui_Infantry_group1_0.h</FilePath>
-            </File>
-            <File>
-              <FileName>ui_Infantry_group1_1.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\module\ShooterUI\ui_Infantry_group1_1.c</FilePath>
-            </File>
-            <File>
-              <FileName>ui_Infantry_group1_1.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\module\ShooterUI\ui_Infantry_group1_1.h</FilePath>
-            </File>
-            <File>
-              <FileName>ui_Infantry_group1_2.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\module\ShooterUI\ui_Infantry_group1_2.c</FilePath>
-            </File>
-            <File>
-              <FileName>ui_Infantry_group1_2.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\module\ShooterUI\ui_Infantry_group1_2.h</FilePath>
-            </File>
-            <File>
-              <FileName>ui_Infantry_group1_3.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\module\ShooterUI\ui_Infantry_group1_3.c</FilePath>
-            </File>
-            <File>
-              <FileName>ui_Infantry_group1_3.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\module\ShooterUI\ui_Infantry_group1_3.h</FilePath>
-            </File>
-            <File>
-              <FileName>ui_Infantry_group1_4.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\module\ShooterUI\ui_Infantry_group1_4.c</FilePath>
-            </File>
-            <File>
-              <FileName>ui_Infantry_group1_4.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\module\ShooterUI\ui_Infantry_group1_4.h</FilePath>
-            </File>
-            <File>
-              <FileName>ui_Infantry_group2_0.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\module\ShooterUI\ui_Infantry_group2_0.c</FilePath>
-            </File>
-            <File>
-              <FileName>ui_Infantry_group2_0.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\module\ShooterUI\ui_Infantry_group2_0.h</FilePath>
-            </File>
-            <File>
-              <FileName>ui_interface.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\module\ShooterUI\ui_interface.c</FilePath>
-            </File>
-            <File>
-              <FileName>ui_interface.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\module\ShooterUI\ui_interface.h</FilePath>
-            </File>
-            <File>
-              <FileName>ui_types.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\module\ShooterUI\ui_types.h</FilePath>
-            </File>
-            <File>
               <FileName>super_cap.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\module\super_cap\super_cap.c</FilePath>
@@ -2698,16 +2603,6 @@
               <FileName>procotol_task.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\application\communication_bond\procotol_task.h</FilePath>
-            </File>
-            <File>
-              <FileName>power_control.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\module\super_cap\power_control.c</FilePath>
-            </File>
-            <File>
-              <FileName>power_control.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\module\super_cap\power_control.h</FilePath>
             </File>
             <File>
               <FileName>power_control_task.c</FileName>

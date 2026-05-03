@@ -2,7 +2,6 @@
 #include "power_ctrl.h"
 //#include "motor.h"// quote chassis_motor information 
 #include "chassis.h"
-#include "referee.h"
 #include "omni_mecanum_chassis.h"
 
 float P_cal[4] = {0}; // 电机功率模型计算出的功率

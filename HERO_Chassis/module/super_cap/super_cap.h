@@ -1,9 +1,82 @@
-// #ifndef __SUPER_CAP_H_
-// #define __SUPER_CAP_H_
+#ifndef __SUPER_CAP_H_
+#define __SUPER_CAP_H_
 
-// #include "defense_center.h"
-// #include "bsp_can.h"
+#include "defense_center.h"
+#include "bsp_can.h"
 
+#include <stdlib.h>
+#include <string.h>
+
+/* 超电相关参数配置 */  
+#define SUPER_CAP_MAX_ENERGY_J 2000.0f //电容组最大能量，单位焦耳(J)
+#define SUPER_CAP_POWER_INIT 35U //裁判初始功率限制，单位瓦(W)
+#define SUPER_CAP_ENERGY_BUFFER_INIT 60U //裁判初始能量缓冲，单位焦耳(J)
+
+// 超电上报状态中的错误等级，仅取 statusCode 的低两位
+typedef enum
+{
+    SUPER_CAP_ERROR_NONE = 0,             // 无错误
+    SUPER_CAP_ERROR_AUTO_RECOVERABLE = 1, // 错误，可自动恢复
+    SUPER_CAP_ERROR_CMD_RECOVERABLE = 2,  // 错误，可通过发信息恢复
+    SUPER_CAP_ERROR_UNRECOVERABLE = 3,    // 错误，不可恢复
+} super_cap_error_e;
+
+typedef enum
+{
+    DISABLE_DCDC = 0,
+    ENABLE_DCDC = 1,
+} super_cap_working_type_e;
+
+typedef struct
+{
+    // 对应超电发送给主控的状态帧
+    super_cap_error_e errorCode;      // 由 statusCode 低两位解析出的错误等级
+    float chassisPower;               // DATA[1..4]，底盘功率，单位 W
+    int16_t chassisPowerLimit;        // DATA[5..6]，底盘最大可用功率，单位 W
+    uint8_t capEnergy;                // DATA[7]，电容能量映射值 0-255
+    float capEnergyJ;                 // 将 0-255 的能量映射为 0-2000J 后的结果
+} super_cap_callback_t;
+
+typedef struct
+{
+    // 对应主控发送给超电的控制帧
+    uint8_t enableDCDC;           // DATA[0] bit0，DCDC 使能
+    uint8_t systemRestart;        // DATA[0] bit1，系统重启
+    uint8_t clearError;           // DATA[0] bit2，清除可恢复错误
+    uint16_t refereePowerLimit;   // DATA[1..2]，裁判限制功率，单位 W
+    uint16_t refereeEnergyBuffer; // DATA[3..4]，裁判能量缓冲，单位 J
+} super_cap_fillmessage_t;
+
+typedef struct
+{
+    uint8_t online ;// 在线标志
+    super_cap_working_type_e working_type; // 工作状态
+
+    // can_init_config_t can_init_config;
+    CAN_instance_t *super_cap_can_instance;
+
+    super_cap_fillmessage_t transmit_data; // 发送数据结构体
+    super_cap_callback_t receive_data;     // 接收数据结构体
+
+	supervisor_t *supervisor;
+
+	uint32_t feed_cnt;
+	float dt;
+
+}Super_Cap_instance_t;
+
+extern Super_Cap_instance_t *Super_Cap_instance;
+extern can_init_config_t super_cap_init_config;
+
+Super_Cap_instance_t *Super_Capacitor_Init(can_init_config_t *config);
+
+void Super_Cap_SendData(Super_Cap_instance_t *superCap);
+
+void Super_Cap_Enable(Super_Cap_instance_t *superCap);
+
+void Super_Cap_Disable(Super_Cap_instance_t *superCap);
+
+/*Bale版*/
 // #define SUPER_CAP_MX_CNT 1
 // #define ENABLE_DCDC 1
 // #define SYS_RESTART 1
@@ -90,4 +163,4 @@
 // // 无参发送接口：默认控制帧并调用 Super_cap_Send
 // uint8_t Super_cap_Send_Auto(uint8_t en_DCDC, uint8_t sys_restart, uint8_t clear_err);
 
-// #endif
+#endif

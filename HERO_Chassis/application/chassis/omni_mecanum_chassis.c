@@ -14,7 +14,6 @@
 #include "INS.h"
 #include "gimbal.h"
 
-#include "super_cap.h"
 #include "remote_control.h"
 #include "rs485.h"
 
@@ -24,8 +23,6 @@
 #include "power_ctrl.h"
 
 #include "bsp_dwt.h"
-
-//extern super_cap_instance_t *super_cap_instance;
 
 // 底板轮毂电机初始化参数
 

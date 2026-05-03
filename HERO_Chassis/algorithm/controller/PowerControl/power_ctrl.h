@@ -28,10 +28,10 @@ extern float P_total;
 extern float I_test[4];
 extern float P_test;
 
-typedef enum
-{
-	SUPERCAP_CONTROL = 0,
-	CODE_CONTROL = 1,
-} power_control_mode_e;//功率控制模式
+// typedef enum
+// {
+// 	SUPERCAP_CONTROL = 0,
+// 	CODE_CONTROL = 1,
+// } power_control_mode_e;//功率控制模式
 
 #endif

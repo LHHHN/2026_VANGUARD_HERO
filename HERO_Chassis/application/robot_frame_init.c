@@ -38,7 +38,6 @@
 #include "buzzer.h"
 #include "remote_control.h"
 #include "wfly_control.h"
-#include "referee.h"
 #include "vofa.h"
 
 #include "bsp_dwt.h"

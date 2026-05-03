@@ -1,22 +1,157 @@
-// /**
-//  ******************************************************************************
-//  * @file    super_cap.c
-//  * @brief   超电控制
-//  * @author  Bale
-//  ******************************************************************************
-//  * Copyright (c) 2023 Team
-//  * All rights reserved.
-//  ******************************************************************************
-//  */
+/**
+ ******************************************************************************
+ * @file    super_cap.c
+ * @brief   超电控制
+ * @author  lHHHn
+ ******************************************************************************
+ * Copyright (c) 2023 Team
+ * All rights reserved.
+ ******************************************************************************
+ */
+#include "super_cap.h"
 
-// #include <stdlib.h>
-// #include <string.h>
+#include "bsp_dwt.h"
 
-// #include "FreeRTOS.h"
-// #include "super_cap.h"
-// #include "bsp_dwt.h"
-// #include "task.h"
+/* 超电相关参数配置 */  
+can_init_config_t super_cap_init_config = {
+        .can_handle = &hfdcan2,
+        .can_mode = FDCAN_CLASSIC_CAN,
+        .rx_id = 0x05A,
+        .tx_id = 0x06A,
+        };
 
+Super_Cap_instance_t *Super_Cap_instance; //只有1例,在这里定义,在这里定义,其他文件通过extern引用和在frame_init初始化
+
+//使能
+void Super_Cap_Enable(Super_Cap_instance_t *superCap)
+{
+    superCap->transmit_data.enableDCDC = 1;
+    superCap->working_type = ENABLE_DCDC;
+}
+
+//失能
+void Super_Cap_Disable(Super_Cap_instance_t *superCap)
+{
+    superCap->transmit_data.enableDCDC = 0;
+    superCap->working_type = DISABLE_DCDC;
+}
+
+//数据解析
+static void Super_Cap_Decode(CAN_instance_t *superCap_can)
+{
+    uint8_t *rxbuff = superCap_can->rx_buff;
+    Super_Cap_instance_t *super_cap = (Super_Cap_instance_t *)superCap_can->id;
+    super_cap_callback_t *receive_data = &(super_cap->receive_data);
+
+    Supervisor_Reload(super_cap->supervisor);
+    super_cap->dt = DWT_GetDeltaT(&super_cap->feed_cnt);
+
+    super_cap->online = 1;
+
+    receive_data->errorCode = (super_cap_error_e)(rxbuff[0] & 0b11100000); // 错误等级在 statusCode 的高三位
+    memcpy(&receive_data->chassisPower, &rxbuff[1], sizeof(float)); // DATA[1..4] 按照 float 原样拷贝
+    receive_data->chassisPowerLimit = (uint16_t)(rxbuff[5] | (rxbuff[6] << 8)); // DATA[5..6]
+    receive_data->capEnergy = rxbuff[7]; // DATA[7]
+    receive_data->capEnergyJ = (float)receive_data->capEnergy * (SUPER_CAP_MAX_ENERGY_J / 255.0f); // 将 0-255 的能量映射为 0-2000J
+}
+
+// 离线回调函数,当一定时间未收到数据时会被调用
+static void Super_Cap_Lost_Callback(void *super_cap_ptr)
+{
+    Super_Cap_instance_t *super_cap = (Super_Cap_instance_t *)super_cap_ptr;
+    super_cap -> online = 0;
+}
+
+// 超电初始化,注册 CAN 实例和守护线程
+Super_Cap_instance_t *Super_Capacitor_Init(can_init_config_t *config)
+{
+    Super_Cap_instance_t *instance = (Super_Cap_instance_t *)malloc(sizeof(Super_Cap_instance_t));
+
+    if (instance == NULL)
+    {
+        return NULL;
+    }
+    memset(instance, 0, sizeof(Super_Cap_instance_t));
+
+    config->can_module_callback = Super_Cap_Decode;
+    config->id = instance;
+    instance->super_cap_can_instance = CAN_Register(config);
+
+    // 注册守护线程
+    supervisor_init_config_t supervisor_config = {
+        .handler_callback = Super_Cap_Lost_Callback,
+        .owner_id = instance,
+        .reload_count = 10, // 100ms未收到数据则丢失
+    };
+    instance->supervisor = Supervisor_Register(&supervisor_config);
+
+    instance->online = 0; // 刚初始化时视为离线状态,直到收到第一条数据
+
+    DWT_GetDeltaT(&instance->feed_cnt);
+
+    Super_Cap_Enable(instance);
+    instance->transmit_data.refereePowerLimit = SUPER_CAP_POWER_INIT; // 设置初始功率限制
+    instance->transmit_data.refereeEnergyBuffer = SUPER_CAP_ENERGY_BUFFER_INIT; // 初始能量缓冲为0
+
+    DWT_Delay(0.1);
+
+    return instance;
+}
+
+// 错误判断
+void Super_Cap_Error_Judge(Super_Cap_instance_t *superCap)
+{
+    static uint8_t error_cnt = 0;
+    static uint8_t error_pro_cnt = 0;
+    if(superCap->receive_data.errorCode == SUPER_CAP_ERROR_CMD_RECOVERABLE)
+    {
+        if(error_cnt > 5)
+        {
+            superCap->transmit_data.clearError = 1; // 发送清除错误命令
+            error_cnt = 0;
+            error_pro_cnt ++ ;
+            if(error_pro_cnt >= 10)
+            {
+                superCap->transmit_data.systemRestart = 1; // 发送系统重启命令
+                error_pro_cnt = 0;
+            }
+        }
+        else
+        {
+            superCap->transmit_data.clearError = 0; 
+            superCap->transmit_data.systemRestart = 0; 
+            error_cnt++;
+        }
+    }
+    else
+    {
+        superCap->transmit_data.clearError = 0; 
+        superCap->transmit_data.systemRestart = 0; 
+        error_cnt = 0;
+        error_pro_cnt = 0;
+    }
+}
+
+// 发送数据
+void Super_Cap_SendData(Super_Cap_instance_t *superCap)
+{
+    Super_Cap_Error_Judge(superCap);
+
+    superCap->super_cap_can_instance->tx_buff[0] = (superCap->transmit_data.enableDCDC & 0x01) |
+                                                   ((superCap->transmit_data.systemRestart & 0x01) << 1) |
+                                                   ((superCap->transmit_data.clearError & 0x01) << 2);
+    superCap->super_cap_can_instance->tx_buff[1] = (uint8_t)(superCap->transmit_data.refereePowerLimit & 0xFF);
+    superCap->super_cap_can_instance->tx_buff[2] = (uint8_t)((superCap->transmit_data.refereePowerLimit >> 8) & 0xFF);
+    superCap->super_cap_can_instance->tx_buff[3] = (uint8_t)(superCap->transmit_data.refereeEnergyBuffer & 0xFF);
+    superCap->super_cap_can_instance->tx_buff[4] = (uint8_t)((superCap->transmit_data.refereeEnergyBuffer >> 8) & 0xFF);
+    for(uint8_t i = 5; i < 8; i++)
+    {
+        superCap->super_cap_can_instance->tx_buff[i] = 0;
+    }
+    CAN_Transmit(superCap->super_cap_can_instance , 10);
+}
+
+/*Bale版*/
 // #define SUPER_CAP_MAX_ENERGY_J 2000.0f
 // #define SUPER_CAP_REFEREE_POWER_LIMIT_W 100U
 // #define SUPER_CAP_REFEREE_BUFFER_MAX_J 60.0f

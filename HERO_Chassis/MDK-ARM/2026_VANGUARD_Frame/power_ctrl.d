@@ -1,7 +1,7 @@
 2026_vanguard_frame/power_ctrl.o: \
   ..\algorithm\controller\PowerControl\power_ctrl.c \
   ..\algorithm\controller\PowerControl\power_ctrl.h \
-  ..\application\chassis\chassis.h ..\module\referee\referee.h \
+  ..\application\chassis\chassis.h \
   ..\application\chassis\omni_mecanum_chassis.h \
   ..\application\robot_frame_config.h \
   ..\module\motor\DM_motor\dm_motor.h ..\module\motor\drv_motor.h \
