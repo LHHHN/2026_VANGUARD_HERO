@@ -24,6 +24,8 @@ uint8_t rs485_receive_en_flag = 0;
 static uint8_t rs485_parse_buff[sizeof(rx_gimbal_t)];
 static uint16_t rs485_parse_index = 0;
 
+uint32_t rs485_cnt ;
+
 static void RS485_Reset_Parse_State(void)
 {
     rs485_parse_index = 0;
@@ -112,14 +114,12 @@ static void RS485_Parse_Circular_Rx_Data(void)
     }
 }
 
-uint32_t rs485_cnt ;
 static void RS485_Rx_Callback(void)
 {
     if(rs485_usart_instance->usart_handle->hdmarx != NULL &&
        rs485_usart_instance->usart_handle->hdmarx->Init.Mode == DMA_CIRCULAR)
     {
         RS485_Parse_Circular_Rx_Data();
-        rs485_cnt ++;
         return;
     }
 
@@ -170,7 +170,8 @@ void RS485_Handle_Rx_Data(void)
         if(rs485_receive_en_flag == 1)
         {
             if (Verify_CRC8_Check_Sum(rs485_rx_message_temp + 1, sizeof(rx_gimbal_t) - 2))
-            {   
+            {
+                rs485_cnt ++;   
                 memcpy(&rs485_rx_message, rs485_rx_message_temp, sizeof(rx_gimbal_t));
                 Supervisor_Reload(rs485_supervisor_instance); // 重载daemon,避免数据更新后一直不被读取而导致数据更新不及时
                 rs485_command.online = 1;
