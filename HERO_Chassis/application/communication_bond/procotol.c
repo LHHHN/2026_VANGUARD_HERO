@@ -125,24 +125,8 @@ void VOFA_Display_IMU(void)
 
 void RC_Transfer_Control(void)
 {
-#if RS485_CHA == 1		
-	// uart2_tx_message.angle_tar = target_yaw_pro;
-	// uart2_tx_message.rocker_r_ = rc_data->rc.rocker_r_;
-	// uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
-	// uart2_tx_message.rc_switch = 0x01 << (rc_data->rc.switch_right - 1) | 0x08 << (rc_data->rc.switch_left - 1) ;
+	static uint8_t rs485_freq_count = 0;
 
-	uint8_t control_src = Get_Control_Source();
-
-	uart2_tx_message.rocker_r1 = rc_data->rc.rocker_r1;
-	uart2_tx_message.mouse_y = rc_data->mouse.y;
-	uart2_tx_message.rc_switch = 0x01 << (rc_data->rc.switch_right - 1) | 0x08 << (rc_data->rc.switch_left - 1);
-	uart2_tx_message.control_src = control_src;
-	uart2_tx_message.gimbal_mode = gimbal_cmd.mode;
-	uart2_tx_message.shoot_mode = shoot_cmd.mode;
-
-	// 板间485通信
-	uart2_online_check();
-#else
 	RS485_Handle_Rx_Data();
 	if(rs485_command.online == 0)
 	{
@@ -150,9 +134,12 @@ void RC_Transfer_Control(void)
 		rs485_rx_message.gimbal_mode = GIMBAL_DISABLE;
 		rs485_rx_message.shoot_mode = SHOOT_DISABLE;
 	}
-	rs485_tx_message.chassis_beat++;
-	RS485_Handle_Tx_Data();
-#endif
+
+	if(rs485_freq_count++ > 10)
+	{
+		rs485_freq_count = 0;
+		RS485_Handle_Tx_Data();
+	}
 }
 
 void SuperCap_PowerControl_Update(void)

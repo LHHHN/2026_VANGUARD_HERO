@@ -171,7 +171,7 @@ void StartDefaultTask(void *argument)
 	  {
 		  if((beat % 1000) == 0)
 		  {
-			  Buzzer_Play(Err_sound, 0);
+			  Buzzer_Play(Warming_sound, 0);
 		  }
 	  }
 //有💩		

@@ -65,4 +65,5 @@
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS_V2\cmsis_os2.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h \
-  ..\module\serial\Serial.h ..\module\rs485\rs485.h
+  ..\module\serial\Serial.h ..\module\rs485\rs485.h \
+  ..\algorithm\basic_function\user_lib.h

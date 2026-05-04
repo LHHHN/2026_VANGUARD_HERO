@@ -43,7 +43,6 @@ static void RS485_Recover_Parse_State(void)
             return;
         }
     }
-
     RS485_Reset_Parse_State();
 }
 
@@ -120,6 +119,7 @@ static void RS485_Rx_Callback(void)
        rs485_usart_instance->usart_handle->hdmarx->Init.Mode == DMA_CIRCULAR)
     {
         RS485_Parse_Circular_Rx_Data();
+        rs485_tx_message.chassis_beat++;
         return;
     }
 
@@ -143,7 +143,7 @@ static void RS485_Lost_Callback(void *id)
         rs485_command.online = 0;
         return;
     }
-
+    
 	memset(&rs485_rx_message, 0, sizeof(rs485_rx_message)); // 清空遥控器数据
     HAL_UARTEx_ReceiveToIdle_DMA(rs485_usart_instance->usart_handle,
 			                             rs485_usart_instance->recv_buff,

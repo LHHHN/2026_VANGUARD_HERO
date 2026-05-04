@@ -24,13 +24,14 @@ typedef struct
     float gimbal_target_yaw_speed;
     float gimbal_measure_yaw;
     float gimbal_measure_yaw_speed;
-    float gimbal_measure_pitch;
 
-    uint8_t shoot_fire_en_flag;
-    uint8_t shoot_launched_flag;
+    uint8_t gimbal_measure_pitch;
+    uint8_t shoot_fire_en_flag : 2;
+    uint8_t shoot_launched_flag : 2;
+    uint8_t control_remote_flag : 1;
+    uint8_t ui_refresh_flag : 1;
+    uint8_t auto_aiming_flag : 2;
 
-    uint8_t auto_aiming_flag;
-    uint8_t control_remote_flag;
     uint8_t crc;    // 校验和
     uint8_t frame_tailer; // 帧尾
 } __attribute__((packed)) tx_gimbal_t;

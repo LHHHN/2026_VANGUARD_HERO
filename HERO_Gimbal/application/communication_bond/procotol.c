@@ -24,11 +24,11 @@
 #include "wfly_control.h"
 #include "remote_control.h"
 #include "remote_vt03.h"
-
 #include "VPC.h"
 #include "Serial.h"
-
 #include "rs485.h"
+
+#include "user_lib.h"
 
 extern bmi088_data_t imu_data;
 extern RC_ctrl_t *rc_data;
@@ -93,21 +93,6 @@ void VS_Receive_Control(void)
 //float vs_pitch_tar;
 void RC_Receive_Control(void)
 {
-#if RS485_CHA == 1	
-	YAW_tar = uart2_rx_message.angle_tar;
-	INS_YAW_angle_test = INS.Yaw;
-	INS_YAW_speed_test = INS.Gyro[2];
-	uart2_tx_message.speed_yaw = INS.Gyro[2];
-	uart2_tx_message.angle_yaw = INS.Yaw;
-	uart2_tx_message.vs_yaw_tar = vs_aim_packet_from_nuc.yaw;
-	uart2_tx_message.vs_mode = vs_aim_packet_from_nuc.mode;
-	uart2_tx_message.shoot_launched = shoot_cmd.fire_launched;
-//	vs_yaw_tar = vs_aim_packet_from_nuc.yaw;
-//	vs_pitch_tar = vs_aim_packet_from_nuc.pitch;
-
-	//板间485通信
-	uart2_online_check();
-#else
 	RS485_Handle_Rx_Data();
 	rs485_tx_message.chassis_mode = chassis_cmd.mode;
 	rs485_tx_message.gimbal_mode = gimbal_cmd.mode;
@@ -120,12 +105,12 @@ void RC_Receive_Control(void)
 	rs485_tx_message.gimbal_target_yaw_speed = gimbal_cmd.yaw_v;
 	rs485_tx_message.gimbal_measure_yaw = INS.Yaw;
 	rs485_tx_message.gimbal_measure_yaw_speed = INS.Gyro[2];
-	rs485_tx_message.gimbal_measure_pitch = INS.Pitch;
+	rs485_tx_message.gimbal_measure_pitch = (uint8_t)trans_thresholds(-INS.Pitch, -0.3f, 0.9f, 0, 255);
 	rs485_tx_message.shoot_fire_en_flag = shoot_cmd.fire_allowed;
 	rs485_tx_message.shoot_launched_flag = shoot_cmd.fire_launched;
 	rs485_tx_message.auto_aiming_flag = vs_aim_packet_from_nuc.mode;
 	rs485_tx_message.control_remote_flag = Control_Is_VT03(Control_Get_Source(rc_data, vt03_data));
+	rs485_tx_message.ui_refresh_flag = vt03_data[0].key->r;
 	RS485_Handle_Tx_Data();
-#endif	
 }
 

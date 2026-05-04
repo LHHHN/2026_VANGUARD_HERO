@@ -226,23 +226,16 @@ void Start_UI_Task(void *argument)
   /* Infinite loop */
   for (;;)
   {
-    static uint8_t last_key_cnt[16] = {0};
-    static uint8_t key_mode_last = 0;
-#define KEY_CLICK(k) (rc_data->key_count[KEY_PRESS][(k)] != last_key_cnt[(k)])
-#define KEY_ACK(k) (last_key_cnt[(k)] = rc_data->key_count[KEY_PRESS][(k)])
     if (first_flag == 0)
     {
       User_UI_Init();
       first_flag = 1;
     }
-    if (KEY_CLICK(Key_R))
+    if (rs485_rx_message.ui_refresh_flag == 1)
     {
       User_UI_Init();
       osDelay(910);
-      KEY_ACK(Key_R);
     }
-#undef KEY_CLICK
-#undef KEY_ACK
     UI_Task();
   }
   /* USER CODE END Start_UI_Task */
