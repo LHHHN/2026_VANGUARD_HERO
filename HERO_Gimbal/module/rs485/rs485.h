@@ -12,9 +12,9 @@
 typedef struct
 {
     uint8_t frame_header; // 帧头
-    uint8_t chassis_mode; // 底盘模式
-    uint8_t gimbal_mode;  // 云台模式
-    uint8_t shoot_mode;   // 发射模式
+    uint8_t chassis_mode : 4; // 底盘模式
+    uint8_t gimbal_mode : 2;  // 云台模式
+    uint8_t shoot_mode : 2;   // 发射模式
 
     float chassis_target_vx;
     float chassis_target_vy;
