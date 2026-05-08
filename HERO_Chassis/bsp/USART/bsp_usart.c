@@ -93,26 +93,35 @@ USART_instance_t *USART_Register(usart_init_config_t *init_config)
  * @param send_size how many bytes to send
  */
 /* @todo 当前仅进行了形式上的封装,后续要进一步考虑是否将module的行为与bsp完全分离 */
-void USART_Send(USART_instance_t *_instance,
+HAL_StatusTypeDef USART_Send(USART_instance_t *_instance,
                 uint8_t *send_buf,
                 uint16_t send_size,
                 usart_transfer_e mode)
 {
+	HAL_StatusTypeDef status = HAL_ERROR;
+
+	if (_instance == NULL || send_buf == NULL || send_size == 0)
+	{
+		return HAL_ERROR;
+	}
+
 	switch (mode)
 	{
 		case USART_TRANSFER_BLOCKING:
-			HAL_UART_Transmit(_instance->usart_handle, send_buf, send_size, 100);
+			status = HAL_UART_Transmit(_instance->usart_handle, send_buf, send_size, 100);
 			break;
 		case USART_TRANSFER_IT:
-			HAL_UART_Transmit_IT(_instance->usart_handle, send_buf, send_size);
+			status = HAL_UART_Transmit_IT(_instance->usart_handle, send_buf, send_size);
 			break;
 		case USART_TRANSFER_DMA:
-			HAL_UART_Transmit_DMA(_instance->usart_handle, send_buf, send_size);
+			status = HAL_UART_Transmit_DMA(_instance->usart_handle, send_buf, send_size);
 			break;
 		default:
 			while (1); // illegal mode! check your code context! 检查定义instance的代码上下文,可能出现指针越界
 			//			break;
 	}
+
+	return status;
 }
 
 /**
@@ -124,13 +133,21 @@ void USART_Send(USART_instance_t *_instance,
 /* 串口发送时,gstate会被设为BUSY_TX */
 uint8_t USART_Is_Ready(USART_instance_t *_instance)
 {
-	if (_instance->usart_handle->gState | HAL_UART_STATE_BUSY_TX)
+	HAL_UART_StateTypeDef state;
+
+	if (_instance == NULL)
 	{
 		return 0;
 	}
-	else
+
+	state = HAL_UART_GetState(_instance->usart_handle);
+	if ((state == HAL_UART_STATE_READY) || (state == HAL_UART_STATE_BUSY_RX))
 	{
 		return 1;
+	}
+	else
+	{
+		return 0;
 	}
 }
 

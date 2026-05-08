@@ -162,7 +162,7 @@ void Super_Cap_SendData(Super_Cap_instance_t *superCap)
     {
         superCap->super_cap_can_instance->tx_buff[i] = 0;
     }
-    CAN_Transmit(superCap->super_cap_can_instance , 10);
+    CAN_Transmit(superCap->super_cap_can_instance , 1);
 }
 
 /*Bale版*/

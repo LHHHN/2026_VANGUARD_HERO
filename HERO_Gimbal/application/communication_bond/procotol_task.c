@@ -57,7 +57,7 @@ static void Procotol_Task(void *argument)
 				VS_Receive_Control( );
 
         procotol_task_diff = osKernelGetTickCount( ) - time;
-        time               = osKernelGetTickCount( );
-        osDelayUntil(time + PROCOTOL_TASK_PERIOD);
+        time += PROCOTOL_TASK_PERIOD;
+        osDelayUntil(time);
     }
 }

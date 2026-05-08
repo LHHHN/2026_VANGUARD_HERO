@@ -25,7 +25,8 @@
 #include "rs485.h"
 
 #define LENGTH 0.405f         // 轴距（wheelbase） 即前后轮轴间距离
-#define MECANUM_WIDTH 0.4238f // 麦轮轮距（track） 即左右驱动轮中心距离
+#define MECANUM_WIDTH_F 0.5058f // 麦轮轮距（track） 即左右驱动轮中心距离
+#define MECANUM_WIDTH_B 0.4772f // 麦轮轮距（track） 即左右驱动轮中心距离
 // #define OMNI_WIDTH 0.435f     // 全向轮轮距（track） 即左右驱动轮中心距离
 #define OMNI_WIDTH 0.4418f  // 全向轮轮距（track） 即左右驱动轮中心距离
 #define WHEEL_RADIUS 0.077f // 驱动轮半径（diameter）

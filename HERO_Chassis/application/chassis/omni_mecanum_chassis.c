@@ -154,20 +154,24 @@ motor_init_config_t DM_arthrosis_motor_init = {
 
         .pid_ref = 0.0f,
     },
-    .controller_setting_init_config = {// .close_loop_type = TORQUE_LOOP,
-                                       .outer_loop_type = ANGLE_LOOP,
-                                       .close_loop_type = SPEED_LOOP | ANGLE_LOOP,
-                                       // .close_loop_type = ANGLE_LOOP,
+    .controller_setting_init_config = {
+    // .close_loop_type = TORQUE_LOOP,
+    // .outer_loop_type = ANGLE_LOOP,
+    // .close_loop_type = SPEED_LOOP | ANGLE_LOOP,
+    .outer_loop_type = OPEN_LOOP,
+    .close_loop_type = OPEN_LOOP,
+    // .close_loop_type = ANGLE_LOOP,
 
-                                       .motor_reverse_flag = MOTOR_DIRECTION_NORMAL,
-                                       .feedback_reverse_flag = FEEDBACK_DIRECTION_NORMAL,
+    .motor_reverse_flag = MOTOR_DIRECTION_NORMAL,
+    .feedback_reverse_flag = FEEDBACK_DIRECTION_NORMAL,
 
-                                       .angle_feedback_source = MOTOR_FEED,
-                                       .speed_feedback_source = MOTOR_FEED,
+    .angle_feedback_source = MOTOR_FEED,
+    .speed_feedback_source = MOTOR_FEED,
 
-                                       .feedforward_flag = FEEDFORWARD_NONE,
-                                       // .control_button = TORQUE_DIRECT_CONTROL,
-                                       .control_button = POLYCYCLIC_LOOP_CONTROL},
+    .feedforward_flag = FEEDFORWARD_NONE,
+    .control_button = TORQUE_DIRECT_CONTROL,
+    // .control_button = POLYCYCLIC_LOOP_CONTROL
+    },
 
     .motor_type = DM4340,
 
@@ -265,11 +269,12 @@ void Chassis_Init(void)
     // 底盘关节电机DM4340初始化
     for (int i = 0; i < 2; i++)
     {
-        DM_arthrosis_motor_init.can_init_config.tx_id = 0x02 + i;
-        DM_arthrosis_motor_init.can_init_config.rx_id = 0x12 + i;
+        DM_arthrosis_motor_init.can_init_config.tx_id = 0x01 + i;
+        DM_arthrosis_motor_init.can_init_config.rx_id = 0x11 + i;
         DM_arthrosis_motor[i] = DM_Motor_Init(&DM_arthrosis_motor_init);
         DM_arthrosis_motor[i]->motor_feedback = DM_MOTOR_ABSOLUTE;
-        DM_arthrosis_motor[i]->dm_mode = MIT_MODE;
+        // DM_arthrosis_motor[i]->dm_mode = MIT_MODE;
+        DM_arthrosis_motor[i]->dm_mode = POS_MODE;
         DM_arthrosis_motor[i]->contorl_mode_state = SINGLE_TORQUE;
         DM_Motor_Enable(DM_arthrosis_motor[i]);
 
@@ -281,14 +286,14 @@ void Chassis_Init(void)
     //  leg_angle_ramp[1] = ramp_init(&leg_angle_ramp_init);
 
     // 底盘履带电机DM3519初始化
-    DM_track_motor[0] = DM_Motor_Init(&DM_track_motor_init);
-    DM_track_motor_init.can_init_config.tx_id = 0x04;
-    DM_track_motor_init.can_init_config.rx_id = 0x14;
-    DM_track_motor[1] = DM_Motor_Init(&DM_track_motor_init);
-    DM_track_motor[0]->dm_mode = SPEED_MODE;
-    DM_track_motor[1]->dm_mode = SPEED_MODE;
-    DM_Motor_Enable(DM_track_motor[0]);
-    DM_Motor_Enable(DM_track_motor[1]);
+    // DM_track_motor[0] = DM_Motor_Init(&DM_track_motor_init);
+    // DM_track_motor_init.can_init_config.tx_id = 0x04;
+    // DM_track_motor_init.can_init_config.rx_id = 0x14;
+    // DM_track_motor[1] = DM_Motor_Init(&DM_track_motor_init);
+    // DM_track_motor[0]->dm_mode = SPEED_MODE;
+    // DM_track_motor[1]->dm_mode = SPEED_MODE;
+    // DM_Motor_Enable(DM_track_motor[0]);
+    // DM_Motor_Enable(DM_track_motor[1]);
 
     chassis_cmd.key_state.keyboard_control = 0;
     chassis_cmd.key_state.keyboard_armed = 0;
@@ -577,6 +582,7 @@ void Chassis_Observer(void)
     //    wheel_speed_fb3 = DJI_Motor_GetVal(chassis_m3508[3], MOTOR_SPEED, RAD);
 }
 
+float leg_test = 0.1f;
 // 更新目标值
 void Chassis_Reference(void)
 {
@@ -774,7 +780,7 @@ void Chassis_Reference(void)
         {
             chassis_cmd.vx = rs485_rx_message.chassis_target_vx;
             chassis_cmd.vy = rs485_rx_message.chassis_target_vy;
-            chassis_cmd.omega_z = rs485_rx_message.chassis_target_wz;
+            // chassis_cmd.omega_z = rs485_rx_message.chassis_target_wz;
             ramp_clear(vx_speed_ramp);
             ramp_clear(vy_speed_ramp);
             ramp_clear(wz_speed_ramp);
@@ -787,7 +793,8 @@ void Chassis_Reference(void)
         chassis_cmd.omega_z = 0.0f;
         chassis_cmd.v_track = 0.0f;
         //TODO
-        chassis_cmd.omega_follow = 0.0f;//PID_Position(&chasiss_follow_pid, gimbal_MF9025_motor->receive_data.RAD_single_round, FOLLOW_OMEGA_Z);
+        chassis_cmd.omega_follow = 0.0f;//
+        chassis_cmd.omega_follow = PID_Position(&chasiss_follow_pid, gimbal_MF9025_motor->receive_data.RAD_single_round, FOLLOW_OMEGA_Z);
     }
     else if (chassis_cmd.mode == CHASSIS_UPSTEP)
     {
@@ -819,7 +826,7 @@ void Chassis_Reference(void)
         chassis_cmd.omega_follow = 0.0f;
         chassis_cmd.vx = 0.0f;
         chassis_cmd.vy = 0.0f;
-        chassis_cmd.leg_angle = 0.0f;
+        // chassis_cmd.leg_angle = 0.0f;
     }
     if (rs485_rx_message.control_remote_flag == 1)
     {
@@ -847,15 +854,19 @@ void Chassis_Reference(void)
         // 将云台坐标系下的平移指令旋转到底盘坐标系，使 SPIN 下 W/S 仍沿云台朝向运动。
         chassis_cmd.vx_real = vx_gimbal * cosf(yaw_rel) + vy_gimbal * sinf(yaw_rel);
         chassis_cmd.vy_real = -vx_gimbal * sinf(yaw_rel) + vy_gimbal * cosf(yaw_rel);
+        
+        chassis_cmd.leg_angle = leg_test ;
+        DM_arthrosis_motor[0]->transmit_data.velocity_des = 1.5f;
+        DM_arthrosis_motor[1]->transmit_data.velocity_des = 1.5f;        
 
-    if (chassis_cmd.leg_state == LEG_NORMAL && chassis_cmd.mode != CHASSIS_UPSTEP)
-    {
-        chassis_cmd.leg_angle = 0.0f;
-    }
-    else if (chassis_cmd.leg_state == LEG_LIFTOFF)
-    {
-        chassis_cmd.leg_angle = 0.40f;
-    }
+    // if (chassis_cmd.leg_state == LEG_NORMAL && chassis_cmd.mode != CHASSIS_UPSTEP)
+    // {
+    //     chassis_cmd.leg_angle = 0.0f;
+    // }
+    // else if (chassis_cmd.leg_state == LEG_LIFTOFF)
+    // {
+    //     chassis_cmd.leg_angle = 0.40f;
+    // }
 #endif
 }
 
@@ -874,14 +885,14 @@ void Chassis_Console(void)
            // \    / \\
                 top      -->vy
            \\ /    \ //
-           1\\      //0
+           0\\      //1
     */
     float omega_z = chassis_cmd.omega_z + chassis_cmd.omega_follow;
 
-    chassis_cmd.wheel_target[0] = ((-chassis_cmd.vx_real - chassis_cmd.vy_real + omega_z * (MECANUM_WIDTH + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-    chassis_cmd.wheel_target[1] = ((chassis_cmd.vx_real - chassis_cmd.vy_real + omega_z * (MECANUM_WIDTH + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-    chassis_cmd.wheel_target[2] = ((chassis_cmd.vx_real + chassis_cmd.vy_real + omega_z * (MECANUM_WIDTH + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
-    chassis_cmd.wheel_target[3] = ((-chassis_cmd.vx_real + chassis_cmd.vy_real + omega_z * (MECANUM_WIDTH + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+    chassis_cmd.wheel_target[1] = ((-chassis_cmd.vx_real - chassis_cmd.vy_real + omega_z * (MECANUM_WIDTH_B + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+    chassis_cmd.wheel_target[0] = ((chassis_cmd.vx_real - chassis_cmd.vy_real + omega_z * (MECANUM_WIDTH_B + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+    chassis_cmd.wheel_target[2] = ((chassis_cmd.vx_real + chassis_cmd.vy_real + omega_z * (MECANUM_WIDTH_F + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
+    chassis_cmd.wheel_target[3] = ((-chassis_cmd.vx_real + chassis_cmd.vy_real + omega_z * (MECANUM_WIDTH_F + LENGTH) / 2) / WHEEL_RADIUS) * M3508_REDUCTION_RATIO;
 
 }
 
@@ -890,7 +901,7 @@ void Chassis_Console(void)
 // float leg0_pos;
 float leg_angle_ramp_L;
 float leg_angle_ramp_R;
-// float legkp;
+//*89/ float legkp;
 // float legki;
 // float legkd;
 // float legoutputlimit;
@@ -912,22 +923,22 @@ void Chassis_Send_Cmd()
     // DM_arthrosis_motor[0]->motor_controller.angle_PID->output_limit = legoutputlimit ;
     // DM_arthrosis_motor[0]->motor_controller.angle_PID->integral_limit = legioutlimit ;
 
-    leg_angle_ramp[0]->real_value = DM_arthrosis_motor[0]->receive_data.position; // 斜坡函数当前值更新
-    DM_Motor_SetTar(DM_arthrosis_motor[0], ramp_calc(leg_angle_ramp[0], chassis_cmd.leg_angle));
-    leg_angle_ramp_L = ramp_calc(leg_angle_ramp[0], chassis_cmd.leg_angle);
-    // DM_Motor_SetTar(DM_arthrosis_motor[0], chassis_cmd.leg_angle);
+    // leg_angle_ramp[0]->real_value = DM_arthrosis_motor[0]->receive_data.position; // 斜坡函数当前值更新
+    // DM_Motor_SetTar(DM_arthrosis_motor[0], ramp_calc(leg_angle_ramp[0], -chassis_cmd.leg_angle));
+    // leg_angle_ramp_L = ramp_calc(leg_angle_ramp[0], -chassis_cmd.leg_angle);
+    DM_Motor_SetTar(DM_arthrosis_motor[0], -chassis_cmd.leg_angle);
 
-    leg_angle_ramp[1]->real_value = DM_arthrosis_motor[1]->receive_data.position; // 斜坡函数当前值更新
-    DM_Motor_SetTar(DM_arthrosis_motor[1], ramp_calc(leg_angle_ramp[1], -chassis_cmd.leg_angle));
-    leg_angle_ramp_R = ramp_calc(leg_angle_ramp[1], -chassis_cmd.leg_angle);
-    // DM_Motor_SetTar(DM_arthrosis_motor[1], -chassis_cmd.leg_angle);
+    // leg_angle_ramp[1]->real_value = DM_arthrosis_motor[1]->receive_data.position; // 斜坡函数当前值更新
+    // DM_Motor_SetTar(DM_arthrosis_motor[1], ramp_calc(leg_angle_ramp[1], chassis_cmd.leg_angle));
+    // leg_angle_ramp_R = ramp_calc(leg_angle_ramp[1], chassis_cmd.leg_angle);
+    DM_Motor_SetTar(DM_arthrosis_motor[1], chassis_cmd.leg_angle);
 
     DM_Motor_SetTar(DM_track_motor[0], -chassis_cmd.v_track);
     // DM_Motor_Control(DM_track_motor[0]);
     DM_Motor_SetTar(DM_track_motor[1], chassis_cmd.v_track);
     // DM_Motor_Control(DM_track_motor[1]);
 
-    Chassis_Disable();
+    // Chassis_Disable();
 
     DM_Motor_Control(NULL);
 }

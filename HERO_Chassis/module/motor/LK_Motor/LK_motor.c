@@ -21,7 +21,7 @@ static void LK_Motor_Set_Mode(LK_motor_mode_e cmd, LK_motor_instance_t *motor)
 {
 	memset(motor->motor_can_instance->tx_buff, 0x00, 8); // 发送电机指令的时候后面7bytes都是0x00
 	motor->motor_can_instance->tx_buff[0] = (uint8_t) cmd; // 第一位是命令id
-	CAN_Transmit(motor->motor_can_instance, 2);
+	CAN_Transmit(motor->motor_can_instance, 1);
 }
 void LK_Motor_Start(LK_motor_instance_t *motor)
 {
@@ -97,7 +97,7 @@ void LK_Motor_GetData(LK_motor_instance_t *motor)
 {
 	memset(motor->motor_can_instance->tx_buff, 0x00, 8); // 发送电机指令的时候后面7bytes都是0x00
 	motor->motor_can_instance->tx_buff[0] = 0x9C; // 第一位是命令id
-	CAN_Transmit(motor->motor_can_instance, 2);
+	CAN_Transmit(motor->motor_can_instance, 1);
 }
 
 //int16_t iq_temp = 0;

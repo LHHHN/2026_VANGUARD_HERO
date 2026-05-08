@@ -200,72 +200,57 @@
         <Ww>
           <count>0</count>
           <WinNumber>2</WinNumber>
-          <ItemText>rs485_rx_message_temp</ItemText>
+          <ItemText>rs485_rx_message</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>2</WinNumber>
-          <ItemText>rs485_rx_message</ItemText>
+          <ItemText>rc_data</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
           <WinNumber>2</WinNumber>
-          <ItemText>rs485_receive_en_flag</ItemText>
+          <ItemText>chassis_cmd</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>2</WinNumber>
-          <ItemText>rs485_tx_message_temp</ItemText>
+          <ItemText>gimbal_cmd</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
           <WinNumber>2</WinNumber>
-          <ItemText>rc_data</ItemText>
+          <ItemText>shoot_cmd</ItemText>
         </Ww>
         <Ww>
           <count>5</count>
           <WinNumber>2</WinNumber>
-          <ItemText>chassis_cmd</ItemText>
+          <ItemText>vt03_data</ItemText>
         </Ww>
         <Ww>
           <count>6</count>
           <WinNumber>2</WinNumber>
-          <ItemText>gimbal_cmd</ItemText>
+          <ItemText>rs485_tx_message</ItemText>
         </Ww>
         <Ww>
           <count>7</count>
           <WinNumber>2</WinNumber>
-          <ItemText>shoot_cmd</ItemText>
+          <ItemText>vs_aim_packet_from_nuc</ItemText>
         </Ww>
         <Ww>
           <count>8</count>
           <WinNumber>2</WinNumber>
-          <ItemText>vt03_data</ItemText>
+          <ItemText>bmi088_h7</ItemText>
         </Ww>
         <Ww>
           <count>9</count>
           <WinNumber>2</WinNumber>
-          <ItemText>rs485_tx_message</ItemText>
+          <ItemText>INS</ItemText>
         </Ww>
         <Ww>
           <count>10</count>
           <WinNumber>2</WinNumber>
-          <ItemText>vs_from_ncu_data</ItemText>
-        </Ww>
-        <Ww>
-          <count>11</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>vs_aim_packet_from_nuc</ItemText>
-        </Ww>
-        <Ww>
-          <count>12</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>bmi088_h7</ItemText>
-        </Ww>
-        <Ww>
-          <count>13</count>
-          <WinNumber>2</WinNumber>
-          <ItemText>INS</ItemText>
+          <ItemText>procotol_task_diff</ItemText>
         </Ww>
       </WatchWindow2>
       <Tracepoint>
@@ -2006,7 +1991,7 @@
 
   <Group>
     <GroupName>application</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

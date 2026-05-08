@@ -125,20 +125,12 @@ void VOFA_Display_IMU(void)
 
 void RC_Transfer_Control(void)
 {
-	static uint8_t rs485_freq_count = 0;
-
 	RS485_Handle_Rx_Data();
 	if(rs485_command.online == 0)
 	{
 		rs485_rx_message.chassis_mode = CHASSIS_DISABLE;
 		rs485_rx_message.gimbal_mode = GIMBAL_DISABLE;
 		rs485_rx_message.shoot_mode = SHOOT_DISABLE;
-	}
-
-	if(rs485_freq_count++ > 10)
-	{
-		rs485_freq_count = 0;
-		RS485_Handle_Tx_Data();
 	}
 }
 
@@ -213,7 +205,8 @@ void SuperCap_PowerControl_Update(void)
 	super_cap_chassis_power_target = SuperCap_Clamp_Float(target_power,
 														 SUPER_CAP_CHASSIS_POWER_MIN_W,
 														 SUPER_CAP_CHASSIS_POWER_MAX_W);
-	chassis_max_power = super_cap_chassis_power_target;
+	// chassis_max_power = super_cap_chassis_power_target;
+	chassis_max_power = 75.0f ;4
 
 	Super_Cap_Enable(Super_Cap_instance);
 	Super_Cap_instance->transmit_data.refereePowerLimit = referee_power_limit;

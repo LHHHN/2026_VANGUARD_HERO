@@ -62,7 +62,7 @@ USART_instance_t *USART_Register(usart_init_config_t *init_config);
 
 void USART_Service_Init(USART_instance_t *_instance);
 
-void USART_Send(USART_instance_t *_instance, uint8_t *send_buf, uint16_t send_size, usart_transfer_e mode);
+HAL_StatusTypeDef USART_Send(USART_instance_t *_instance, uint8_t *send_buf, uint16_t send_size, usart_transfer_e mode);
 
 uint8_t USART_Error_Lost(USART_instance_t *_instance);
 

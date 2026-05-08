@@ -58,8 +58,8 @@ static void Daemon_Task( void *argument )
         Daemon_Proc();
         
         daemon_task_diff = osKernelGetTickCount( ) - time;
-        time = osKernelGetTickCount( );
-        osDelayUntil( time + DAEMON_TASK_PERIOD );
+        time += DAEMON_TASK_PERIOD;
+        osDelayUntil( time );
     }
 }
 

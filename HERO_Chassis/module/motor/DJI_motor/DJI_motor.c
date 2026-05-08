@@ -616,7 +616,7 @@ void DJI_Motor_Control(DJI_motor_instance_t *motor_s)
 		{
 			if (sender_enable_flag[i])
 			{
-				CAN_Transmit(&sender_assignment[i], 2);
+				CAN_Transmit(&sender_assignment[i], 1);
 			}
 		}
 	}
@@ -624,7 +624,7 @@ void DJI_Motor_Control(DJI_motor_instance_t *motor_s)
 	{
 		if (sender_enable_flag[motor->sender_group])
 		{
-			CAN_Transmit(&sender_assignment[motor->sender_group], 2);
+			CAN_Transmit(&sender_assignment[motor->sender_group], 1);
 		}
 	}
 }

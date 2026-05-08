@@ -69,7 +69,7 @@ static void DM_Motor_Set_Mode(DM_motor_mode_e cmd, DM_motor_instance_t *motor)
 {
 	memset(motor->motor_can_instance->tx_buff, 0xff, 7); // 发送电机指令的时候前面7bytes都是0xff
 	motor->motor_can_instance->tx_buff[7] = (uint8_t) cmd; // 最后一位是命令id
-	CAN_Transmit(motor->motor_can_instance, 10);
+	CAN_Transmit(motor->motor_can_instance, 1);
 }
 
 void DM_Motor_Set_Zeropoint(DM_motor_instance_t *motor)
