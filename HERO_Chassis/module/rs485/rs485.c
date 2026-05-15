@@ -19,7 +19,7 @@
 #define RS485_GIMBAL_RECOVERY_LEG_FLAG(flags) ((uint8_t)(((flags) >> 3U) & 0x01U))
 #define RS485_GIMBAL_REMOTE_FLAG(flags) ((uint8_t)(((flags) >> 4U) & 0x01U))
 #define RS485_GIMBAL_UI_FLAG(flags) ((uint8_t)(((flags) >> 5U) & 0x01U))
-#define RS485_GIMBAL_AUTO_AIM_FLAG(flags) ((uint8_t)(((flags) >> 6U) & 0x02U))
+#define RS485_GIMBAL_AUTO_AIM_FLAG(flags) ((uint8_t)(((flags) >> 6U) & 0x03U))
 
 typedef struct
 {
