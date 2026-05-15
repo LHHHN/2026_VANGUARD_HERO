@@ -86,8 +86,8 @@ motor_init_config_t shoot_m3508_init = {
     },
 };
 
-float shoot_tar_1 = 3500.0f;
-float shoot_tar_2 = 3800.0f;
+float shoot_tar_1 = 3400.0f;
+float shoot_tar_2 = 3680.0f;
 
 float shoot_tar_16mps_1 = 4720.0f;
 float shoot_tar_16mps_2 = 4905.0f;
@@ -249,6 +249,18 @@ void Shoot_Set_Mode(void)
                     shoot_cmd.mode = SHOOT_ENABLE;
                 }
             }
+
+            //修改摩擦轮转速
+            if(KEY_CLICK(Key_X) == 1)
+            {
+                shoot_tar_2 += 5.0f;
+            }
+            KEY_ACK(Key_X);
+            if(KEY_CLICK(Key_Z) == 1)
+            {
+                shoot_tar_2 -= 5.0f;
+            }
+            KEY_ACK(Key_Z);
         }
         else
         {
@@ -306,12 +318,14 @@ void Shoot_Reference(void)
 
 #define KEY_CLICK(k) (vt03_data->key_count[KEY_PRESS][(k)] != last_key_cnt[(k)])
 #define KEY_ACK(k) (last_key_cnt[(k)] = vt03_data->key_count[KEY_PRESS][(k)])
-    for (int i = 0; i < 3; i++)
-    {
-        // shoot_m3508_motor[i]->motor_controller.speed_PID->kp = shoot_kp_test;
-        // shoot_m3508_motor[i]->motor_controller.speed_PID->ki = shoot_ki_test;
-        // shoot_m3508_motor[i]->motor_controller.speed_PID->kd = shoot_kd_test;
-    }
+
+
+    // for (int i = 0; i < 3; i++)
+    // {
+    //     shoot_m3508_motor[i]->motor_controller.speed_PID->kp = shoot_kp_test;
+    //     shoot_m3508_motor[i]->motor_controller.speed_PID->ki = shoot_ki_test;
+    //     shoot_m3508_motor[i]->motor_controller.speed_PID->kd = shoot_kd_test;
+    // }
     shoot_speed_test_0 = shoot_m3508_motor[0]->receive_data.speed;
     shoot_speed_test_1 = shoot_m3508_motor[1]->receive_data.speed;
     shoot_speed_test_2 = -shoot_m3508_motor[2]->receive_data.speed;

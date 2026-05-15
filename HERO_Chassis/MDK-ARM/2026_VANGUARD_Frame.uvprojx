@@ -2614,6 +2614,11 @@
               <FileType>5</FileType>
               <FilePath>..\module\super_cap\power_control_task.h</FilePath>
             </File>
+            <File>
+              <FileName>control_task.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\application\control_task.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

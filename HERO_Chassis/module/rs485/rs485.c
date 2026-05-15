@@ -15,10 +15,11 @@
 #define RS485_GIMBAL_CONTROL_FLAGS(fire, launched, remote, ui, auto_aim) \
     ((uint8_t)(((fire) & 0x03U) | (((launched) & 0x03U) << 2U) | (((remote) & 0x01U) << 4U) | (((ui) & 0x01U) << 5U) | (((auto_aim) & 0x03U) << 6U)))
 #define RS485_GIMBAL_FIRE_FLAG(flags) ((uint8_t)((flags) & 0x03U))
-#define RS485_GIMBAL_LAUNCHED_FLAG(flags) ((uint8_t)(((flags) >> 2U) & 0x03U))
+#define RS485_GIMBAL_LAUNCHED_FLAG(flags) ((uint8_t)(((flags) >> 2U) & 0x01U))
+#define RS485_GIMBAL_RECOVERY_LEG_FLAG(flags) ((uint8_t)(((flags) >> 3U) & 0x01U))
 #define RS485_GIMBAL_REMOTE_FLAG(flags) ((uint8_t)(((flags) >> 4U) & 0x01U))
 #define RS485_GIMBAL_UI_FLAG(flags) ((uint8_t)(((flags) >> 5U) & 0x01U))
-#define RS485_GIMBAL_AUTO_AIM_FLAG(flags) ((uint8_t)(((flags) >> 6U) & 0x03U))
+#define RS485_GIMBAL_AUTO_AIM_FLAG(flags) ((uint8_t)(((flags) >> 6U) & 0x02U))
 
 typedef struct
 {
@@ -139,7 +140,6 @@ static void RS485_Copy_Gimbal_Payload(const rs485_gimbal_wire_t *wire)
     rs485_rx_message.chassis_target_vx = wire->payload.chassis_target_vx;
     rs485_rx_message.chassis_target_vy = wire->payload.chassis_target_vy;
     rs485_rx_message.chassis_target_wz = wire->payload.chassis_target_wz;
-    rs485_rx_message.chassis_target_leg_angle = wire->payload.chassis_target_leg_angle;
     rs485_rx_message.gimbal_target_yaw = wire->payload.gimbal_target_yaw;
     rs485_rx_message.gimbal_target_yaw_speed = wire->payload.gimbal_target_yaw_speed;
     rs485_rx_message.gimbal_measure_yaw = wire->payload.gimbal_measure_yaw;
@@ -150,6 +150,7 @@ static void RS485_Copy_Gimbal_Payload(const rs485_gimbal_wire_t *wire)
     rs485_rx_message.control_remote_flag = RS485_GIMBAL_REMOTE_FLAG(wire->payload.control_flags);
     rs485_rx_message.ui_refresh_flag = RS485_GIMBAL_UI_FLAG(wire->payload.control_flags);
     rs485_rx_message.auto_aiming_flag = RS485_GIMBAL_AUTO_AIM_FLAG(wire->payload.control_flags);
+    rs485_rx_message.recovery_leg_flag = RS485_GIMBAL_RECOVERY_LEG_FLAG(wire->payload.control_flags);
     rs485_rx_message.seq = wire->header.seq;
     rs485_rx_message.ack_seq = wire->header.ack_seq;
 }

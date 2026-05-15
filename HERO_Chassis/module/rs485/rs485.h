@@ -36,7 +36,6 @@ typedef struct
     float chassis_target_vx;
     float chassis_target_vy;
     float chassis_target_wz;
-    float chassis_target_leg_angle;
     float gimbal_target_yaw;
     float gimbal_target_yaw_speed;
     float gimbal_measure_yaw;
@@ -70,7 +69,8 @@ typedef struct
 
     uint8_t gimbal_measure_pitch;
     uint8_t shoot_fire_en_flag : 2;
-    uint8_t shoot_launched_flag : 2;
+    uint8_t shoot_launched_flag : 1;
+    uint8_t recovery_leg_flag: 1;
     uint8_t control_remote_flag : 1;
     uint8_t ui_refresh_flag : 1;
     uint8_t auto_aiming_flag : 2;

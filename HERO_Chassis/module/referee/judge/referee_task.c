@@ -239,27 +239,39 @@ static void UI_Robot_State(void)
 				540,
 				300,
 				300);
+    //绘制自瞄边框
 	UI_Rectangle_Draw(&UI_robot_state[1],
 					  "se1",
 					  UI_Graph_ADD,
 					  9,
 					  UI_Color_Pink,
 					  5,
-					  700,
-					  350,
-					  1130,
-					  640);
+					  800,
+					  275,
+					  1050,
+					  450);
+    //绘制手喵3m圆点
 	UI_Circle_Draw(&UI_robot_state[2],
 				   "se2",
 				   UI_Graph_ADD,
 				   9,
-				   UI_Color_White,
+				   UI_Color_Orange,
 				   5,
-				   960,
-				   490,
+				   945,
+				   410,
 				   10);
-	UI_Circle_Draw(&UI_robot_state[3],
-				   "se2",
+    //绘制手喵5m圆点
+    UI_Circle_Draw(&UI_robot_state[3],
+				   "se3",
+				   UI_Graph_ADD,
+				   9,
+				   UI_Color_Orange,
+				   5,
+				   945,
+				   375,
+				   10);              
+	UI_Circle_Draw(&UI_robot_state[4],
+				   "se4",
 				   UI_Graph_ADD,
 				   9,
 				   UI_Color_Main,
@@ -267,15 +279,6 @@ static void UI_Robot_State(void)
 				   960,
 				   490,
 				   5);
-	UI_Circle_Draw(&UI_robot_state[4],
-				   "se2",
-				   UI_Graph_ADD,
-				   9,
-				   UI_Color_Black,
-				   5,
-				   960,
-				   490,
-				   1);
 	UI_Graph_Refresh(&referee_recv_info->referee_id,
 					 5,
 					 UI_robot_state[0],
@@ -353,7 +356,7 @@ static void UI_State_Mode_Data(void)
 				 150,
 				 850,
 				 "none:");
-	UI_Char_Refresh(&referee_recv_info->referee_id, UI_state_sta_string[6]);
+	UI_Char_Refresh(&referee_recv_info->referee_id, UI_state_sta_string[5]);
 	UI_Char_Draw(&UI_state_sta_string[6],
 				 "ss6",
 				 UI_Graph_ADD,
@@ -612,8 +615,8 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
 	_Interactive_data->chassis_mode = chassis_cmd.mode;					// chassis_cmd.chassis;
 	_Interactive_data->gimbal_mode = gimbal_cmd.mode;					// gimbal_cmd.gimbal;
 	_Interactive_data->shoot_mode = shoot_cmd.mode;						// shoot_cmd.shooter;
-//	_Interactive_data->Super_Power = trans_thresholds(super_cap_instance->receive_data.capEnergy, 0, 250, 0, 100);
-//	_Interactive_data->Chassis_Power_Limit = super_cap_instance->receive_data.chassisPower;
+	_Interactive_data->Super_Power = trans_thresholds(Super_Cap_instance->receive_data.capEnergy, 0, 250, 0, 100);
+	_Interactive_data->Chassis_Power_Limit = Super_Cap_instance->receive_data.chassisPower;
 
 	//   RobotModeTest(Interactive_data); // 测试用函数，实现模式自动变化,用于检查该任务和裁判系统是否连接正常
 

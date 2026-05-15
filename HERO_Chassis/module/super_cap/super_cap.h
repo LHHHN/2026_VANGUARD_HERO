@@ -83,6 +83,7 @@ typedef struct
 }Super_Cap_instance_t;
 
 extern Super_Cap_instance_t *Super_Cap_instance;
+
 extern can_init_config_t super_cap_init_config;
 
 Super_Cap_instance_t *Super_Capacitor_Init(can_init_config_t *config);

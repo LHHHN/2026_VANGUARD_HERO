@@ -69,29 +69,58 @@ float shoot_time;
 
 static void Shoot_Task(void *argument)
 {
-	static const control_task_hook_t shoot_steps[] = {
-		Shoot_Observer,
-		Shoot_Handle_Exception,
-		Shoot_Set_Mode,
-		Shoot_Reference,
-		Shoot_Console,
-		Shoot_Send_Cmd,
-	};
-	static const control_task_config_t shoot_task_config = {
-		.publish = Shoot_Publish,
-		.start = NULL,
-		.steps = shoot_steps,
-		.step_count = (uint8_t)(sizeof(shoot_steps) / sizeof(shoot_steps[0])),
-		.period_ms = SHOOT_TASK_PERIOD,
-		.startup_delay_ms = 2,
-		.diff_ms = &shoot_task_diff,
-#if INCLUDE_uxTaskGetStackHighWaterMark
-		.stack_high_water = &shoot_high_water,
-#endif
-	};
+	Shoot_Publish( );
 
-	(void)argument;
-	Control_Task_Run(&shoot_task_config);
+	uint32_t time = osKernelGetTickCount( );
+
+	osDelay(2);
+
+	for (; ;)
+	{
+		// 更新状态量
+		Shoot_Observer( );
+		// 处理异常
+		Shoot_Handle_Exception( );
+		// 设置射击模式
+		Shoot_Set_Mode( );
+		// 设置目标量
+		Shoot_Reference( );
+		// 计算控制量
+		Shoot_Console( );
+		// 发送控制量
+		Shoot_Send_Cmd( );
+
+		shoot_task_diff = osKernelGetTickCount( ) - time;
+		time            = osKernelGetTickCount( );
+		osDelayUntil(time + SHOOT_TASK_PERIOD);
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+		shoot_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
+	}
+// 	static const control_task_hook_t shoot_steps[] = {
+// 		Shoot_Observer,
+// 		Shoot_Handle_Exception,
+// 		Shoot_Set_Mode,
+// 		Shoot_Reference,
+// 		Shoot_Console,
+// 		Shoot_Send_Cmd,
+// 	};
+// 	static const control_task_config_t shoot_task_config = {
+// 		.publish = Shoot_Publish,
+// 		.start = NULL,
+// 		.steps = shoot_steps,
+// 		.step_count = (uint8_t)(sizeof(shoot_steps) / sizeof(shoot_steps[0])),
+// 		.period_ms = SHOOT_TASK_PERIOD,
+// 		.startup_delay_ms = 2,
+// 		.diff_ms = &shoot_task_diff,
+// #if INCLUDE_uxTaskGetStackHighWaterMark
+// 		.stack_high_water = &shoot_high_water,
+// #endif
+// 	};
+
+// 	(void)argument;
+// 	Control_Task_Run(&shoot_task_config);
 }
 
 __weak void Shoot_Publish(void)

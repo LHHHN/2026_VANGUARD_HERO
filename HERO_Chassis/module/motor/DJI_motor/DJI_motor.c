@@ -13,6 +13,7 @@
 #include "bsp_dwt.h"
 #include "bsp_can.h"
 #include "power_ctrl.h"
+#include "rs485.h"
 
 #define GM6020_VOLTAGE 1
 #define GM6020_CURRENT 1
@@ -582,8 +583,11 @@ void DJI_Motor_Control(DJI_motor_instance_t *motor_s)
 		// 	memset(sender_assignment[group].tx_buff + 2 * num, 0, sizeof(uint16_t));
 		// }
 	}
-
-	chassis_power_control();
+	if(rs485_rx_message.control_remote_flag == 1)
+	{
+		chassis_power_control();
+	}
+	
 	for (size_t i = 0; i < j; ++i)
 	{
 		if (motor_s == NULL)

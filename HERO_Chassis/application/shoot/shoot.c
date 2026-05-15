@@ -22,7 +22,8 @@
 DJI_motor_instance_t *shoot_stir_motor;
 shoot_cmd_t shoot_cmd;
 
-float shoot_stir_tar = -14400; // 固定目标转速
+float shoot_stir_tar = -25200 ;//-14400; // 固定目标转速
+float shoot_stir_zhuan = -25.0f ;
 
 PID_t shoot_stir_angle_pid = {
     .kp = 14.0f, // 5.0f,
@@ -256,14 +257,14 @@ void Shoot_Reference(void)
             shoot_cmd.v_shoot_stir = 0;
         }
 
-        if (((shoot_angle_now - shoot_angle_last) < -62.0f * 19.8f))
+        if (((shoot_angle_now - shoot_angle_last) < shoot_stir_zhuan * 19.8f))
         {
             shoot_cmd.v_shoot_stir = 0;
         }
     }
     else if (shoot_cmd.mode == SHOOT_AUTO_AIMING)
     {
-        // 遥控器
+        // 遥控器   
         if (rs485_rx_message.control_remote_flag == 0)
         {
             if (rs485_rx_message.auto_aiming_flag == 2 && rs485_rx_message.shoot_fire_en_flag == 1)
@@ -299,7 +300,7 @@ void Shoot_Reference(void)
                     }
                 }
 
-                if (((shoot_angle_now - shoot_angle_last) < -62.0f * 19.8f))
+                if (((shoot_angle_now - shoot_angle_last) < shoot_stir_zhuan * 19.8f))
                 {
                     shoot_cmd.v_shoot_stir = 0;
                     if (vs_shoot_cnt == 0.0f)
@@ -348,7 +349,7 @@ void Shoot_Reference(void)
                     }
                 }
 
-                if (((shoot_angle_now - shoot_angle_last) < -63.0f * 19.8f))
+                if (((shoot_angle_now - shoot_angle_last) < shoot_stir_zhuan * 19.8f))
                 {
                     shoot_cmd.v_shoot_stir = 0;
                     if (vs_shoot_cnt == 0.0f)

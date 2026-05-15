@@ -156,5 +156,7 @@ void Robot_Frame_Init(void)
 
 	Frame_Device_Init();
 
+	Robot_Frame_Task_Init();
+
 	// __enable_irq( );
 }

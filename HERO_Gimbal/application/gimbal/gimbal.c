@@ -28,6 +28,8 @@
 #include "user_lib.h"
 #include "kalman_one_filter.h"
 
+#include "chassis.h"
+
 DM_motor_instance_t *pitch_motor;
 gimbal_cmd_t gimbal_cmd;
 
@@ -308,6 +310,7 @@ void Gimbal_Set_Mode()
         {
             gimbal_cmd.mode = GIMBAL_ENABLE;
         }
+        
         if(chassis_cmd.mode != CHASSIS_DISABLE)
         {
             /* 蹬腿云台跟随键鼠 */
@@ -319,11 +322,12 @@ void Gimbal_Set_Mode()
             {
                 gimbal_cmd.mode = GIMBAL_ENABLE;
             }
-            if(vt03_data->key->q == 1)
+
+            if(chassis_cmd.mode == CHASSIS_UPSTEP)
             {
                 gimbal_cmd.mode = GIMBAL_ZERO;
             }
-            else if(vt03_data->key->q ==0 && gimbal_cmd.mode == GIMBAL_ZERO)
+            else if(chassis_cmd.mode != CHASSIS_UPSTEP && gimbal_cmd.mode == GIMBAL_ZERO)
             {
                 gimbal_cmd.mode = GIMBAL_ENABLE;
             }
@@ -399,7 +403,7 @@ void Gimbal_Console()
         }
         else if(control_source == CONTROL_SOURCE_VT03)
         {
-            gimbal_cmd.yaw_v = (float)vt03_data->mouse.x * KEY_YAW_SEN;
+            gimbal_cmd.yaw_v = -(float)vt03_data->mouse.x * KEY_YAW_SEN;
             gimbal_cmd.pitch_v = ramp_calc(pitch_speed_ramp, (float)vt03_data->mouse.y * KEY_PITCH_SEN);
             pitch_speed_ramp->real_value = gimbal_cmd.pitch_v;
         }
@@ -443,7 +447,7 @@ void Gimbal_Console()
             }
             else if(control_source == CONTROL_SOURCE_VT03)
             {
-                gimbal_cmd.yaw_v = (float)vt03_data->mouse.x * KEY_YAW_SEN;
+                gimbal_cmd.yaw_v = -(float)vt03_data->mouse.x * KEY_YAW_SEN;
                 gimbal_cmd.pitch_v = ramp_calc(pitch_speed_ramp, (float)vt03_data->mouse.y * KEY_PITCH_SEN);
                 pitch_speed_ramp->real_value = gimbal_cmd.pitch_v;
             }
@@ -547,14 +551,14 @@ void Gimbal_Console()
         gimbal_cmd.yaw_v = 0.0f;
     }
 
-    if (gimbal_cmd.pitch_target <= PTICH_MIN_ANGLE)
-    {
-        gimbal_cmd.pitch_target = PTICH_MIN_ANGLE;
-    }
-    else if (gimbal_cmd.pitch_target >= PTICH_MAX_ANGLE)
-    {
-        gimbal_cmd.pitch_target = PTICH_MAX_ANGLE;
-    }	
+    // if (gimbal_cmd.pitch_target <= PTICH_MIN_ANGLE)
+    // {
+    //     gimbal_cmd.pitch_target = PTICH_MIN_ANGLE;
+    // }
+    // else if (gimbal_cmd.pitch_target >= PTICH_MAX_ANGLE)
+    // {
+    //     gimbal_cmd.pitch_target = PTICH_MAX_ANGLE;
+    // }	
 }
 
 // 发送控制量

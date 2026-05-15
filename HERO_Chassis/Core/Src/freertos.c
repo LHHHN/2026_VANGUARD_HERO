@@ -74,7 +74,7 @@ const osThreadAttr_t defaultTask_attributes = {
 };
 /* Definitions for UI_Task */
 osThreadId_t UI_TaskHandle;
-uint32_t UI_TaskBuffer[ 512 ];
+uint32_t UI_TaskBuffer[ 1024 ];
 osStaticThreadDef_t UI_TaskControlBlock;
 const osThreadAttr_t UI_Task_attributes = {
   .name = "UI_Task",
@@ -82,7 +82,7 @@ const osThreadAttr_t UI_Task_attributes = {
   .cb_size = sizeof(UI_TaskControlBlock),
   .stack_mem = &UI_TaskBuffer[0],
   .stack_size = sizeof(UI_TaskBuffer),
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityNormal1,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -130,7 +130,11 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  Robot_Frame_Task_Init();
+
+  
+  // Robot_Frame_Task_Init();
+
+
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -176,18 +180,18 @@ void StartDefaultTask(void *argument)
     }
 
     beat++;
-    if ((beat % 120000) == 0)
-    {
-      Buzzer_Play(Super_Mario_sound, 0);
-    }
-    else if ((beat % 30000) == 0)
-    {
-      Buzzer_Play(Heartbeat_sound, 0);
-    }
-    else if ((beat % 55555) == 0)
-    {
-      Buzzer_Play(Call_Airsupport_sound, 0);
-    }
+//    if ((beat % 120000) == 0)
+//    {
+//      Buzzer_Play(Super_Mario_sound, 0);
+//    }
+//    else if ((beat % 30000) == 0)
+//    {
+//      Buzzer_Play(Heartbeat_sound, 0);
+//    }
+//    else if ((beat % 55555) == 0)
+//    {
+//      Buzzer_Play(Call_Airsupport_sound, 0);
+//    }
 
     if(rs485_command.online == 0)
 	  {
@@ -231,11 +235,13 @@ void Start_UI_Task(void *argument)
       User_UI_Init();
       first_flag = 1;
     }
+
     if (rs485_rx_message.ui_refresh_flag == 1)
     {
       User_UI_Init();
       osDelay(910);
     }
+    
     UI_Task();
   }
   /* USER CODE END Start_UI_Task */

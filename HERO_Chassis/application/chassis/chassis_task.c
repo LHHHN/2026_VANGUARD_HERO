@@ -82,29 +82,59 @@ static void Chassis_Task_Start(void)
 
 static void Chassis_Task(void *argument)
 {
-	static const control_task_hook_t chassis_steps[] = {
-		Chassis_Observer,
-		Chassis_Handle_Exception,
-		Chassis_Set_Mode,
-		Chassis_Reference,
-		Chassis_Console,
-		Chassis_Send_Cmd,
-	};
-	static const control_task_config_t chassis_task_config = {
-		.publish = Chassis_Publish,
-		.start = Chassis_Task_Start,
-		.steps = chassis_steps,
-		.step_count = (uint8_t)(sizeof(chassis_steps) / sizeof(chassis_steps[0])),
-		.period_ms = CHASSIS_TASK_PERIOD,
-		.startup_delay_ms = 2,
-		.diff_ms = &chassis_task_diff,
-#if INCLUDE_uxTaskGetStackHighWaterMark
-		.stack_high_water = &chassis_high_water,
-#endif
-	};
+	Chassis_Publish( );
 
-	(void)argument;
-	Control_Task_Run(&chassis_task_config);
+	uint32_t time = osKernelGetTickCount( );
+
+	osDelay(2);
+
+	for (; ;)
+	{
+		/******************************底盘测试运行总时长代码*****************************/
+		// 更新状态量
+		Chassis_Observer( );
+		// 处理异常
+		Chassis_Handle_Exception( );
+		// 设置底盘模式
+		Chassis_Set_Mode( );
+		// 更新目标量
+		Chassis_Reference( );
+		// 计算控制量
+		Chassis_Console( );
+		// 发送控制量
+		Chassis_Send_Cmd( );
+
+		chassis_task_diff = osKernelGetTickCount( ) - time;
+		time              = osKernelGetTickCount( );
+		osDelayUntil(time + CHASSIS_TASK_PERIOD);
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+		chassis_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
+	}
+// 	static const control_task_hook_t chassis_steps[] = {
+// 		Chassis_Observer,
+// 		Chassis_Handle_Exception,
+// 		Chassis_Set_Mode,
+// 		Chassis_Reference,
+// 		Chassis_Console,
+// 		Chassis_Send_Cmd,
+// 	};
+// 	static const control_task_config_t chassis_task_config = {
+// 		.publish = Chassis_Publish,
+// 		.start = Chassis_Task_Start,
+// 		.steps = chassis_steps,
+// 		.step_count = (uint8_t)(sizeof(chassis_steps) / sizeof(chassis_steps[0])),
+// 		.period_ms = CHASSIS_TASK_PERIOD,
+// 		.startup_delay_ms = 2,
+// 		.diff_ms = &chassis_task_diff,
+// #if INCLUDE_uxTaskGetStackHighWaterMark
+// 		.stack_high_water = &chassis_high_water,
+// #endif
+// 	};
+
+// 	(void)argument;
+// 	Control_Task_Run(&chassis_task_config);
 }
 
 __weak void Chassis_Publish(void)

@@ -9,8 +9,8 @@
 #define RS485_CHASSIS_FRAME_SIZE (sizeof(rs485_frame_header_t) + sizeof(rs485_chassis_status_payload_t) + sizeof(uint16_t) + sizeof(uint8_t))
 #define RS485_GIMBAL_MODE_FLAGS(chassis, gimbal, shoot) \
     ((uint8_t)(((chassis) & 0x0FU) | (((gimbal) & 0x03U) << 4U) | (((shoot) & 0x03U) << 6U)))
-#define RS485_GIMBAL_CONTROL_FLAGS(fire, launched, remote, ui, auto_aim) \
-    ((uint8_t)(((fire) & 0x03U) | (((launched) & 0x03U) << 2U) | (((remote) & 0x01U) << 4U) | (((ui) & 0x01U) << 5U) | (((auto_aim) & 0x03U) << 6U)))
+#define RS485_GIMBAL_CONTROL_FLAGS(fire, launched, recovery_leg, remote, ui, auto_aim) \
+    ((uint8_t)(((fire) & 0x03U) | (((launched) & 0x01U) << 2U) | (((recovery_leg) & 0x01U) <<3U )| (((remote) & 0x01U) << 4U) | (((ui) & 0x01U) << 5U) | (((auto_aim) & 0x03U) << 6U) ))
 
 typedef struct
 {
@@ -135,7 +135,6 @@ static void RS485_Fill_Gimbal_Payload(rs485_gimbal_cmd_payload_t *payload)
     payload->chassis_target_vx = rs485_tx_message.chassis_target_vx;
     payload->chassis_target_vy = rs485_tx_message.chassis_target_vy;
     payload->chassis_target_wz = rs485_tx_message.chassis_target_wz;
-    payload->chassis_target_leg_angle = rs485_tx_message.chassis_target_leg_angle;
     payload->gimbal_target_yaw = rs485_tx_message.gimbal_target_yaw;
     payload->gimbal_target_yaw_speed = rs485_tx_message.gimbal_target_yaw_speed;
     payload->gimbal_measure_yaw = rs485_tx_message.gimbal_measure_yaw;
@@ -143,9 +142,11 @@ static void RS485_Fill_Gimbal_Payload(rs485_gimbal_cmd_payload_t *payload)
     payload->gimbal_measure_pitch = rs485_tx_message.gimbal_measure_pitch;
     payload->control_flags = RS485_GIMBAL_CONTROL_FLAGS(rs485_tx_message.shoot_fire_en_flag,
                                                         rs485_tx_message.shoot_launched_flag,
+                                                        rs485_tx_message.recovery_leg_flag,
                                                         rs485_tx_message.control_remote_flag,
                                                         rs485_tx_message.ui_refresh_flag,
-                                                        rs485_tx_message.auto_aiming_flag);
+                                                        rs485_tx_message.auto_aiming_flag
+                                                    );
 }
 
 static void RS485_Parse_Byte(uint8_t data)

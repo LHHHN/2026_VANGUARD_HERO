@@ -76,7 +76,7 @@ static void Procotol_Task(void *argument)
         }
 
         procotol_task_diff = osKernelGetTickCount( ) - time;
-        time += PROCOTOL_TASK_PERIOD;
-        osDelayUntil(time);
+        time          = osKernelGetTickCount( );
+        osDelayUntil(time + PROCOTOL_TASK_PERIOD);
     }
 }

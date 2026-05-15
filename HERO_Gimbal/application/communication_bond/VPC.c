@@ -76,7 +76,7 @@ void VPC_UpdatePackets(void)
 //    vs_aim_packet_to_nuc.bullet_speed = 15.9;
 //  }
   // vs_aim_packet_to_nuc.bullet_speed = 11.9; // 未定
-	vs_aim_packet_to_nuc.bullet_speed = 12.1f;
+	vs_aim_packet_to_nuc.bullet_speed = 11.9f;
   vs_aim_packet_to_nuc.bullet_count = 0; // 未定
 
   // vs_aim_packet_to_nuc.mode = 0;

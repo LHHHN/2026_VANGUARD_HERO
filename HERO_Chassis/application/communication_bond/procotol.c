@@ -54,32 +54,6 @@ typedef enum
 static super_cap_power_policy_e super_cap_power_policy = SUPER_CAP_POLICY_ERROR_FALLBACK;
 float super_cap_chassis_power_target;
 
-static uint16_t SuperCap_Clamp_U16(uint16_t value, uint16_t min, uint16_t max)
-{
-	if (value < min)
-	{
-		return min;
-	}
-	if (value > max)
-	{
-		return max;
-	}
-	return value;
-}
-
-static float SuperCap_Clamp_Float(float value, float min, float max)
-{
-	if (value < min)
-	{
-		return min;
-	}
-	if (value > max)
-	{
-		return max;
-	}
-	return value;
-}
-
 static uint8_t Get_Control_Source(void)
 {
 	if (rc_data->rc.switch_left == 2 && rc_data->rc.switch_right == 2)
@@ -134,14 +108,18 @@ void RC_Transfer_Control(void)
 	}
 }
 
+float super_cap_e;
+float super_cap_p ;
+uint16_t referee_power_limit ;
 void SuperCap_PowerControl_Update(void)
 {
-	uint16_t referee_power_limit = SUPER_CAP_POWER_INIT;
+	referee_power_limit = SUPER_CAP_POWER_INIT;
 	uint16_t referee_energy_buffer = SUPER_CAP_ENERGY_BUFFER_INIT;
 	uint8_t cap_energy;
 	uint8_t cap_unavailable;
-	float target_power;
-
+	float target_power;	
+	super_cap_e = Super_Cap_instance->receive_data.capEnergyJ ;
+	super_cap_p = Super_Cap_instance->receive_data.chassisPower ;
 	if (Super_Cap_instance == NULL)
 	{
 		chassis_max_power = SUPER_CAP_CHASSIS_POWER_MIN_W;
@@ -155,10 +133,10 @@ void SuperCap_PowerControl_Update(void)
 		referee_energy_buffer = referee_outer_info->PowerHeatData.buffer_energy;
 	}
 
-	referee_power_limit = SuperCap_Clamp_U16(referee_power_limit,
+	referee_power_limit = int16_constrain(referee_power_limit,
 											SUPER_CAP_POWER_LIMIT_MIN_W,
 											SUPER_CAP_POWER_LIMIT_MAX_W);
-	referee_energy_buffer = SuperCap_Clamp_U16(referee_energy_buffer,
+	referee_energy_buffer = int16_constrain(referee_energy_buffer,
 											  0U,
 											  SUPER_CAP_ENERGY_BUFFER_INIT);
 
@@ -185,31 +163,42 @@ void SuperCap_PowerControl_Update(void)
 	}
 	else if (cap_energy < SUPER_CAP_ENERGY_40_RAW)
 	{
-		target_power = (float)referee_power_limit * 0.85f;
+		target_power = (float)referee_power_limit * 1.0f;
 		Power_Control_Mode = CODE_CONTROL;
 		super_cap_power_policy = SUPER_CAP_POLICY_MINUS_15;
 	}
 	else if (cap_energy < SUPER_CAP_ENERGY_70_RAW)
 	{
-		target_power = (float)referee_power_limit * 1.15f;
+		target_power = (float)referee_power_limit * 1.5f;
 		Power_Control_Mode = SUPERCAP_CONTROL;
 		super_cap_power_policy = SUPER_CAP_POLICY_PLUS_15;
 	}
 	else
 	{
-		target_power = (float)referee_power_limit * 1.30f;
+		target_power = (float)referee_power_limit * 1.8f;
 		Power_Control_Mode = SUPERCAP_CONTROL;
 		super_cap_power_policy = SUPER_CAP_POLICY_PLUS_30;
 	}
 
-	super_cap_chassis_power_target = SuperCap_Clamp_Float(target_power,
+	super_cap_chassis_power_target = float_constrain(target_power,
 														 SUPER_CAP_CHASSIS_POWER_MIN_W,
 														 SUPER_CAP_CHASSIS_POWER_MAX_W);
-	// chassis_max_power = super_cap_chassis_power_target;
-	chassis_max_power = 75.0f ;4
+	
+	
+	chassis_max_power = super_cap_chassis_power_target;
+	// chassis_max_power = 75.0f ;
 
 	Super_Cap_Enable(Super_Cap_instance);
-	Super_Cap_instance->transmit_data.refereePowerLimit = referee_power_limit;
-	Super_Cap_instance->transmit_data.refereeEnergyBuffer = referee_energy_buffer;
+	if(rs485_rx_message.control_remote_flag == 1)
+	{
+		Super_Cap_instance->transmit_data.refereePowerLimit = referee_power_limit;
+		Super_Cap_instance->transmit_data.refereeEnergyBuffer = referee_energy_buffer;
+	}
+	else
+	{
+		
+		Super_Cap_instance->transmit_data.refereePowerLimit = SUPER_CAP_POWER_LIMIT_MAX_W;
+		Super_Cap_instance->transmit_data.refereeEnergyBuffer = SUPER_CAP_ENERGY_BUFFER_INIT;
+	}
 	Super_Cap_SendData(Super_Cap_instance);
 }

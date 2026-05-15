@@ -34,6 +34,7 @@ extern bmi088_data_t imu_data;
 extern RC_ctrl_t *rc_data;
 extern VT03_ctrl_t *vt03_data;
 extern INS_behaviour_t INS;
+
 extern float test_data_acc[3];
 extern float test_data_gyro[3];
 
@@ -100,7 +101,6 @@ void RC_Receive_Control(void)
 	rs485_tx_message.chassis_target_vx = chassis_cmd.target_vx;
 	rs485_tx_message.chassis_target_vy = chassis_cmd.target_vy;
 	rs485_tx_message.chassis_target_wz = chassis_cmd.target_wz;
-	rs485_tx_message.chassis_target_leg_angle = chassis_cmd.target_leg_angle;
 	rs485_tx_message.gimbal_target_yaw = gimbal_cmd.yaw_target;
 	rs485_tx_message.gimbal_target_yaw_speed = gimbal_cmd.yaw_v;
 	rs485_tx_message.gimbal_measure_yaw = INS.Yaw;
@@ -109,8 +109,9 @@ void RC_Receive_Control(void)
 	rs485_tx_message.shoot_fire_en_flag = shoot_cmd.fire_allowed;
 	rs485_tx_message.shoot_launched_flag = shoot_cmd.fire_launched;
 	rs485_tx_message.auto_aiming_flag = vs_aim_packet_from_nuc.mode;
+	rs485_tx_message.recovery_leg_flag = chassis_cmd.recovery_leg_state;
 	rs485_tx_message.control_remote_flag = Control_Is_VT03(Control_Get_Source(rc_data, vt03_data));
-	rs485_tx_message.ui_refresh_flag = vt03_data[0].key->r;
+	rs485_tx_message.ui_refresh_flag = vt03_data->key->r;
 	RS485_Handle_Tx_Data();
 }
 

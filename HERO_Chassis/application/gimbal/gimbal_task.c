@@ -69,29 +69,58 @@ float gimbal_time;
 
 static void Gimbal_Task(void *argument)
 {
-	static const control_task_hook_t gimbal_steps[] = {
-		Gimbal_Observer,
-		Gimbal_Handle_Exception,
-		Gimbal_Set_Mode,
-		Gimbal_Reference,
-		Gimbal_Console,
-		Gimbal_Send_Cmd,
-	};
-	static const control_task_config_t gimbal_task_config = {
-		.publish = Gimbal_Publish,
-		.start = NULL,
-		.steps = gimbal_steps,
-		.step_count = (uint8_t)(sizeof(gimbal_steps) / sizeof(gimbal_steps[0])),
-		.period_ms = GIMBAL_TASK_PERIOD,
-		.startup_delay_ms = 2,
-		.diff_ms = &gimbal_task_diff,
-#if INCLUDE_uxTaskGetStackHighWaterMark
-		.stack_high_water = &gimbal_high_water,
-#endif
-	};
+	Gimbal_Publish( );
 
-	(void)argument;
-	Control_Task_Run(&gimbal_task_config);
+	uint32_t time = osKernelGetTickCount( );
+
+	osDelay(2);
+
+	for (; ;)
+	{
+		// 更新状态量
+		Gimbal_Observer( );
+		// 处理异常
+		Gimbal_Handle_Exception( );
+		// 设置云台模式
+		Gimbal_Set_Mode( );
+		// 更新目标量
+		Gimbal_Reference( );
+		// 计算控制量
+		Gimbal_Console( );
+		// 发送控制量
+		Gimbal_Send_Cmd( );
+
+		gimbal_task_diff = osKernelGetTickCount( ) - time;
+		time             = osKernelGetTickCount( );
+		osDelayUntil(time + GIMBAL_TASK_PERIOD);
+
+#if INCLUDE_uxTaskGetStackHighWaterMark
+		gimbal_high_water = uxTaskGetStackHighWaterMark(NULL);
+#endif
+	}	
+// 	static const control_task_hook_t gimbal_steps[] = {
+// 		Gimbal_Observer,
+// 		Gimbal_Handle_Exception,
+// 		Gimbal_Set_Mode,
+// 		Gimbal_Reference,
+// 		Gimbal_Console,
+// 		Gimbal_Send_Cmd,
+// 	};
+// 	static const control_task_config_t gimbal_task_config = {
+// 		.publish = Gimbal_Publish,
+// 		.start = NULL,
+// 		.steps = gimbal_steps,
+// 		.step_count = (uint8_t)(sizeof(gimbal_steps) / sizeof(gimbal_steps[0])),
+// 		.period_ms = GIMBAL_TASK_PERIOD,
+// 		.startup_delay_ms = 2,
+// 		.diff_ms = &gimbal_task_diff,
+// #if INCLUDE_uxTaskGetStackHighWaterMark
+// 		.stack_high_water = &gimbal_high_water,
+// #endif
+// 	};
+
+// 	(void)argument;
+// 	Control_Task_Run(&gimbal_task_config);
 }
 
 __weak void Gimbal_Publish(void)

@@ -281,6 +281,7 @@ static void DM_Motor_Decode(CAN_instance_t *motor_can)
 	DM_motor_callback_t *receive_data = &(motor->receive_data); // 将can实例中保存的id转换成电机实例的指针
 
 	velocity = receive_data->velocity;
+	torque   = receive_data->torque;
 
 	Supervisor_Reload(motor->supervisor);
 	motor->dt = DWT_GetDeltaT(&motor->feed_cnt);
@@ -591,43 +592,6 @@ void DM_Motor_Control(DM_motor_instance_t *motor_s)
 				motor->transmit_data.velocity_des = pid_ref;
 			}
 
-			//速度模式最终只控制速度，所以应该在此都是只传一个速度控制量即可
-			//但是需要注意的是如果需要角度闭环时同时给出前馈，则只能分开判断，因为速度模式发出去的速度我们虚假认为电机能直接稳定响应，
-			//而若是我们设置速度闭环同时又采取与角度闭环时一样的操作则会导致最终控制的速度并不是我们想控制的速度
-			// if (motor->motor_settings.outer_loop_type == ANGLE_LOOP)
-			// {
-			// 	motor->transmit_data.velocity_des = pid_ref ;//+ motor->dm_offset_control;缺陷设计，前馈控制应该搭建控制环路分析得到具体的前馈控制器，但是可以临时应对突发情况得到一个不好不差的控制
-
-			// 	//pid 应做好限幅
-			// 	// if (motor->transmit_data.velocity_des >= motor->motor_controller.angle_PID->output_limit)
-			// 	// {
-			// 	// 	motor->transmit_data.velocity_des = motor->motor_controller.angle_PID->output_limit;
-			// 	// }
-			// 	// else if (motor->transmit_data.velocity_des <= -motor->motor_controller.angle_PID->output_limit)
-			// 	// {
-			// 	// 	motor->transmit_data.velocity_des = -motor->motor_controller.angle_PID->output_limit;
-			// 	// }
-			// }
-			// else if (motor->motor_settings.outer_loop_type == SPEED_LOOP)
-			// {
-			// 	motor->transmit_data.velocity_des = pid_ref;
-
-			// 	//pid 应做好限幅
-			// 	// if (motor->transmit_data.velocity_des >= motor->motor_controller.speed_PID->output_limit)
-			// 	// {
-			// 	// 	motor->transmit_data.velocity_des = motor->motor_controller.speed_PID->output_limit;
-			// 	// }
-			// 	// else if (motor->transmit_data.velocity_des <= -motor->motor_controller.speed_PID->output_limit)
-			// 	// {
-			// 	// 	motor->transmit_data.velocity_des = -motor->motor_controller.speed_PID->output_limit;
-			// 	// }
-			// }
-			// else if (motor->motor_settings.outer_loop_type == TORQUE_LOOP)
-			// {
-			// 	//速度模式控不了力矩，所以应该删去这个内容
-			// 	motor->transmit_data.velocity_des = pid_ref;
-			// }
-
 			DM_Speed_Ctrl(motor, motor->transmit_data.velocity_des);
 		}
 
@@ -645,47 +609,6 @@ void DM_Motor_Control(DM_motor_instance_t *motor_s)
 				motor->transmit_data.position_des = pid_ref;
 			}
 
-			//位置模式最终控制位置，但可以设置最高速度加以限制，
-			//这里因为位置给定就是目标值，我们虚假认为电机能直接稳定响应，所以不用pid计算位置，
-			//所以只需直接发送位置，并用pid计算最高速度加以限制
-			// if (motor->motor_settings.close_loop_type == ANGLE_LOOP)
-			// {
-			// 	motor->transmit_data.velocity_des = pid_ref;
-
-			// 	//pid 应做好限幅
-			// 	// if (motor->transmit_data.velocity_des >= max)
-			// 	// {
-			// 	// 	motor->transmit_data.velocity_des = max;
-			// 	// }
-			// 	// else if (motor->transmit_data.velocity_des <= min)
-			// 	// {
-			// 	// 	motor->transmit_data.velocity_des = min;
-			// 	// }
-
-			// 	DM_Pos_Speed_Ctrl(motor,
-			// 	                  motor->transmit_data.position_des,
-			// 	                  motor->transmit_data.velocity_des);
-			// }
-
-			// if (motor->motor_settings.close_loop_type == SPEED_LOOP)
-			// {
-			// 	motor->transmit_data.velocity_des = pid_ref;
-
-			// 	//pid 应做好限幅
-			// 	// if (motor->transmit_data.velocity_des >= max)
-			// 	// {
-			// 	// 	motor->transmit_data.velocity_des = max;
-			// 	// }
-			// 	// else if (motor->transmit_data.velocity_des <= min)
-			// 	// {
-			// 	// 	motor->transmit_data.velocity_des = min;
-			// 	// }
-
-			// 	DM_Pos_Speed_Ctrl(motor,
-			// 	                  motor->transmit_data.position_des,
-			// 	                  motor->transmit_data.velocity_des);
-			// }
-
 			DM_Pos_Speed_Ctrl(motor,
 			                  motor->transmit_data.position_des,
 			                  motor->transmit_data.velocity_des);
@@ -693,11 +616,6 @@ void DM_Motor_Control(DM_motor_instance_t *motor_s)
 
 		else if (motor->dm_mode == MIT_MODE)
 		{
-			//这里不提供其他的设计，只有纯力矩控制，如有需求在此修改代码逻辑即可
-			// motor->transmit_data.position_des = 0.0f;
-			// motor->transmit_data.velocity_des = 0.0f;
-			// motor->transmit_data.Kp = 0;
-			// motor->transmit_data.Kd = 0;
 
 			// 若该电机处于停止状态,直接将buff置零
 			if (motor->motor_state_flag == MOTOR_DISABLE)

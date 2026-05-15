@@ -20,7 +20,7 @@
 /*遥控器参数*/
 #define REMOTE_X_SEN 0.007 // 660 ~ -660
 #define REMOTE_Y_SEN 0.005
-#define REMOTE_OMEGA_Z_SEN 0.001f // 6.6
+#define REMOTE_OMEGA_Z_SEN 0.0025f // 6.6
 
 /*键鼠参数*/
 #define KEY_X_SEN 1.5
@@ -63,7 +63,7 @@ typedef struct
 	float target_vx;
     float target_vy;
     float target_wz;      // 底盘小陀螺时的角速度(rad/s)
-    float target_leg_angle;
+    uint8_t recovery_leg_state; // 1: request leg recovery
 
     chassis_mode_e mode;
     chassis_key_state_e key_state;

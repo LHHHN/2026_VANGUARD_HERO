@@ -24,10 +24,11 @@
 
 #include "rs485.h"
 
-#define LENGTH 0.405f         // 轴距（wheelbase） 即前后轮轴间距离
+#define LENGTH_F 0.21722f         // 前轴距（wheelbase） 即前后轮轴间距离
+#define LENGTH_B 0.22250f         // 后轴距（wheelbase） 即前后轮轴间距离
 #define MECANUM_WIDTH_F 0.5058f // 麦轮轮距（track） 即左右驱动轮中心距离
 #define MECANUM_WIDTH_B 0.4772f // 麦轮轮距（track） 即左右驱动轮中心距离
-// #define OMNI_WIDTH 0.435f     // 全向轮轮距（track） 即左右驱动轮中心距离
+
 #define OMNI_WIDTH 0.4418f  // 全向轮轮距（track） 即左右驱动轮中心距离
 #define WHEEL_RADIUS 0.077f // 驱动轮半径（diameter）
 
@@ -49,7 +50,7 @@
 // #define REMOTE_YAW_SEN 0.000015f
 #define REMOTE_PITCH_SEN 0.000002f
 
-#define FOLLOW_OMEGA_Z 3.67f // 底盘跟随0点
+#define FOLLOW_OMEGA_Z 3.73f // 底盘跟随0点
 
 typedef enum
 {
@@ -84,6 +85,7 @@ typedef struct
     float omega_follow; // 底盘跟随时的角速度  (rad/s)
 
     float leg_angle; // 前腿电机角度
+    float leg_length_target;
     float v_track;   // 履带速度
 
     float wheel_target[4]; // 四轮目标速度(rad/s)
