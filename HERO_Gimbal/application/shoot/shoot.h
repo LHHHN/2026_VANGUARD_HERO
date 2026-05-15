@@ -59,6 +59,7 @@ typedef struct
 
 extern DJI_motor_instance_t *shoot_m3508_motor[3];
 extern shoot_cmd_t shoot_cmd;
+extern float shoot_tar_2;
 
 void Shoot_Init(void);
 

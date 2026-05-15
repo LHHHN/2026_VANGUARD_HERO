@@ -178,165 +178,155 @@
         <Ww>
           <count>4</count>
           <WinNumber>1</WinNumber>
-          <ItemText>shoot_task_diff,0x0A</ItemText>
+          <ItemText>daemon_task_diff,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>5</count>
           <WinNumber>1</WinNumber>
-          <ItemText>daemon_task_diff,0x0A</ItemText>
+          <ItemText>procotol_task_diff,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>6</count>
           <WinNumber>1</WinNumber>
-          <ItemText>procotol_task_diff,0x0A</ItemText>
+          <ItemText>DM_arthrosis_motor</ItemText>
         </Ww>
         <Ww>
           <count>7</count>
           <WinNumber>1</WinNumber>
-          <ItemText>DM_arthrosis_motor</ItemText>
+          <ItemText>chassis_cmd</ItemText>
         </Ww>
         <Ww>
           <count>8</count>
           <WinNumber>1</WinNumber>
-          <ItemText>chassis_cmd</ItemText>
+          <ItemText>INS</ItemText>
         </Ww>
         <Ww>
           <count>9</count>
           <WinNumber>1</WinNumber>
-          <ItemText>INS</ItemText>
+          <ItemText>DM_arthrosis_speed_pid</ItemText>
         </Ww>
         <Ww>
           <count>10</count>
           <WinNumber>1</WinNumber>
-          <ItemText>chassis_max_power</ItemText>
+          <ItemText>DM_arthrosis_angle_pid</ItemText>
         </Ww>
         <Ww>
           <count>11</count>
           <WinNumber>1</WinNumber>
-          <ItemText>DM_arthrosis_speed_pid</ItemText>
+          <ItemText>kp_leg_test</ItemText>
         </Ww>
         <Ww>
           <count>12</count>
           <WinNumber>1</WinNumber>
-          <ItemText>DM_arthrosis_angle_pid</ItemText>
+          <ItemText>kd_leg_test</ItemText>
         </Ww>
         <Ww>
           <count>13</count>
           <WinNumber>1</WinNumber>
-          <ItemText>kp_leg_test</ItemText>
+          <ItemText>INS.Pitch</ItemText>
         </Ww>
         <Ww>
           <count>14</count>
           <WinNumber>1</WinNumber>
-          <ItemText>kd_leg_test</ItemText>
+          <ItemText>leg_left_length</ItemText>
         </Ww>
         <Ww>
           <count>15</count>
           <WinNumber>1</WinNumber>
-          <ItemText>INS.Pitch</ItemText>
+          <ItemText>kp_length_test</ItemText>
         </Ww>
         <Ww>
           <count>16</count>
           <WinNumber>1</WinNumber>
-          <ItemText>leg_left_length</ItemText>
+          <ItemText>kd_length_test</ItemText>
         </Ww>
         <Ww>
           <count>17</count>
           <WinNumber>1</WinNumber>
-          <ItemText>kp_length_test</ItemText>
+          <ItemText>kp_roll_test</ItemText>
         </Ww>
         <Ww>
           <count>18</count>
           <WinNumber>1</WinNumber>
-          <ItemText>kd_length_test</ItemText>
+          <ItemText>kd_roll_test</ItemText>
         </Ww>
         <Ww>
           <count>19</count>
           <WinNumber>1</WinNumber>
-          <ItemText>kp_roll_test</ItemText>
+          <ItemText>LEG_INIT</ItemText>
         </Ww>
         <Ww>
           <count>20</count>
           <WinNumber>1</WinNumber>
-          <ItemText>kd_roll_test</ItemText>
+          <ItemText>DM_arthrosis_motor[0]-&gt;receive_data.torque</ItemText>
         </Ww>
         <Ww>
           <count>21</count>
           <WinNumber>1</WinNumber>
-          <ItemText>LEG_INIT</ItemText>
+          <ItemText>DM_arthrosis_motor[1]-&gt;receive_data.torque</ItemText>
         </Ww>
         <Ww>
           <count>22</count>
           <WinNumber>1</WinNumber>
-          <ItemText>DM_arthrosis_motor[0]-&gt;receive_data.torque</ItemText>
+          <ItemText>INS.Roll</ItemText>
         </Ww>
         <Ww>
           <count>23</count>
           <WinNumber>1</WinNumber>
-          <ItemText>DM_arthrosis_motor[1]-&gt;receive_data.torque</ItemText>
+          <ItemText>DM_arthrosis_roll_pid[0]</ItemText>
         </Ww>
         <Ww>
           <count>24</count>
           <WinNumber>1</WinNumber>
-          <ItemText>INS.Roll</ItemText>
+          <ItemText>gimbal_MF9025_motor</ItemText>
         </Ww>
         <Ww>
           <count>25</count>
           <WinNumber>1</WinNumber>
-          <ItemText>DM_arthrosis_roll_pid[0]</ItemText>
+          <ItemText>chasiss_follow_pid</ItemText>
         </Ww>
         <Ww>
           <count>26</count>
           <WinNumber>1</WinNumber>
-          <ItemText>gimbal_MF9025_motor</ItemText>
+          <ItemText>leg_right_length</ItemText>
         </Ww>
         <Ww>
           <count>27</count>
           <WinNumber>1</WinNumber>
-          <ItemText>chasiss_follow_pid</ItemText>
+          <ItemText>forward_diff_pitch</ItemText>
         </Ww>
         <Ww>
           <count>28</count>
           <WinNumber>1</WinNumber>
-          <ItemText>leg_right_length</ItemText>
+          <ItemText>kp_leg_test0</ItemText>
         </Ww>
         <Ww>
           <count>29</count>
           <WinNumber>1</WinNumber>
-          <ItemText>forward_diff_pitch</ItemText>
+          <ItemText>kp_leg_test1</ItemText>
         </Ww>
         <Ww>
           <count>30</count>
           <WinNumber>1</WinNumber>
-          <ItemText>kp_leg_test0</ItemText>
+          <ItemText>referee_outer_info</ItemText>
         </Ww>
         <Ww>
           <count>31</count>
           <WinNumber>1</WinNumber>
-          <ItemText>kp_leg_test1</ItemText>
+          <ItemText>shoot_stir_motor</ItemText>
         </Ww>
         <Ww>
           <count>32</count>
           <WinNumber>1</WinNumber>
-          <ItemText>referee_outer_info</ItemText>
+          <ItemText>shoot_cmd</ItemText>
         </Ww>
         <Ww>
           <count>33</count>
           <WinNumber>1</WinNumber>
-          <ItemText>shoot_stir_motor</ItemText>
-        </Ww>
-        <Ww>
-          <count>34</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>shoot_cmd</ItemText>
-        </Ww>
-        <Ww>
-          <count>35</count>
-          <WinNumber>1</WinNumber>
           <ItemText>gimbal_cmd</ItemText>
         </Ww>
         <Ww>
-          <count>36</count>
+          <count>34</count>
           <WinNumber>1</WinNumber>
           <ItemText>target_yaw</ItemText>
         </Ww>

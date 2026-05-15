@@ -147,6 +147,7 @@ static void RS485_Fill_Gimbal_Payload(rs485_gimbal_cmd_payload_t *payload)
                                                         rs485_tx_message.ui_refresh_flag,
                                                         rs485_tx_message.auto_aiming_flag
                                                     );
+    payload->shoot_tar_2 = rs485_tx_message.shoot_tar_2;
 }
 
 static void RS485_Parse_Byte(uint8_t data)

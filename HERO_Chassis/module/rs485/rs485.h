@@ -42,6 +42,7 @@ typedef struct
     float gimbal_measure_yaw_speed;
     uint8_t gimbal_measure_pitch;
     uint8_t control_flags;
+    uint16_t shoot_tar_2;
 } __attribute__((packed)) rs485_gimbal_cmd_payload_t;
 
 typedef struct
@@ -74,6 +75,7 @@ typedef struct
     uint8_t control_remote_flag : 1;
     uint8_t ui_refresh_flag : 1;
     uint8_t auto_aiming_flag : 2;
+    uint16_t shoot_tar_2;
 
     uint8_t seq;
     uint8_t ack_seq;

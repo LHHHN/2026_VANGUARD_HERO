@@ -112,6 +112,7 @@ void RC_Receive_Control(void)
 	rs485_tx_message.recovery_leg_flag = chassis_cmd.recovery_leg_state;
 	rs485_tx_message.control_remote_flag = Control_Is_VT03(Control_Get_Source(rc_data, vt03_data));
 	rs485_tx_message.ui_refresh_flag = vt03_data->key->r;
+	rs485_tx_message.shoot_tar_2 = (uint16_t)(shoot_tar_2);
 	RS485_Handle_Tx_Data();
 }
 

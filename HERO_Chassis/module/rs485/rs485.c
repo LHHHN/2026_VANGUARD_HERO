@@ -151,6 +151,7 @@ static void RS485_Copy_Gimbal_Payload(const rs485_gimbal_wire_t *wire)
     rs485_rx_message.ui_refresh_flag = RS485_GIMBAL_UI_FLAG(wire->payload.control_flags);
     rs485_rx_message.auto_aiming_flag = RS485_GIMBAL_AUTO_AIM_FLAG(wire->payload.control_flags);
     rs485_rx_message.recovery_leg_flag = RS485_GIMBAL_RECOVERY_LEG_FLAG(wire->payload.control_flags);
+    rs485_rx_message.shoot_tar_2 = wire->payload.shoot_tar_2;
     rs485_rx_message.seq = wire->header.seq;
     rs485_rx_message.ack_seq = wire->header.ack_seq;
 }

@@ -223,6 +223,30 @@ static void UI_Measure_Judge_Data(void)
 	UI_Graph_Refresh(&referee_recv_info->referee_id,
 					 1,
 					 UI_measure_digital[0]);
+	UI_Char_Draw(&UI_sign_logo[1],
+				 "sc1",
+				 UI_Graph_ADD,
+				 8,
+				 UI_Color_Cyan,
+				 15,
+				 2,
+				 1400,
+				 700,
+				 "shoot_tar_2:");
+	UI_Char_Refresh(&referee_recv_info->referee_id, UI_sign_logo[1]);
+	UI_Int_Draw(&UI_measure_digital[1],
+				"sd1",
+				UI_Graph_ADD,
+				6,
+				UI_Color_Main,
+				30,
+				3,
+				1600,
+				710,
+				(int32_t)(Interactive_data->Shoot_Tar_2));
+	UI_Graph_Refresh(&referee_recv_info->referee_id,
+					 1,
+					 UI_measure_digital[1]);
 }
 
 static void UI_Robot_State(void)
@@ -617,6 +641,7 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
 	_Interactive_data->shoot_mode = shoot_cmd.mode;						// shoot_cmd.shooter;
 	_Interactive_data->Super_Power = trans_thresholds(Super_Cap_instance->receive_data.capEnergy, 0, 250, 0, 100);
 	_Interactive_data->Chassis_Power_Limit = Super_Cap_instance->receive_data.chassisPower;
+	_Interactive_data->Shoot_Tar_2 = rs485_rx_message.shoot_tar_2;
 
 	//   RobotModeTest(Interactive_data); // 测试用函数，实现模式自动变化,用于检查该任务和裁判系统是否连接正常
 
@@ -1004,6 +1029,23 @@ static void MyUIRefresh(referee_info_t *referee_recv_info,
 							 1,
 							 UI_measure_digital[0]);
 		}
+		if (_Interactive_data->Referee_Interactive_Flag.Shoot_Tar_flag == 1)
+		{
+			UI_Int_Draw(&UI_measure_digital[1],
+						"sd1",
+						UI_Graph_Change,
+						6,
+						UI_Color_Main,
+						30,
+						3,
+						1600,
+						710,
+						(int32_t)(_Interactive_data->Shoot_Tar_2));
+			UI_Graph_Refresh(&referee_recv_info->referee_id,
+							 1,
+							 UI_measure_digital[1]);
+			_Interactive_data->Referee_Interactive_Flag.Shoot_Tar_flag = 0;
+		}
 	}
 
 	if ((refresh_cnt % 6) == 0)
@@ -1119,6 +1161,11 @@ static void UIChangeCheck(Referee_Interactive_info_t *_Interactive_data)
 			_Interactive_data->Referee_Interactive_Flag.Super_flag = 1;
 		}
 		_Interactive_data->Super_last_Power = _Interactive_data->Super_Power;
+	}
+	if (_Interactive_data->Shoot_Tar_2 != _Interactive_data->Shoot_Tar_2_last)
+	{
+		_Interactive_data->Referee_Interactive_Flag.Shoot_Tar_flag = 1;
+		_Interactive_data->Shoot_Tar_2_last = _Interactive_data->Shoot_Tar_2;
 	}
 }
 #endif

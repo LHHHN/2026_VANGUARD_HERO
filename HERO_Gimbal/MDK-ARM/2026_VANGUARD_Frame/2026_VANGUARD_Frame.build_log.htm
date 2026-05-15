@@ -27,36 +27,7 @@ Project File Date:  05/04/2026
 <h2>Output:</h2>
 *** Using Compiler 'V6.24', folder: 'D:\keil5_543\ARM\ARMCLANG\Bin'
 Build target '2026_VANGUARD_Frame'
-compiling freertos.c...
-compiling rs485.c...
-compiling bsp_usart.c...
-../application/chassis/chassis.c(154): warning: using the result of an assignment as a condition without parentheses [-Wparentheses]
-  154 |                 else if(chassis_cmd.mode = CHASSIS_UPSTEP)
-      |                         ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
-../application/chassis/chassis.c(154): note: place parentheses around the assignment to silence this warning
-  154 |                 else if(chassis_cmd.mode = CHASSIS_UPSTEP)
-      |                                          ^               
-      |                         (                                )
-../application/chassis/chassis.c(154): note: use '==' to turn this assignment into an equality comparison
-  154 |                 else if(chassis_cmd.mode = CHASSIS_UPSTEP)
-      |                                          ^
-      |                                          ==
-1 warning generated.
-compiling chassis.c...
-compiling shoot_task.c...
-compiling shoot.c...
-compiling gimbal_task.c...
-compiling VPC.c...
-compiling robot_frame_init.c...
-../application/gimbal/gimbal.c(69): warning: taking address of packed member 'Pitch' of class or structure 'INS_behaviour_t' may result in an unaligned pointer value [-Waddress-of-packed-member]
-   69 |         .other_angle_feedback_ptr = &(INS.Pitch),
-      |                                       ^~~~~~~~~
-1 warning generated.
-compiling gimbal.c...
-compiling procotol.c...
-linking...
-Program Size: Code=160466 RO-data=3266 RW-data=2640 ZI-data=66736  
-"2026_VANGUARD_Frame\2026_VANGUARD_Frame.axf" - 0 Error(s), 2 Warning(s).
+"2026_VANGUARD_Frame\2026_VANGUARD_Frame.axf" - 0 Error(s), 0 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -80,7 +51,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE@6.1.1
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:03
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

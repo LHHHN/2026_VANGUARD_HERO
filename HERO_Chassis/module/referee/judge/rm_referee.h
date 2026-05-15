@@ -67,6 +67,7 @@ typedef struct
   uint32_t friction_flag :1;
   uint32_t Power_flag :1;
   uint32_t Super_flag :1;
+  uint32_t Shoot_Tar_flag :1;
 } Referee_Interactive_Flag_t;
 
 // 此结构体包含UI绘制与机器人车间通信的需要的其他非裁判系统数据
@@ -82,6 +83,7 @@ typedef struct
   uint8_t ammo_mode;					 // 弹舱盖打开
   float Chassis_Power_Limit; // 功率控制
   uint8_t Super_Power;
+  uint16_t Shoot_Tar_2;
 
   // 上一次的模式，用于flag判断
   uint8_t control_last_mode;
@@ -92,6 +94,7 @@ typedef struct
   uint8_t ammo_last_mode;
   uint8_t Chassis_last_Power_Limit;
   uint8_t Super_last_Power;
+  uint16_t Shoot_Tar_2_last;
 
 } Referee_Interactive_info_t;
 
